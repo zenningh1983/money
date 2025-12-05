@@ -1,1130 +1,384 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { 
-  PieChart, Wallet, CreditCard, Landmark, Banknote, 
-  Plus, Minus, Save, Trash2, Edit2, X, ChevronDown, ChevronRight, ChevronUp, ChevronLeft,
-  Sparkles, Settings, LayoutGrid, FileText,
-  Tag, Check, Users, 
-  Github, CloudUpload, CloudDownload, AlertCircle, RefreshCw, Brain, Lock, ArrowRight,
-  ArrowUp, ArrowDown, ListPlus, Calendar as CalendarIcon, GripVertical,
-  BarChart3, UserCog, LogOut, Coins, Receipt, CheckCircle2, TrendingUp, Layout, ClipboardList, Filter, UserPlus,
-  DollarSign, Briefcase, Percent, Cloud
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>通往財富自由之路 - FinancePro</title>
+    
+    <!-- 核心依賴 (使用 CDN，本地開啟需要網路載入這些基礎庫，載入後即可在瀏覽器運行) -->
+    <!-- React 核心 -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel (用於解析 JSX) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Recharts (圖表庫) -->
+    <script src="https://unpkg.com/prop-types/prop-types.min.js"></script>
+    <script src="https://unpkg.com/recharts@2.8.0/umd/Recharts.js"></script>
+    
+    <!-- Tailwind CSS (樣式庫) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif; background-color: #f8fafc; }
+        /* 自定義捲軸 */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* 隱藏 Recharts 的 console 警告 */
+        .recharts-default-tooltip { border-radius: 12px !important; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important; border: none !important; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
 
-// --- 🔐 使用者配置區 ---
-const ENCRYPTED_CONFIG = {
-  TOKEN_PREFIX: "ghp_", 
-  TOKEN_BODY: "uGYqNrODupI2hp9QjKSZCVtSygLzwB1jY42B", 
-  REPO: "zenningh1983/money",         
-  PATH: "wealth_freedom_v2.json", 
-  APP_PASSWORD: "8888" 
-};
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useRef } = React;
+        const { PieChart, Pie, Cell, ResponsiveContainer, Tooltip: RechartsTooltip } = Recharts;
 
-const getGithubToken = () => ENCRYPTED_CONFIG.TOKEN_PREFIX + ENCRYPTED_CONFIG.TOKEN_BODY;
+        // --- Icon System (模擬 Lucide-React) ---
+        // 為了單檔執行，我們手動定義這些 SVG 組件
+        const CreateIcon = ({ d, className, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+                {Array.isArray(d) ? d.map((p, i) => <path key={i} d={p} />) : <path d={d} />}
+                {props.children}
+            </svg>
+        );
 
-// --- Utils ---
-const generateId = () => Math.random().toString(36).substr(2, 9);
-const utf8_to_b64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
-const b64_to_utf8 = (str) => decodeURIComponent(escape(window.atob(str)));
-const formatCurrency = (val) => new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'TWD', minimumFractionDigits: 0 }).format(val);
-const formatNumber = (val) => new Intl.NumberFormat('zh-TW', { maximumFractionDigits: 2 }).format(val);
+        const Layout = (p) => <CreateIcon {...p} d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2M9 3v18M21 9H9" />;
+        const LayoutGrid = (p) => <CreateIcon {...p} d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z" />;
+        const Wallet = (p) => <CreateIcon {...p} d="M21 12V7H5a2 2 0 0 1 0-4h14v4M3 5v14a2 2 0 0 0 2 2h16v-5M18 12a2 2 0 0 0 0 4h4v-4Z" />;
+        const TrendingUp = (p) => <CreateIcon {...p} d={["M23 6l-9.5 9.5-5-5L1 18", "M17 6h6v6"]} />;
+        const PieChartIcon = (p) => <CreateIcon {...p} d="M21.21 15.89A10 10 0 1 1 8 2.83M22 12A10 10 0 0 0 12 2v10z" />;
+        const ArrowRight = (p) => <CreateIcon {...p} d="M5 12h14M12 5l7 7-7 7" />;
+        const Plus = (p) => <CreateIcon {...p} d="M12 5v14M5 12h14" />;
+        const Minus = (p) => <CreateIcon {...p} d="M5 12h14" />;
+        const Save = (p) => <CreateIcon {...p} d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8" />;
+        const Trash2 = (p) => <CreateIcon {...p} d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2M10 11v6M14 11v6" />;
+        const Edit2 = (p) => <CreateIcon {...p} d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />;
+        const X = (p) => <CreateIcon {...p} d="M18 6 6 18M6 6l12 12" />;
+        const ChevronDown = (p) => <CreateIcon {...p} d="m6 9 6 6 6-6" />;
+        const ChevronUp = (p) => <CreateIcon {...p} d="m18 15-6-6-6 6" />;
+        const ChevronLeft = (p) => <CreateIcon {...p} d="m15 18-6-6 6-6" />;
+        const ChevronRight = (p) => <CreateIcon {...p} d="m9 18 6-6-6-6" />;
+        const Settings = (p) => <CreateIcon {...p} d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"><circle cx="12" cy="12" r="3" /></CreateIcon>;
+        const FileText = (p) => <CreateIcon {...p} d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2zM14 2v6h6M16 13H8M16 17H8M10 9H8" />;
+        const Tag = (p) => <CreateIcon {...p} d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"><circle cx="7" cy="7" r="3" /></CreateIcon>;
+        const Check = (p) => <CreateIcon {...p} d="M20 6 9 17l-5-5" />;
+        const Users = (p) => <CreateIcon {...p} d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 8.5a4 4 0 1 0 0-8 4 4 0 0 0 0 8M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />;
+        const Github = (p) => <CreateIcon {...p} d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4M9 18c-4.51 2-5-2-7-2" />;
+        const CloudUpload = (p) => <CreateIcon {...p} d="m18 10-6-6-6 6M12 4v9M12.09 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29" />;
+        const CloudDownload = (p) => <CreateIcon {...p} d="M12 13v8l-4-4m4 4 4-4M12.09 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29" />;
+        const AlertCircle = (p) => <CreateIcon {...p} d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 8v4M12 16h.01" />;
+        const RefreshCw = (p) => <CreateIcon {...p} d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16M3 21v-5h5" />;
+        const Lock = (p) => <CreateIcon {...p} d="M19 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2zm-7-7a4 4 0 0 1 4 4v3H8V4a4 4 0 0 1 4-4z" />;
+        const ArrowUp = (p) => <CreateIcon {...p} d="M12 19V5M5 12l7-7 7 7" />;
+        const ArrowDown = (p) => <CreateIcon {...p} d="M12 5v14M19 12l-7 7-7-7" />;
+        const ListPlus = (p) => <CreateIcon {...p} d="M11 12H3M16 6H3M16 18H3M19 10v4M21 12h-4" />;
+        const CalendarIcon = (p) => <CreateIcon {...p} d="M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM16 2v4M8 2v4M3 10h18" />;
+        const GripVertical = (p) => <CreateIcon {...p} d="M9 12h.01M15 12h.01M9 5h.01M15 5h.01M9 19h.01M15 19h.01" />;
+        const BarChart3 = (p) => <CreateIcon {...p} d="M3 3v18h18M18 17V9M13 17V5M8 17v-3" />;
+        const UserCog = (p) => <CreateIcon {...p} d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"><circle cx="9" cy="7" r="4"/><circle cx="19" cy="11" r="2"/><path d="M19 8v1"/><path d="M19 13v1"/><path d="M16 11h1"/><path d="M21 11h1"/></CreateIcon>;
+        const LogOut = (p) => <CreateIcon {...p} d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />;
+        const Cloud = (p) => <CreateIcon {...p} d="M17.5 19c0-1.7-1.3-3-3-3h-11C1.6 16 0 14.4 0 12.5S1.6 9 3.5 9h.2c.4-3 3-5.3 6-5.3 3.6 0 6.4 2.7 6.8 6.2h.6c2.4 0 4.4 2 4.4 4.4 0 2.2-1.6 4-3.7 4.3" />;
+        const CreditCard = (p) => <CreateIcon {...p} d="M2 10h20M2 14h2M6 14h2M10 14h2M14 14h2M2 6h20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" />;
+        const Landmark = (p) => <CreateIcon {...p} d="M3 21h18M5 21V7l8-4 8 4v14M8 21v-4h8v4" />;
+        const Banknote = (p) => <CreateIcon {...p} d="M2 6h20v12H2zM6 12h.01M18 12h.01M12 10a2 2 0 0 1 2 2 2 2 0 0 1-2 2 2 2 0 0 1-2-2 2 2 0 0 1 2-2Z" />;
+        const Sparkles = (p) => <CreateIcon {...p} d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />;
+        const ClipboardList = (p) => <CreateIcon {...p} d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M12 2v4M8 11h.01M8 16h.01M12 11h4M12 16h4" />;
+        const Filter = (p) => <CreateIcon {...p} d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />;
+        const UserPlus = (p) => <CreateIcon {...p} d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></CreateIcon>;
 
-// --- Default Data ---
-const DEFAULT_CATEGORIES = [
-  { id: 'c_food', name: '飲食', type: 'expense', color: 'bg-orange-100 text-orange-600', subs: [{ id: 's_bf', name: '早餐' }, { id: 's_lun', name: '午餐' }, { id: 's_din', name: '晚餐' }, { id: 's_bev', name: '飲料' }] },
-  { id: 'c_trans', name: '交通', type: 'expense', color: 'bg-blue-100 text-blue-600', subs: [{ id: 's_bus', name: '公車捷運' }, { id: 's_taxi', name: 'Uber' }, { id: 's_gas', name: '加油' }] },
-  { id: 'c_inc', name: '收入', type: 'income', color: 'bg-green-100 text-green-600', subs: [{ id: 's_sal', name: '薪水' }, { id: 's_bonus', name: '獎金' }, { id: 's_repay', name: '還款入帳' }] }
-];
-
-const DEFAULT_ACCOUNTS = [
-  { id: 'a_cash', name: '現金', type: 'cash', balance: 2000, icon: 'Banknote' },
-  { id: 'a_bank', name: '銀行', type: 'bank', balance: 50000, icon: 'Landmark' },
-  { id: 'a_card', name: '信用卡', type: 'credit', balance: -5000, icon: 'CreditCard' },
-];
-
-const COLORS = ['#34C759', '#007AFF', '#5856D6', '#FF2D55', '#FF9500', '#AF52DE', '#5AC8FA', '#FF3B30', '#4CD964'];
-const DEFAULT_PEOPLE = [{ id: 'p_partner', name: '伴侶', defaultRatio: 50 }];
-const DEFAULT_USERS = [{ id: 'u_default', name: '我 (主帳號)' }];
-
-// --- UI Components ---
-
-const Toast = ({ message, type, onClose }) => {
-  useEffect(() => { const t = setTimeout(onClose, 3000); return () => clearTimeout(t); }, [onClose]);
-  const bgClass = type === 'error' ? 'bg-red-500/90' : type === 'success' ? 'bg-green-600/90' : 'bg-gray-800/90';
-  return (
-    <div className={`fixed top-6 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-full text-white text-sm font-medium shadow-2xl z-[100] flex items-center gap-2 animate-in fade-in slide-in-from-top-4 backdrop-blur-md ${bgClass}`}>
-      {type === 'error' ? <AlertCircle size={16}/> : type === 'loading' ? <RefreshCw size={16} className="animate-spin"/> : <Check size={16}/>}
-      {message}
-    </div>
-  );
-};
-
-const Modal = ({ isOpen, onClose, title, children, maxWidth = "max-w-lg" }) => {
-  if (!isOpen) return null;
-  return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className={`bg-white/95 backdrop-blur-xl rounded-[2rem] w-full ${maxWidth} max-h-[90vh] overflow-hidden shadow-2xl border border-white/50 flex flex-col`}>
-        <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-white/50 z-10 shrink-0">
-          <h3 className="font-bold text-xl text-gray-800">{title}</h3>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X size={20} /></button>
-        </div>
-        <div className="p-5 flex-1 overflow-y-auto">{children}</div>
-      </div>
-    </div>
-  );
-};
-
-const IconComponent = ({ name, size = 18, className }) => {
-  const icons = { Wallet, CreditCard, Landmark, Banknote };
-  const Icon = icons[name] || Wallet;
-  return <Icon size={size} className={className} />;
-};
-
-const SimplePieChart = ({ data }) => {
-    const total = data.reduce((sum, item) => sum + item.value, 0);
-    let currentAngle = 0;
-
-    if (total === 0) return <div className="flex items-center justify-center h-40 text-gray-400 text-sm">尚無持股資料</div>;
-
-    return (
-        <div className="flex flex-row items-center gap-6 justify-center h-48">
-            <div className="relative w-40 h-40 shrink-0">
-                <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-                    {data.map((item, index) => {
-                        const sliceAngle = (item.value / total) * 360;
-                        const x1 = 50 + 50 * Math.cos(Math.PI * currentAngle / 180);
-                        const y1 = 50 + 50 * Math.sin(Math.PI * currentAngle / 180);
-                        const x2 = 50 + 50 * Math.cos(Math.PI * (currentAngle + sliceAngle) / 180);
-                        const y2 = 50 + 50 * Math.sin(Math.PI * (currentAngle + sliceAngle) / 180);
-                        const largeArc = sliceAngle > 180 ? 1 : 0;
-                        const pathData = `M 50 50 L ${x1} ${y1} A 50 50 0 ${largeArc} 1 ${x2} ${y2} Z`;
-                        currentAngle += sliceAngle;
-                        return <path key={index} d={pathData} fill={COLORS[index % COLORS.length]} />;
-                    })}
-                    <circle cx="50" cy="50" r="30" fill="white" />
-                </svg>
-            </div>
-            <div className="space-y-1 overflow-y-auto max-h-40 flex-1 pr-2 custom-scrollbar">
-                {data.map((item, index) => (
-                    <div key={index} className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-1.5">
-                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
-                            <span className="font-bold text-gray-700">{item.name}</span>
-                        </div>
-                        <span className="text-gray-500">{Math.round((item.value / total) * 100)}%</span>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-};
-
-const MonthGridPicker = ({ value, onChange }) => {
-    const [year, month] = value.split('-');
-    const [viewYear, setViewYear] = useState(parseInt(year));
-    const [isOpen, setIsOpen] = useState(false);
-    const pickerRef = useRef(null);
-
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (pickerRef.current && !pickerRef.current.contains(event.target)) setIsOpen(false);
+        // --- 使用者配置 ---
+        const ENCRYPTED_CONFIG = {
+            TOKEN_PREFIX: "ghp_", 
+            TOKEN_BODY: "uGYqNrODupI2hp9QjKSZCVtSygLzwB1jY42B", 
+            REPO: "zenningh1983/money",         
+            PATH: "wealth_freedom_v5.json", 
+            APP_PASSWORD: "8888" 
         };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
 
-    const months = Array.from({ length: 12 }, (_, i) => i + 1);
+        const getGithubToken = () => ENCRYPTED_CONFIG.TOKEN_PREFIX + ENCRYPTED_CONFIG.TOKEN_BODY;
 
-    return (
-        <div className="relative" ref={pickerRef}>
-            <button 
-                onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-gray-200 font-bold text-gray-700 shadow-sm hover:bg-gray-50"
-            >
-                <CalendarIcon size={16} className="text-gray-400"/>
-                {viewYear}年 {parseInt(month)}月
-                <ChevronDown size={14} className="text-gray-400"/>
-            </button>
+        // --- Helpers ---
+        const generateId = () => Math.random().toString(36).substr(2, 9);
+        const utf8_to_b64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
+        const b64_to_utf8 = (str) => decodeURIComponent(escape(window.atob(str)));
+        const formatCurrency = (val) => new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'TWD', minimumFractionDigits: 0 }).format(val);
+        const formatNumber = (val) => new Intl.NumberFormat('zh-TW', { maximumFractionDigits: 2 }).format(val);
 
-            {isOpen && (
-                <div className="absolute top-full left-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 w-64 z-50 animate-in fade-in zoom-in-95">
-                    <div className="flex justify-between items-center mb-4">
-                        <button onClick={() => setViewYear(y => y - 1)} className="p-1 hover:bg-gray-100 rounded"><ChevronLeft size={16}/></button>
-                        <span className="font-bold text-lg">{viewYear}</span>
-                        <button onClick={() => setViewYear(y => y + 1)} className="p-1 hover:bg-gray-100 rounded"><ChevronRight size={16}/></button>
+        // --- Default Data ---
+        const DEFAULT_CATEGORIES = [
+          { id: 'c_food', name: '飲食', type: 'expense', color: 'bg-orange-100 text-orange-600', subs: [{ id: 's_bf', name: '早餐' }, { id: 's_lun', name: '午餐' }, { id: 's_din', name: '晚餐' }, { id: 's_bev', name: '飲料' }] },
+          { id: 'c_trans', name: '交通', type: 'expense', color: 'bg-blue-100 text-blue-600', subs: [{ id: 's_bus', name: '公車捷運' }, { id: 's_taxi', name: 'Uber' }, { id: 's_gas', name: '加油' }] },
+          { id: 'c_ent', name: '娛樂', type: 'expense', color: 'bg-purple-100 text-purple-600', subs: [{ id: 's_mov', name: '電影' }, { id: 's_game', name: '遊戲' }, { id: 's_tvl', name: '旅遊' }] },
+          { id: 'c_life', name: '生活', type: 'expense', color: 'bg-pink-100 text-pink-600', subs: [{ id: 's_shop', name: '購物' }, { id: 's_med', name: '醫療' }] },
+          
+          // 收入分類
+          { id: 'c_active', name: '主動收入', type: 'income', color: 'bg-emerald-100 text-emerald-600', subs: [{ id: 's_sal', name: '薪資' }, { id: 's_bonus', name: '獎金' }, { id: 's_part', name: '兼職' }] },
+          { id: 'c_passive', name: '被動收入', type: 'income', color: 'bg-cyan-100 text-cyan-600', subs: [{ id: 's_div', name: '股息' }, { id: 's_rent', name: '房租' }, { id: 's_int', name: '利息' }] },
+          { id: 'c_other', name: '其他收入', type: 'income', color: 'bg-teal-100 text-teal-600', subs: [{ id: 's_gift', name: '禮金' }, { id: 's_repay', name: '還款入帳' }, { id: 's_trade', name: '二手拍賣' }] }
+        ];
+
+        const DEFAULT_ACCOUNTS = [
+          { id: 'a_cash', name: '現金', type: 'cash', balance: 2000, icon: 'Banknote' },
+          { id: 'a_bank', name: '銀行', type: 'bank', balance: 50000, icon: 'Landmark' },
+          { id: 'a_card', name: '信用卡', type: 'credit', balance: -5000, icon: 'CreditCard' },
+        ];
+
+        const COLORS = ['#34C759', '#007AFF', '#5856D6', '#FF2D55', '#FF9500', '#AF52DE', '#5AC8FA', '#FF3B30', '#4CD964'];
+        const DEFAULT_PEOPLE = [{ id: 'p_partner', name: '伴侶', defaultRatio: 50 }];
+        const DEFAULT_USERS = [{ id: 'u_default', name: '我 (主帳號)' }];
+
+        // --- Components ---
+
+        const Toast = ({ message, type, onClose }) => {
+            useEffect(() => { const t = setTimeout(onClose, 3000); return () => clearTimeout(t); }, [onClose]);
+            const bgClass = type === 'error' ? 'bg-red-500/90' : type === 'success' ? 'bg-green-600/90' : 'bg-gray-800/90';
+            return (
+                <div className={`fixed top-6 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-full text-white text-sm font-medium shadow-2xl z-[100] flex items-center gap-2 animate-fade-in backdrop-blur-md ${bgClass}`}>
+                {type === 'error' ? <AlertCircle size={16}/> : type === 'loading' ? <RefreshCw size={16} className="animate-spin"/> : <Check size={16}/>}
+                {message}
+                </div>
+            );
+        };
+
+        const Modal = ({ isOpen, onClose, title, children, maxWidth = "max-w-lg" }) => {
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-fade-in">
+                <div className={`bg-white/95 backdrop-blur-xl rounded-[2rem] w-full ${maxWidth} max-h-[90vh] overflow-hidden shadow-2xl border border-white/50 flex flex-col`}>
+                    <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-white/50 z-10 shrink-0">
+                    <h3 className="font-bold text-xl text-gray-800">{title}</h3>
+                    <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X size={20} /></button>
                     </div>
-                    <div className="grid grid-cols-4 gap-2">
-                        {months.map(m => (
-                            <button
-                                key={m}
-                                onClick={() => { onChange(`${viewYear}-${m.toString().padStart(2, '0')}`); setIsOpen(false); }}
-                                className={`py-2 rounded-lg text-sm font-bold transition-colors ${
-                                    viewYear === parseInt(year) && m === parseInt(month)
-                                        ? 'bg-black text-white'
-                                        : 'hover:bg-gray-100 text-gray-600'
-                                }`}
-                            >
-                                {m}月
-                            </button>
+                    <div className="p-5 flex-1 overflow-y-auto">{children}</div>
+                </div>
+                </div>
+            );
+        };
+
+        const IconComp = ({ name, size = 18, className }) => {
+            const icons = { Wallet, CreditCard, Landmark, Banknote };
+            const I = icons[name] || Wallet;
+            return <I size={size} className={className} />;
+        };
+
+        const MonthGridPicker = ({ value, onChange }) => {
+            const [year, month] = value.split('-');
+            const [viewYear, setViewYear] = useState(parseInt(year));
+            const [isOpen, setIsOpen] = useState(false);
+            const pickerRef = useRef(null);
+
+            useEffect(() => {
+                const handleClickOutside = (event) => { if (pickerRef.current && !pickerRef.current.contains(event.target)) setIsOpen(false); };
+                document.addEventListener("mousedown", handleClickOutside);
+                return () => document.removeEventListener("mousedown", handleClickOutside);
+            }, []);
+
+            const months = Array.from({ length: 12 }, (_, i) => i + 1);
+
+            return (
+                <div className="relative" ref={pickerRef}>
+                    <button onClick={() => setIsOpen(!isOpen)} className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-gray-200 font-bold text-gray-700 shadow-sm hover:bg-gray-50">
+                        <CalendarIcon size={16} className="text-gray-400"/> {viewYear}年 {parseInt(month)}月 <ChevronDown size={14} className="text-gray-400"/>
+                    </button>
+                    {isOpen && (
+                        <div className="absolute top-full left-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 w-64 z-50 animate-fade-in">
+                            <div className="flex justify-between items-center mb-4">
+                                <button onClick={() => setViewYear(y => y - 1)} className="p-1 hover:bg-gray-100 rounded"><ChevronLeft size={16}/></button>
+                                <span className="font-bold text-lg">{viewYear}</span>
+                                <button onClick={() => setViewYear(y => y + 1)} className="p-1 hover:bg-gray-100 rounded"><ChevronRight size={16}/></button>
+                            </div>
+                            <div className="grid grid-cols-4 gap-2">
+                                {months.map(m => (
+                                    <button key={m} onClick={() => { onChange(`${viewYear}-${m.toString().padStart(2, '0')}`); setIsOpen(false); }} className={`py-2 rounded-lg text-sm font-bold transition-colors ${viewYear === parseInt(year) && m === parseInt(month) ? 'bg-black text-white' : 'hover:bg-gray-100 text-gray-600'}`}>
+                                        {m}月
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const SimplePieChart = ({ data }) => {
+            const total = data.reduce((sum, item) => sum + item.value, 0);
+            let currentAngle = 0;
+            if (total === 0) return <div className="flex items-center justify-center h-40 text-gray-400 text-sm">尚無持股資料</div>;
+
+            return (
+                <div className="flex flex-row items-center gap-6 justify-center h-48">
+                    <div className="relative w-40 h-40 shrink-0">
+                        <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
+                            {data.map((item, index) => {
+                                const sliceAngle = (item.value / total) * 360;
+                                const x1 = 50 + 50 * Math.cos(Math.PI * currentAngle / 180);
+                                const y1 = 50 + 50 * Math.sin(Math.PI * currentAngle / 180);
+                                const x2 = 50 + 50 * Math.cos(Math.PI * (currentAngle + sliceAngle) / 180);
+                                const y2 = 50 + 50 * Math.sin(Math.PI * (currentAngle + sliceAngle) / 180);
+                                const largeArc = sliceAngle > 180 ? 1 : 0;
+                                const pathData = `M 50 50 L ${x1} ${y1} A 50 50 0 ${largeArc} 1 ${x2} ${y2} Z`;
+                                currentAngle += sliceAngle;
+                                return <path key={index} d={pathData} fill={COLORS[index % COLORS.length]} />;
+                            })}
+                            <circle cx="50" cy="50" r="30" fill="white" />
+                        </svg>
+                    </div>
+                    <div className="space-y-1 overflow-y-auto max-h-40 flex-1 pr-2">
+                        {data.map((item, index) => (
+                            <div key={index} className="flex items-center justify-between text-xs">
+                                <div className="flex items-center gap-1.5">
+                                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                                    <span className="font-bold text-gray-700">{item.name}</span>
+                                </div>
+                                <span className="text-gray-500">{Math.round((item.value / total) * 100)}%</span>
+                            </div>
                         ))}
                     </div>
                 </div>
-            )}
-        </div>
-    );
-};
+            );
+        };
 
-// --- Portal Screen ---
+        // --- Sub Views ---
 
-const PortalScreen = ({ onSelect, userList, selectedUser, onSelectUser, onCreateUser }) => {
-    return (
-        <div className="fixed inset-0 z-[90] bg-gray-50/90 backdrop-blur-3xl flex flex-col items-center justify-center p-6 animate-in fade-in zoom-in-95">
-            <div className="max-w-md w-full space-y-8">
-                {/* Header Section */}
-                <div className="text-center space-y-6">
-                    <div className="inline-flex p-6 bg-gray-900 rounded-[2.5rem] text-white shadow-2xl mb-2">
-                        <Layout size={48} />
+        const PortalScreen = ({ onSelect, userList, selectedUser, onSelectUser, onCreateUser }) => {
+            const [showUserMenu, setShowUserMenu] = useState(false);
+            const handleCreateClick = () => {
+                const name = prompt("請輸入新使用者的名稱：");
+                if (name && name.trim()) { onCreateUser(name.trim()); setShowUserMenu(false); }
+            };
+            return (
+                <div className="fixed inset-0 z-[90] bg-gray-50/90 backdrop-blur-3xl flex flex-col items-center justify-center p-6 animate-fade-in">
+                    <div className="max-w-md w-full space-y-8">
+                        <div className="text-center space-y-6">
+                            <div className="inline-flex p-6 bg-gray-900 rounded-[2.5rem] text-white shadow-2xl mb-2"><Layout width="48" height="48" /></div>
+                            <div><h1 className="text-3xl font-black text-gray-900 tracking-tight">通往財富自由之路</h1><p className="text-gray-400 mt-2 font-medium">請選擇功能模組</p></div>
+                        </div>
+                        <div className="flex justify-center relative">
+                            <button onClick={() => setShowUserMenu(!showUserMenu)} className="bg-white px-5 py-2.5 rounded-full shadow-sm border border-gray-200 flex items-center gap-3 text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+                                <UserCog size={18} className="text-gray-400"/> <span>當前使用者:</span><span className="font-bold text-gray-900">{selectedUser?.name}</span>{showUserMenu ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                            </button>
+                            {showUserMenu && (
+                                <div className="absolute top-full mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
+                                    <div className="max-h-48 overflow-y-auto p-1">
+                                        {userList.map(u => (
+                                            <button key={u.id} onClick={() => { onSelectUser(u); setShowUserMenu(false); }} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-3 hover:bg-gray-50 transition-colors ${u.id === selectedUser?.id ? 'bg-blue-50 text-blue-600' : 'text-gray-700'}`}>
+                                                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs text-gray-600">{u.name[0]}</div><span className="truncate">{u.name}</span>{u.id === selectedUser?.id && <Check size={16} className="ml-auto"/>}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="border-t border-gray-100 p-1">
+                                        <button onClick={handleCreateClick} className="w-full text-left px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-3 text-blue-600 hover:bg-blue-50 transition-colors">
+                                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center"><UserPlus size={16} /></div>新增使用者
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        <div className="space-y-4">
+                            <button onClick={() => onSelect('accounting')} className="w-full bg-white p-6 rounded-[2.5rem] shadow-lg border border-gray-100 flex items-center gap-6 hover:scale-[1.02] transition-all group relative overflow-hidden">
+                                <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm z-10"><Wallet width="32" height="32" /></div>
+                                <div className="text-left flex-1 z-10"><h3 className="text-xl font-bold text-gray-900">現金帳本</h3><p className="text-gray-400 text-sm mt-1">日常收支、資產管理</p></div>
+                                <div className="bg-gray-50 p-3 rounded-full text-gray-300 z-10"><ArrowRight size={20} /></div>
+                            </button>
+                            <button onClick={() => onSelect('investment')} className="w-full bg-white p-6 rounded-[2.5rem] shadow-lg border border-gray-100 flex items-center gap-6 hover:scale-[1.02] transition-all group relative overflow-hidden">
+                                <div className="w-16 h-16 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shadow-sm z-10"><TrendingUp width="32" height="32" /></div>
+                                <div className="text-left flex-1 z-10"><h3 className="text-xl font-bold text-gray-900">證券投資</h3><p className="text-gray-400 text-sm mt-1">股票、ETF、股利</p></div>
+                                <div className="bg-gray-50 p-3 rounded-full text-gray-300 z-10"><ArrowRight size={20} /></div>
+                            </button>
+                        </div>
+                    </div>
+                    <div className="absolute bottom-8 text-[10px] text-gray-300 font-mono tracking-widest">OFFLINE V5.0</div>
+                </div>
+            );
+        };
+
+        const Sidebar = ({ activeTab, setActiveTab, collapsed, setCollapsed, currentUser, userList, onSelectUser, onCreateUser, viewState, setViewState, syncStatus }) => {
+            const [showUserMenu, setShowUserMenu] = useState(false);
+            const handleCreateClick = () => {
+                const name = prompt("請輸入新使用者的名稱：");
+                if (name && name.trim()) { onCreateUser(name.trim()); setShowUserMenu(false); }
+            };
+            const menuItems = viewState === 'accounting' ? [
+                { id: 'dashboard', icon: LayoutGrid, label: '概覽' }, { id: 'history', icon: FileText, label: '明細' },
+                { id: 'analysis', icon: BarChart3, label: '報表' }, { id: 'settings', icon: Settings, label: '設定' }
+            ] : [
+                { id: 'dashboard', icon: LayoutGrid, label: '資產' }, { id: 'history', icon: FileText, label: '紀錄' },
+                { id: 'add', icon: Plus, label: '下單' }, { id: 'settings', icon: Settings, label: '設定' }
+            ];
+
+            return (
+                <div className={`hidden md:flex flex-col bg-white/80 backdrop-blur-xl border-r border-gray-200 h-screen sticky top-0 z-40 transition-all duration-300 ${collapsed ? 'w-20' : 'w-64'}`}>
+                    <div className={`flex items-center gap-3 text-gray-900 font-black text-2xl p-6 ${collapsed ? 'justify-center' : ''}`}>
+                        <div className={`text-white p-2 rounded-xl flex-shrink-0 shadow-lg ${viewState === 'accounting' ? 'bg-blue-600' : 'bg-purple-600'}`}>{viewState === 'accounting' ? <Wallet size={24} /> : <TrendingUp size={24} />}</div>
+                        {!collapsed && <span className="whitespace-nowrap transition-opacity duration-300 text-lg">財富自由</span>}
+                    </div>
+                    <button onClick={() => setCollapsed(!collapsed)} className="absolute -right-3 top-8 bg-white border border-gray-200 p-1.5 rounded-full shadow-sm text-gray-500 hover:text-gray-900 z-50">{collapsed ? <ChevronRight size={14}/> : <ChevronDown size={14} className="rotate-90"/>}</button>
+                    <nav className="flex-1 space-y-2 px-3 mt-4">
+                        {menuItems.map(item => (
+                            <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full text-left px-3 py-3 rounded-2xl font-bold flex items-center gap-3 transition-all ${activeTab === item.id ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:bg-gray-50'} ${collapsed ? 'justify-center' : ''}`}>
+                                <item.icon size={20} /> {!collapsed && item.label}
+                            </button>
+                        ))}
+                    </nav>
+                    <div className="p-4 border-t border-gray-100 relative">
+                         {showUserMenu && !collapsed && (
+                            <div className="absolute bottom-full left-4 right-4 mb-2 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden z-50">
+                                <div className="max-h-48 overflow-y-auto p-1">{userList.map(u => (<button key={u.id} onClick={() => { onSelectUser(u); setShowUserMenu(false); }} className={`w-full text-left px-3 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-gray-50 ${u.id === currentUser?.id ? 'bg-blue-50 text-blue-600' : 'text-gray-700'}`}><div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs text-gray-600">{u.name[0]}</div><span className="truncate">{u.name}</span></button>))}</div>
+                                <div className="border-t border-gray-100 p-1"><button onClick={handleCreateClick} className="w-full text-left px-3 py-2 rounded-xl text-sm font-bold flex items-center gap-2 text-blue-600 hover:bg-blue-50"><UserPlus size={16} /> 新增</button></div>
+                            </div>
+                        )}
+                        <div className={`flex items-center gap-3 p-2 rounded-2xl hover:bg-gray-50 transition-colors cursor-pointer group ${collapsed ? 'justify-center' : ''}`} onClick={() => !collapsed && setShowUserMenu(!showUserMenu)}>
+                            <div className={`w-10 h-10 rounded-full bg-gradient-to-tr ${viewState === 'accounting' ? 'from-blue-500 to-cyan-500' : 'from-purple-500 to-pink-500'} flex items-center justify-center text-white font-bold flex-shrink-0 relative`}>
+                                {currentUser?.name[0]}
+                                <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white transition-colors duration-500 ${syncStatus === 'loading' ? 'bg-blue-500' : syncStatus === 'success' ? 'bg-green-500' : syncStatus === 'error' ? 'bg-red-500' : 'bg-gray-300'}`}></div>
+                            </div>
+                            {!collapsed && (<div className="flex-1 overflow-hidden text-left"><div className="text-xs text-gray-400 font-medium flex justify-between items-center">{viewState === 'accounting' ? '記帳中' : '投資中'} {showUserMenu ? <ChevronDown size={12}/> : <ChevronUp size={12}/>}</div><div className="font-bold text-gray-800 truncate">{currentUser?.name}</div></div>)}
+                        </div>
+                        {!collapsed && <button onClick={() => setViewState('portal')} className="w-full mt-2 text-xs text-gray-400 flex items-center justify-center gap-1 hover:text-gray-600 bg-gray-50 py-2 rounded-xl transition-all"><LogOut size={12}/> 切換模組</button>}
+                    </div>
+                </div>
+            );
+        };
+
+        const DashboardView = ({ accounts, transactions, onEditTx, setIsTxModalOpen, setIsSmartModalOpen, setActiveTab, setSettingsTab }) => {
+            const totalAssets = accounts.reduce((sum, acc) => sum + acc.balance, 0);
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const monthTxs = transactions.filter(t => t.date.startsWith(currentMonth));
+            const income = monthTxs.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0);
+            const expense = monthTxs.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0);
+
+            return (
+                <div className="space-y-8 animate-fade-in">
+                    <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+                        <div className="relative z-10">
+                            <div className="flex justify-between items-start mb-6"><div><div className="text-gray-400 text-sm font-medium mb-1 tracking-wider uppercase">總資產淨值</div><div className="text-5xl font-bold tracking-tight">{formatCurrency(totalAssets)}</div></div></div>
+                            <div className="grid grid-cols-2 gap-4 mb-8 bg-white/10 rounded-2xl p-4 backdrop-blur-sm border border-white/10"><div><div className="text-xs text-gray-400 mb-1">本月收入</div><div className="text-xl font-bold text-green-400">+{income.toLocaleString()}</div></div><div><div className="text-xs text-gray-400 mb-1">本月支出</div><div className="text-xl font-bold text-white">-{expense.toLocaleString()}</div></div></div>
+                            <div className="flex gap-4"><button onClick={() => { onEditTx(null); setIsTxModalOpen(true); }} className="flex-1 bg-white text-gray-900 py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-gray-100 shadow-lg"><Plus size={20} /> 記帳</button><button onClick={() => setIsSmartModalOpen(true)} className="flex-1 bg-white/10 backdrop-blur-md text-white py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-white/20 border border-white/10"><Sparkles size={20} className="text-yellow-300"/> 智慧匯入</button></div>
+                        </div>
                     </div>
                     <div>
-                        <h1 className="text-3xl font-black text-gray-900 tracking-tight">通往財富自由之路</h1>
-                        <p className="text-gray-400 mt-2 font-medium">請選擇功能模組</p>
+                        <div className="flex justify-between items-end mb-4 px-1"><h3 className="font-bold text-xl text-gray-800">我的帳戶</h3><button onClick={() => { setActiveTab('settings'); setSettingsTab('accounts'); }} className="text-sm text-blue-600 font-bold bg-blue-50 px-3 py-1 rounded-full hover:bg-blue-100">管理</button></div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">{accounts.map(acc => (<div key={acc.id} className="bg-white/70 backdrop-blur-md p-5 rounded-3xl border border-white/60 shadow-sm flex flex-col justify-between h-32 hover:shadow-md transition-all"><div className="flex items-start justify-between"><div className={`p-3 rounded-2xl ${acc.type === 'credit' ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-600'}`}><IconComp name={acc.icon} size={24} /></div><span className="text-xs font-bold text-gray-400 bg-gray-100/80 px-2 py-1 rounded-lg">{acc.type === 'credit' ? '負債' : '資產'}</span></div><div><div className="text-sm font-medium text-gray-500 truncate mb-0.5">{acc.name}</div><div className={`text-2xl font-bold ${acc.balance < 0 ? 'text-red-500' : 'text-gray-900'}`}>{acc.balance.toLocaleString()}</div></div></div>))}</div>
                     </div>
                 </div>
+            );
+        };
 
-                {/* User Pill */}
-                <div className="flex justify-center">
-                    <div className="bg-white px-5 py-2.5 rounded-full shadow-sm border border-gray-200 flex items-center gap-3 text-sm text-gray-600">
-                        <UserCog size={18} className="text-gray-400"/> 
-                        <span>當前使用者:</span>
-                        <span className="font-bold text-gray-900">{selectedUser?.name}</span>
-                    </div>
-                </div>
-                
-                {/* Module Cards */}
-                <div className="space-y-4">
-                    <button 
-                        onClick={() => onSelect('accounting')}
-                        className="w-full bg-white p-6 rounded-[2.5rem] shadow-lg border border-gray-100 flex items-center gap-6 hover:scale-[1.02] hover:shadow-2xl hover:border-blue-100 transition-all group relative overflow-hidden"
-                    >
-                        <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm group-hover:bg-blue-600 group-hover:text-white transition-colors z-10">
-                            <Wallet size={32} />
-                        </div>
-                        <div className="text-left flex-1 z-10">
-                            <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">現金帳本</h3>
-                            <p className="text-gray-400 text-sm mt-1">日常收支、資產管理、代墊分帳</p>
-                        </div>
-                        <div className="bg-gray-50 p-3 rounded-full text-gray-300 group-hover:text-blue-500 group-hover:bg-blue-50 transition-colors z-10">
-                            <ArrowRight size={20} />
-                        </div>
-                        <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-blue-50 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    </button>
-
-                    <button 
-                        onClick={() => onSelect('investment')}
-                        className="w-full bg-white p-6 rounded-[2.5rem] shadow-lg border border-gray-100 flex items-center gap-6 hover:scale-[1.02] hover:shadow-2xl hover:border-purple-100 transition-all group relative overflow-hidden"
-                    >
-                        <div className="w-16 h-16 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shadow-sm group-hover:bg-purple-600 group-hover:text-white transition-colors z-10">
-                            <TrendingUp size={32} /> 
-                        </div>
-                        <div className="text-left flex-1 z-10">
-                            <h3 className="text-xl font-bold text-gray-900 group-hover:text-purple-600 transition-colors">證券投資</h3>
-                            <p className="text-gray-400 text-sm mt-1">股票、ETF、股利追蹤</p>
-                        </div>
-                        <div className="bg-gray-50 p-3 rounded-full text-gray-300 group-hover:text-purple-500 group-hover:bg-purple-50 transition-colors z-10">
-                             <ArrowRight size={20} />
-                        </div>
-                        <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-purple-50 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    </button>
-                </div>
-            </div>
-            
-            <div className="absolute bottom-8 text-[10px] text-gray-300 font-mono tracking-widest">BUILD v8.1.0 PRO</div>
-        </div>
-    );
-};
-
-// --- Components (Restored) ---
-
-const StockTransactionForm = ({ initialData, onSave, onCancel, accounts }) => {
-    const [type, setType] = useState('BUY');
-    const [ticker, setTicker] = useState('');
-    const [date, setDate] = useState(new Date().toISOString().substr(0, 10));
-    const [shares, setShares] = useState('');
-    const [price, setPrice] = useState('');
-    const [fees, setFees] = useState('0');
-    const [selectedAccount, setSelectedAccount] = useState('預設帳戶');
-
-    useEffect(() => {
-        if (initialData) {
-            setType(initialData.type);
-            setTicker(initialData.ticker);
-            setDate(initialData.date);
-            setShares(initialData.shares);
-            setPrice(initialData.price);
-            setFees(initialData.fees);
-            setSelectedAccount(initialData.account || '預設帳戶');
-        }
-    }, [initialData]);
-
-    const handleSubmit = () => {
-        if (!ticker || !price) return alert('請填寫完整資訊');
-        onSave({
-            id: initialData ? initialData.id : generateId(),
-            type,
-            ticker: ticker.toUpperCase(),
-            date,
-            shares: Number(shares) || 0,
-            price: Number(price),
-            fees: Number(fees),
-            account: selectedAccount,
-            amount: type === 'DIVIDEND' ? Number(price) : (Number(shares) * Number(price))
-        });
-    };
-
-    return (
-        <div className="space-y-4">
-            <div className="flex p-1 bg-gray-100 rounded-xl w-full">
-                {['BUY', 'SELL', 'DIVIDEND'].map(t => (
-                    <button key={t} type="button" onClick={() => setType(t)} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${type === t ? (t === 'BUY' ? 'bg-green-500 text-white shadow' : t === 'SELL' ? 'bg-red-500 text-white shadow' : 'bg-yellow-500 text-white shadow') : 'text-gray-500 hover:text-gray-700'}`}>
-                        {t === 'BUY' ? '買入' : t === 'SELL' ? '賣出' : '股利'}
-                    </button>
-                ))}
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <label className="text-xs font-medium text-gray-500 mb-1 block">代號</label>
-                    <input type="text" value={ticker} onChange={e => setTicker(e.target.value)} placeholder="e.g. 2330" className="w-full p-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none uppercase font-bold" />
-                </div>
-                <div>
-                    <label className="text-xs font-medium text-gray-500 mb-1 block">日期</label>
-                    <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full p-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" />
-                </div>
-            </div>
-            {type !== 'DIVIDEND' && (
-                <div>
-                    <label className="text-xs font-medium text-gray-500 mb-1 block">股數</label>
-                    <input type="number" value={shares} onChange={e => setShares(e.target.value)} placeholder="0" className="w-full p-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" />
-                </div>
-            )}
-            <div>
-                <label className="text-xs font-medium text-gray-500 mb-1 block">{type === 'DIVIDEND' ? '實領金額' : '單價'}</label>
-                <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
-                    <input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="0.00" className="w-full p-3 pl-8 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" />
-                </div>
-            </div>
-            {type !== 'DIVIDEND' && (
-                <div>
-                    <label className="text-xs font-medium text-gray-500 mb-1 block">手續費</label>
-                    <input type="number" value={fees} onChange={e => setFees(e.target.value)} placeholder="0" className="w-full p-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" />
-                </div>
-            )}
-            <button onClick={handleSubmit} className="w-full py-4 bg-gray-900 text-white rounded-2xl font-bold shadow-lg hover:bg-black active:scale-95 transition-all">
-                {initialData ? '儲存修改' : '確認紀錄'}
-            </button>
-        </div>
-    );
-};
-
-const InvestmentDashboard = ({ portfolio }) => {
-    const pieData = portfolio.holdings.map(h => ({ name: h.ticker, value: h.shares * h.mktPrice }));
-    return (
-        <div className="space-y-6 animate-in fade-in">
-            <div className="bg-gradient-to-br from-indigo-900 to-purple-800 text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
-                <div className="relative z-10">
-                    <div className="flex justify-between items-start mb-6">
-                        <div>
-                            <div className="text-indigo-200 text-sm font-medium mb-1 tracking-wider uppercase">證券總市值</div>
-                            <div className="text-4xl font-bold tracking-tight">{formatCurrency(portfolio.mktVal)}</div>
-                        </div>
-                        <div className="bg-white/10 p-2 rounded-xl backdrop-blur-md">
-                            <TrendingUp size={24} className="text-white"/>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
-                        <div>
-                            <div className="text-xs text-indigo-200 mb-1">總損益 (含息)</div>
-                            <div className={`text-xl font-bold ${portfolio.totalReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                {portfolio.totalReturn > 0 ? '+' : ''}{formatCurrency(portfolio.totalReturn)}
-                            </div>
-                        </div>
-                        <div>
-                            <div className="text-xs text-indigo-200 mb-1">已領股利</div>
-                            <div className="text-xl font-bold text-yellow-300">{formatCurrency(portfolio.div)}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
-                <h3 className="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2"><PieChart size={20} className="text-purple-500"/> 持股分佈</h3>
-                <SimplePieChart data={pieData} />
-            </div>
-            <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
-                <table className="w-full text-left text-sm">
-                    <thead className="bg-gray-50 text-gray-500">
-                        <tr>
-                            <th className="p-4">標的</th>
-                            <th className="p-4">股數</th>
-                            <th className="p-4 text-right">均價/現價</th>
-                            <th className="p-4 text-right">損益</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {portfolio.holdings.map(h => {
-                            const unrealized = (h.mktPrice - h.avgPrice) * h.shares;
-                            return (
-                                <tr key={h.ticker} className="hover:bg-gray-50">
-                                    <td className="p-4 font-bold text-gray-800">{h.ticker}</td>
-                                    <td className="p-4 text-gray-600">{formatNumber(h.shares)}</td>
-                                    <td className="p-4 text-right">
-                                        <div className="text-gray-800">{formatNumber(h.mktPrice)}</div>
-                                        <div className="text-xs text-gray-400">{formatNumber(h.avgPrice)}</div>
-                                    </td>
-                                    <td className={`p-4 text-right font-bold ${unrealized >= 0 ? 'text-green-600' : 'text-red-500'}`}>
-                                        {formatNumber(unrealized)}
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-                {portfolio.holdings.length === 0 && <div className="p-8 text-center text-gray-400 text-sm">目前無持股</div>}
-            </div>
-        </div>
-    );
-};
-
-const StockHistoryView = ({ transactions, onEdit, onDelete }) => {
-    const grouped = useMemo(() => {
-        const groups = {};
-        transactions.forEach(t => {
-            const monthKey = t.date.substring(0, 7);
-            if (!groups[monthKey]) groups[monthKey] = [];
-            groups[monthKey].push(t);
-        });
-        return Object.keys(groups).sort().reverse().map(month => ({ 
-            month, 
-            txs: groups[month].sort((a,b) => new Date(b.date) - new Date(a.date)) 
-        }));
-    }, [transactions]);
-
-    if (transactions.length === 0) return <div className="text-center text-gray-400 py-20 bg-white/50 rounded-3xl border border-dashed border-gray-200">尚無證券交易紀錄</div>;
-
-    return (
-        <div className="space-y-6 animate-in fade-in">
-            {grouped.map(g => (
-                <div key={g.month} className="space-y-3">
-                    <div className="sticky top-0 bg-gray-50/95 backdrop-blur-sm py-2 px-1 z-10">
-                        <span className="text-sm font-bold text-gray-500 bg-gray-200 px-2 py-1 rounded-lg">{g.month}</span>
-                    </div>
-                    {g.txs.map(t => (
-                        <div key={t.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between group">
-                            <div className="flex items-center gap-4">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white shadow-sm ${t.type === 'BUY' ? 'bg-green-500' : t.type === 'SELL' ? 'bg-red-500' : 'bg-yellow-500'}`}>
-                                    {t.type === 'BUY' ? '買' : t.type === 'SELL' ? '賣' : '息'}
-                                </div>
-                                <div>
-                                    <div className="font-bold text-gray-800 text-lg">{t.ticker}</div>
-                                    <div className="text-xs text-gray-500">{t.date}</div>
-                                </div>
-                            </div>
-                            <div className="text-right">
-                                <div className={`font-bold ${t.type === 'BUY' ? 'text-gray-900' : 'text-green-600'}`}>
-                                    {t.type === 'DIVIDEND' ? formatCurrency(t.amount) : `${t.shares} 股`}
-                                </div>
-                                <div className="text-xs text-gray-400">
-                                    {t.type !== 'DIVIDEND' && `@${t.price}`}
-                                </div>
-                                <div className="flex gap-2 justify-end mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button onClick={() => onEdit(t)} className="text-blue-400 hover:text-blue-600"><Edit2 size={14}/></button>
-                                    <button onClick={() => onDelete(t.id)} className="text-red-400 hover:text-red-600"><Trash2 size={14}/></button>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            ))}
-        </div>
-    );
-};
-
-const DashboardView = ({ accounts, transactions, onEditTx, setIsTxModalOpen, setIsSmartModalOpen, setActiveTab, setSettingsTab }) => {
-  const totalAssets = accounts.reduce((sum, acc) => sum + acc.balance, 0);
-  const currentMonth = new Date().toISOString().slice(0, 7);
-  const monthTxs = transactions.filter(t => t.date.startsWith(currentMonth));
-  const income = monthTxs.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0);
-  const expense = monthTxs.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0);
-
-  return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
-        <div className="relative z-10">
-          <div className="flex justify-between items-start mb-6">
-              <div>
-                  <div className="text-gray-400 text-sm font-medium mb-1 tracking-wider uppercase">總資產淨值</div>
-                  <div className="text-5xl font-bold tracking-tight">
-                    {new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'TWD', maximumFractionDigits: 0 }).format(totalAssets)}
-                  </div>
-              </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4 mb-8 bg-white/10 rounded-2xl p-4 backdrop-blur-sm border border-white/10">
-              <div>
-                  <div className="text-xs text-gray-400 mb-1">本月收入</div>
-                  <div className="text-xl font-bold text-green-400">+{income.toLocaleString()}</div>
-              </div>
-              <div>
-                  <div className="text-xs text-gray-400 mb-1">本月支出</div>
-                  <div className="text-xl font-bold text-white">-{expense.toLocaleString()}</div>
-              </div>
-          </div>
-          <div className="flex gap-4">
-            <button onClick={() => { onEditTx(null); setIsTxModalOpen(true); }} className="flex-1 bg-white text-gray-900 py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors shadow-lg active:scale-95"><Plus size={20} /> 記帳</button>
-            <button onClick={() => setIsSmartModalOpen(true)} className="flex-1 bg-white/10 backdrop-blur-md text-white py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-white/20 transition-colors border border-white/10 active:scale-95"><Sparkles size={20} className="text-yellow-300"/> 智慧匯入</button>
-          </div>
-        </div>
-      </div>
-      <div>
-        <div className="flex justify-between items-end mb-4 px-1">
-          <h3 className="font-bold text-xl text-gray-800">我的帳戶</h3>
-          <button onClick={() => { setActiveTab('settings'); setSettingsTab('accounts'); }} className="text-sm text-blue-600 font-bold bg-blue-50 px-3 py-1 rounded-full hover:bg-blue-100">管理</button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {accounts.map(acc => (
-            <div key={acc.id} className="bg-white/70 backdrop-blur-md p-5 rounded-3xl border border-white/60 shadow-sm flex flex-col justify-between h-32 hover:shadow-md transition-all">
-              <div className="flex items-start justify-between">
-                <div className={`p-3 rounded-2xl ${acc.type === 'credit' ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-600'}`}><IconComponent name={acc.icon} size={24} /></div>
-                <span className="text-xs font-bold text-gray-400 bg-gray-100/80 px-2 py-1 rounded-lg">{acc.type === 'credit' ? '負債' : '資產'}</span>
-              </div>
-              <div>
-                <div className="text-sm font-medium text-gray-500 truncate mb-0.5">{acc.name}</div>
-                <div className={`text-2xl font-bold ${acc.balance < 0 ? 'text-red-500' : 'text-gray-900'}`}>{acc.balance.toLocaleString()}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const HistoryView = ({ transactions, categories, accounts, onDeleteTx, onEditTx, setIsTxModalOpen, onRepayDebt }) => {
-  const [filterMonth, setFilterMonth] = useState(new Date().toISOString().slice(0, 7));
-  const [filterAccount, setFilterAccount] = useState('all');
-  const [viewMode, setViewMode] = useState('my'); 
-  const monthTxs = transactions.filter(tx => tx.date.startsWith(filterMonth)).sort((a, b) => new Date(b.date) - new Date(a.date));
-  const myTxs = monthTxs.filter(tx => !tx.isSplit && (filterAccount === 'all' || tx.accountId === filterAccount));
-  const allDebts = transactions.filter(tx => tx.isSplit && tx.type === 'transfer' && !tx.isSettled);
-
-  return (
-    <div className="space-y-6 animate-in fade-in">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-        <div className="flex bg-gray-100 p-1 rounded-xl self-start">
-            <button onClick={() => setViewMode('my')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${viewMode === 'my' ? 'bg-white shadow text-gray-900' : 'text-gray-500'}`}>我的帳本</button>
-            <button onClick={() => setViewMode('lending')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${viewMode === 'lending' ? 'bg-white shadow text-orange-600' : 'text-gray-500'}`}>代墊/收款</button>
-        </div>
-        <div className="flex gap-2 self-end md:self-auto">
-          <MonthGridPicker value={filterMonth} onChange={setFilterMonth} />
-          {viewMode === 'my' && (
-              <div className="relative">
-                 <select value={filterAccount} onChange={e => setFilterAccount(e.target.value)} className="pl-9 pr-8 py-2 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 h-[42px]">
-                   <option value="all">所有帳戶</option>
-                   {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                 </select>
-                 <Filter size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"/>
-                 <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"/>
-              </div>
-          )}
-        </div>
-      </div>
-      {viewMode === 'my' ? (
-          <div className="space-y-3">
-            {myTxs.length === 0 ? <div className="text-center text-gray-400 py-20 bg-white/50 rounded-3xl border border-dashed border-gray-200">本月無交易記錄</div> : 
-              myTxs.map(tx => <TransactionCard key={tx.id} tx={tx} onDelete={onDeleteTx} onEdit={(t) => { onEditTx(t); setIsTxModalOpen(true); }} categories={categories} accounts={accounts} />)
-            }
-          </div>
-      ) : (
-          <div className="space-y-4">
-             {allDebts.length === 0 ? <div className="text-center text-gray-400 py-20 bg-white/50 rounded-3xl border border-dashed border-gray-200">目前無待收款項</div> : 
-               allDebts.map(tx => (
-                   <div key={tx.id} className="bg-white p-4 rounded-2xl border border-orange-100 shadow-sm flex justify-between items-center">
-                       <div>
-                           <div className="flex items-center gap-2 mb-1">
-                               <span className="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-0.5 rounded-lg">未還</span>
-                               <span className="font-bold text-gray-800">{tx.payee}</span>
-                           </div>
-                           <div className="text-xs text-gray-500">{tx.date} • {tx.note}</div>
-                       </div>
-                       <div className="flex items-center gap-4">
-                           <div className="text-xl font-bold text-orange-600">${Number(tx.amount).toLocaleString()}</div>
-                           <button onClick={() => onRepayDebt(tx)} className="bg-gray-900 text-white px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-black shadow-md">結清</button>
-                       </div>
-                   </div>
-               ))
-             }
-          </div>
-      )}
-    </div>
-  );
-};
-
-const AnalysisView = ({ transactions, categories }) => {
-    const [filterMonth, setFilterMonth] = useState(new Date().toISOString().slice(0, 7));
-    const filteredTxs = transactions.filter(tx => tx.date.startsWith(filterMonth) && tx.type === 'expense');
-    const totalExpense = filteredTxs.reduce((sum, t) => sum + Number(t.amount), 0);
-    const catStats = categories.filter(c => c.type === 'expense').map(cat => {
-            const amount = filteredTxs.filter(t => t.categoryId === cat.id).reduce((sum, t) => sum + Number(t.amount), 0);
-            return { ...cat, amount };
-        }).filter(c => c.amount > 0).sort((a, b) => b.amount - a.amount);
-
-    return (
-        <div className="space-y-6 animate-in fade-in">
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="font-bold text-2xl text-gray-800 flex items-center gap-2"><BarChart3 className="text-gray-400"/> 收支報表</h2>
-                <MonthGridPicker value={filterMonth} onChange={setFilterMonth} />
-            </div>
-            <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 text-center">
-                <div className="text-gray-400 text-sm font-bold uppercase tracking-wider mb-1">本月總支出</div>
-                <div className="text-4xl font-black text-gray-900">${totalExpense.toLocaleString()}</div>
-            </div>
-            <div className="space-y-3">
-                {catStats.map(cat => {
-                    const percent = totalExpense > 0 ? Math.round((cat.amount / totalExpense) * 100) : 0;
-                    return (
-                        <div key={cat.id} className="bg-white p-4 rounded-2xl border border-gray-50 shadow-sm relative overflow-hidden">
-                             <div className="absolute left-0 top-0 bottom-0 bg-gray-50" style={{ width: `${percent}%` }}></div>
-                             <div className="relative flex justify-between items-center z-10">
-                                 <div className="flex items-center gap-3">
-                                     <div className={`w-3 h-3 rounded-full ${cat.color.split(' ')[0]}`}></div>
-                                     <span className="font-bold text-gray-700">{cat.name}</span>
-                                 </div>
-                                 <div className="text-right">
-                                     <div className="font-bold text-gray-900">${cat.amount.toLocaleString()}</div>
-                                     <div className="text-xs text-gray-400">{percent}%</div>
-                                 </div>
-                             </div>
-                        </div>
-                    );
-                })}
-                {catStats.length === 0 && <div className="text-center text-gray-400 py-10">尚無資料</div>}
-            </div>
-        </div>
-    );
-};
-
-const TransactionCard = ({ tx, onDelete, onEdit, categories, accounts }) => {
-  const cat = categories.find(c => c.id === tx.categoryId);
-  const sub = cat?.subs.find(s => s.id === tx.subCategoryId);
-  const acc = accounts.find(a => a.id === tx.accountId);
-  return (
-    <div className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-white/60 shadow-sm hover:shadow-md transition-all flex items-center justify-between">
-      <div className="flex items-center gap-4 overflow-hidden">
-        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${cat?.color || 'bg-gray-100 text-gray-500'}`}>
-          {tx.type === 'expense' ? <Minus size={20} /> : <Plus size={20} />}
-        </div>
-        <div className="min-w-0">
-          <div className="font-bold text-gray-800 truncate flex items-center gap-2 text-base">
-            {cat?.name} {sub && <span className="text-xs font-normal text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-md">{sub.name}</span>}
-          </div>
-          <div className="text-xs text-gray-500 truncate flex items-center gap-1.5 mt-0.5">
-            <span className="font-mono">{new Date(tx.date).toLocaleDateString()}</span>
-            <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-            <span>{acc?.name}</span>
-            {tx.payee && <span className="bg-gray-100 px-1.5 rounded text-gray-600">{tx.payee}</span>}
-          </div>
-          {tx.note && <div className="text-xs text-gray-400 truncate mt-1 pl-2 border-l-2 border-gray-200">{tx.note}</div>}
-        </div>
-      </div>
-      <div className="flex flex-col items-end gap-1">
-        <div className={`font-bold text-lg ${tx.type === 'income' ? 'text-green-600' : 'text-gray-900'}`}>{tx.type === 'income' ? '+' : '-'}{Number(tx.amount).toLocaleString()}</div>
-        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onClick={() => onEdit(tx)} className="bg-blue-50 text-blue-600 p-1.5 rounded-lg hover:bg-blue-100"><Edit2 size={14}/></button>
-          <button onClick={() => onDelete(tx.id)} className="bg-red-50 text-red-500 p-1.5 rounded-lg hover:bg-red-100"><Trash2 size={14}/></button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const SettingsPage = ({ 
-  accounts, setAccounts, 
-  categories, setCategories, 
-  people, setPeople, 
-  ghConfig, setGhConfig, 
-  backup, restore,
-  settingsTab, setSettingsTab
-}) => {
-  const SortableItem = ({ index, moveItem, children, onEdit, onDelete }) => {
-    const ref = useRef(null);
-    const [isDragging, setIsDragging] = useState(false);
-    const handleDrop = (e) => {
-      const dragIndex = Number(e.dataTransfer.getData('dragIndex'));
-      moveItem(dragIndex, index);
-      setIsDragging(false);
-    };
-    return (
-      <div ref={ref} draggable onDragStart={e=>{e.dataTransfer.setData('dragIndex', index); setIsDragging(true)}} onDragOver={e=>e.preventDefault()} onDrop={handleDrop} onDragEnd={()=>setIsDragging(false)} className={`bg-white border border-gray-100 rounded-xl p-3 flex items-center justify-between group hover:shadow-md transition-all ${isDragging ? 'opacity-50 scale-95' : ''}`}>
-        <div className="flex items-center gap-3 overflow-hidden flex-1"><GripVertical size={16} className="text-gray-300 cursor-grab active:cursor-grabbing flex-shrink-0"/>{children}</div>
-        <div className="flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
-          {onEdit && <button onClick={onEdit} className="p-1.5 hover:bg-blue-50 text-blue-500 rounded"><Edit2 size={16}/></button>}
-          {onDelete && <button onClick={onDelete} className="p-1.5 hover:bg-red-50 text-red-500 rounded"><Trash2 size={16}/></button>}
-          <div className="flex flex-col ml-1 border-l border-gray-100 pl-1 md:hidden"><button onClick={()=>moveItem(index,index-1)} className="p-1 text-gray-400"><ArrowUp size={14}/></button><button onClick={()=>moveItem(index,index+1)} className="p-1 text-gray-400"><ArrowDown size={14}/></button></div>
-        </div>
-      </div>
-    );
-  };
-  const genericMove = (list, setList, from, to) => { if (to < 0 || to >= list.length) return; const newList = [...list]; const [moved] = newList.splice(from, 1); newList.splice(to, 0, moved); setList(newList); };
-
-  const AccountSettings = () => {
-      const [editingId, setEditingId] = useState(null); const [editName, setEditName] = useState(''); const [newAccName, setNewAccName] = useState(''); const [newAccType, setNewAccType] = useState('cash');
-      const add = () => { if(!newAccName) return; setAccounts([...accounts, { id: generateId(), name: newAccName, type: newAccType, balance: 0, icon: newAccType==='credit'?'CreditCard':newAccType==='bank'?'Landmark':'Banknote' }]); setNewAccName(''); };
-      const startEdit = (acc) => { setEditingId(acc.id); setEditName(acc.name); };
-      const saveEdit = () => { setAccounts(accounts.map(a => a.id === editingId ? { ...a, name: editName } : a)); setEditingId(null); };
-      return (
-          <div className="space-y-4">
-              <div className="flex gap-2 mb-4">
-                  <select value={newAccType} onChange={e=>setNewAccType(e.target.value)} className="border rounded-xl p-2 text-sm"><option value="cash">現金</option><option value="bank">銀行</option><option value="credit">信用卡</option></select>
-                  <input value={newAccName} onChange={e => setNewAccName(e.target.value)} placeholder="新帳戶名稱" className="border rounded-xl p-2 flex-1 text-sm"/>
-                  <button onClick={add} className="bg-blue-600 text-white p-2 rounded-xl"><Plus size={20}/></button>
-              </div>
-              <div className="space-y-2">{accounts.map((acc, i) => (<SortableItem key={acc.id} index={i} moveItem={(f, t) => genericMove(accounts, setAccounts, f, t)} onEdit={() => startEdit(acc)} onDelete={() => { if(confirm('確定刪除?')) setAccounts(accounts.filter(a => a.id !== acc.id)) }}><div className="p-2 bg-gray-100 rounded-lg"><IconComponent name={acc.icon} size={18}/></div>{editingId === acc.id ? (<input value={editName} autoFocus onChange={e => setEditName(e.target.value)} onBlur={saveEdit} onKeyDown={e => e.key === 'Enter' && saveEdit()} className="border rounded p-1 text-sm w-full"/>) : (<div className="font-bold text-gray-700 flex-1">{acc.name}</div>)}<span className="text-xs text-gray-400 bg-gray-50 px-2 rounded whitespace-nowrap">{acc.type}</span></SortableItem>))}</div>
-          </div>
-      );
-  };
-
-  const CategorySettings = () => {
-      const [expandedCatId, setExpandedCatId] = useState(null); const [editingCatId, setEditingCatId] = useState(null); const [editCatName, setEditCatName] = useState('');
-      const [editingSubId, setEditingSubId] = useState(null); const [editSubName, setEditSubName] = useState('');
-      const [newCatName, setNewCatName] = useState(''); const [newSubName, setNewSubName] = useState('');
-      const addCategory = () => { if (!newCatName) return; setCategories([...categories, { id: generateId(), name: newCatName, type: 'expense', color: 'bg-gray-100 text-gray-600', subs: [{ id: generateId(), name: '一般' }] }]); setNewCatName(''); };
-      const startEditCat = (cat) => { setEditingCatId(cat.id); setEditCatName(cat.name); }; const saveEditCat = () => { setCategories(categories.map(c => c.id === editingCatId ? { ...c, name: editCatName } : c)); setEditingCatId(null); };
-      const addSub = (catId) => { if (!newSubName) return; setCategories(categories.map(c => c.id === catId ? { ...c, subs: [...c.subs, { id: generateId(), name: newSubName }] } : c)); setNewSubName(''); };
-      const startEditSub = (sub) => { setEditingSubId(sub.id); setEditSubName(sub.name); }; const saveEditSub = (catId) => { setCategories(categories.map(c => c.id === catId ? { ...c, subs: c.subs.map(s => s.id === editingSubId ? { ...s, name: editSubName } : s) } : c)); setEditingSubId(null); };
-      const removeSub = (catId, subId) => { setCategories(categories.map(c => c.id === catId ? { ...c, subs: c.subs.filter(s => s.id !== subId) } : c)); };
-      return (
-          <div className="space-y-4">
-              <div className="flex gap-2 mb-4"><input value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder="新增大類" className="border rounded-xl p-2 flex-1 text-sm"/><button onClick={addCategory} className="bg-blue-600 text-white p-2 rounded-xl"><Plus size={20}/></button></div>
-              <div className="space-y-2">{categories.map((cat, i) => (<div key={cat.id} className="border border-gray-100 rounded-xl bg-white overflow-hidden"><div className="flex items-center p-2"><div className="flex-1 flex items-center gap-2 cursor-pointer p-1" onClick={() => setExpandedCatId(expandedCatId === cat.id ? null : cat.id)}>{expandedCatId === cat.id ? <ChevronDown size={16} className="text-gray-400"/> : <ChevronRight size={16} className="text-gray-400"/>}{editingCatId === cat.id ? (<input value={editCatName} autoFocus onClick={e => e.stopPropagation()} onChange={e => setEditCatName(e.target.value)} onBlur={saveEditCat} onKeyDown={e => e.key === 'Enter' && saveEditCat()} className="border rounded p-1 text-sm w-full"/>) : (<span className="font-bold text-gray-700">{cat.name}</span>)}</div><div className="flex gap-1"><button onClick={() => genericMove(categories, setCategories, i, i-1)} className="p-1.5 text-gray-300 hover:text-gray-600"><ArrowUp size={14}/></button><button onClick={() => genericMove(categories, setCategories, i, i+1)} className="p-1.5 text-gray-300 hover:text-gray-600"><ArrowDown size={14}/></button><button onClick={() => startEditCat(cat)} className="p-1.5 text-blue-400 hover:text-blue-600"><Edit2 size={14}/></button><button onClick={() => { if(confirm('刪除大類?')) setCategories(categories.filter(c => c.id !== cat.id)) }} className="p-1.5 text-red-300 hover:text-red-500"><Trash2 size={14}/></button></div></div>{expandedCatId === cat.id && (<div className="bg-gray-50 p-3 border-t border-gray-100"><div className="flex flex-wrap gap-2 mb-3">{cat.subs.map(sub => (<div key={sub.id} className="bg-white border border-gray-200 px-2 py-0.5 rounded-lg text-xs flex items-center gap-1 group">{editingSubId === sub.id ? (<input value={editSubName} autoFocus onChange={e => setEditSubName(e.target.value)} onBlur={() => saveEditSub(cat.id)} onKeyDown={e => e.key === 'Enter' && saveEditSub(cat.id)} className="w-16 p-0.5 border rounded"/>) : (<span className="cursor-pointer" onClick={() => startEditSub(sub)}>{sub.name}</span>)}<button onClick={() => removeSub(cat.id, sub.id)} className="text-gray-300 hover:text-red-500"><X size={12}/></button></div>))}</div><div className="flex gap-2"><input value={newSubName} onChange={e => setNewSubName(e.target.value)} placeholder="新增子分類" className="border rounded p-1.5 flex-1 text-sm bg-white" onKeyDown={e => e.key === 'Enter' && addSub(cat.id)}/><button onClick={() => addSub(cat.id)} className="bg-gray-200 text-gray-600 p-1.5 rounded hover:bg-gray-300"><Plus size={16}/></button></div></div>)}</div>))}</div>
-          </div>
-      );
-  };
-
-  const PeopleSettings = () => {
-      const [editingId, setEditingId] = useState(null); const [editName, setEditName] = useState(''); const [editRatio, setEditRatio] = useState(0); const [newName, setNewName] = useState(''); const [newRatio, setNewRatio] = useState(50);
-      const add = () => { if(!newName) return; setPeople([...people, { id: generateId(), name: newName, defaultRatio: Number(newRatio) }]); setNewName(''); };
-      const startEdit = (p) => { setEditingId(p.id); setEditName(p.name); setEditRatio(p.defaultRatio); }; const saveEdit = () => { setPeople(people.map(p => p.id === editingId ? { ...p, name: editName, defaultRatio: Number(editRatio) } : p)); setEditingId(null); };
-      return (
-          <div className="space-y-4"><div className="flex gap-2 items-center mb-4"><input value={newName} onChange={e => setNewName(e.target.value)} placeholder="姓名" className="border rounded-xl p-2 flex-1 text-sm"/><input type="number" value={newRatio} onChange={e => setNewRatio(e.target.value)} placeholder="%" className="border rounded-xl p-2 w-16 text-sm text-center"/><button onClick={add} className="bg-gray-900 text-white p-2 rounded-xl"><Plus size={20}/></button></div><div className="space-y-2">{people.map((p, i) => (<SortableItem key={p.id} index={i} moveItem={(f, t) => genericMove(people, setPeople, f, t)} onEdit={() => startEdit(p)} onDelete={() => setPeople(people.filter(x => x.id !== p.id))}><div className="bg-orange-100 text-orange-600 p-1.5 rounded-full"><Users size={16}/></div>{editingId === p.id ? (<div className="flex gap-2 items-center flex-1"><input value={editName} onChange={e => setEditName(e.target.value)} className="border rounded p-1 text-sm flex-1"/><input value={editRatio} onChange={e => setEditRatio(e.target.value)} className="border rounded p-1 text-sm w-12"/><button onClick={saveEdit} className="bg-green-500 text-white px-2 py-1 rounded text-xs">OK</button></div>) : (<><span className="font-bold text-gray-700 flex-1">{p.name}</span><span className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-500">對方付 {p.defaultRatio}%</span></>)}</SortableItem>))}</div></div>
-      );
-  };
-
-  const CloudSettings = () => {
-      const [localGh, setLocalGh] = useState(ghConfig);
-      return (
-          <div className="space-y-4">
-              <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-sm text-blue-800 mb-4"><div className="font-bold flex items-center gap-2 mb-1"><Github size={16}/> 全域雲端同步</div>所有使用者共用此儲存庫設定。</div>
-              <div className="space-y-3 opacity-50 pointer-events-none"><input value={localGh.repo} readOnly className="w-full border rounded-xl p-2.5 text-sm bg-gray-50"/><input type="password" value={localGh.token} readOnly className="w-full border rounded-xl p-2.5 text-sm bg-gray-50"/></div>
-              <div className="grid grid-cols-2 gap-3 mt-4"><button onClick={backup} className="py-3 bg-white border border-gray-200 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-gray-50"><CloudUpload size={16}/> 立即備份</button><button onClick={restore} className="py-3 bg-white border border-gray-200 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-gray-50"><CloudDownload size={16}/> 立即還原</button></div>
-          </div>
-      );
-  };
-
-  return (
-      <div className="p-6 md:p-8 max-w-4xl mx-auto w-full animate-in fade-in">
-          <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-2"><Settings className="text-gray-400"/> 設定</h2>
-          <div className="flex gap-2 overflow-x-auto pb-2 mb-6 scrollbar-hide">
-              {[{ id: 'accounts', icon: Wallet, label: '帳戶' }, { id: 'categories', icon: Tag, label: '分類' }, { id: 'people', icon: Users, label: '分帳' }, { id: 'cloud', icon: Github, label: '系統' }].map(t => (
-                  <button key={t.id} onClick={() => setSettingsTab(t.id)} className={`px-4 py-2.5 rounded-xl font-bold whitespace-nowrap flex items-center gap-2 transition-all ${settingsTab === t.id ? 'bg-gray-900 text-white shadow-lg scale-105' : 'bg-white text-gray-500 hover:bg-gray-50'}`}><t.icon size={18}/> {t.label}</button>
-              ))}
-          </div>
-          <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-6 shadow-sm border border-white/60 min-h-[400px]">
-              {settingsTab === 'cloud' && <CloudSettings />}
-              {settingsTab === 'accounts' && <AccountSettings />}
-              {settingsTab === 'categories' && <CategorySettings />}
-              {settingsTab === 'people' && <PeopleSettings />}
-          </div>
-      </div>
-  );
-};
-
-const TransactionForm = ({ initialData, onClose, onSave, categories, accounts, people }) => {
-  const [mode, setMode] = useState('simple'); 
-  const [baseData, setBaseData] = useState(initialData || {
-    date: new Date().toISOString().split('T')[0], accountId: accounts[0]?.id, amount: '', categoryId: categories[0]?.id, subCategoryId: categories[0]?.subs[0]?.id, payee: '', note: ''
-  });
-  const [splitWith, setSplitWith] = useState(''); const [splitRatio, setSplitRatio] = useState(50);
-  const [rows, setRows] = useState([{ id: 1, categoryId: categories[0]?.id, subCategoryId: categories[0]?.subs[0]?.id, amount: '' }]);
-  const totalAmount = mode === 'simple' ? Number(baseData.amount) : rows.reduce((sum, r) => sum + Number(r.amount), 0);
-
-  const handleSave = () => {
-      if (totalAmount <= 0) return alert('金額錯誤');
-      const txsToSave = [];
-      const common = { date: baseData.date, accountId: baseData.accountId, payee: baseData.payee, type: 'expense' };
-      if (mode === 'simple') txsToSave.push({ ...common, id: generateId(), amount: totalAmount, categoryId: baseData.categoryId, subCategoryId: baseData.subCategoryId, note: baseData.note });
-      else rows.forEach(r => { if (Number(r.amount) > 0) txsToSave.push({ ...common, id: generateId(), amount: Number(r.amount), categoryId: r.categoryId, subCategoryId: r.subCategoryId, note: `${baseData.note} (分項)` }); });
-
-      if (splitWith) {
-          const person = people.find(p => p.id === splitWith);
-          const debtAmount = Math.round(totalAmount * (splitRatio / 100));
-          txsToSave.forEach(tx => { const originalAmt = tx.amount; const myPortion = Math.round(originalAmt * ((100 - splitRatio) / 100)); tx.amount = myPortion; tx.note += ` (總 ${originalAmt}, ${person.name}付${splitRatio}%)`; });
-          txsToSave.push({ ...common, id: generateId(), amount: debtAmount, type: 'transfer', categoryId: 'c_inc', subCategoryId: 's_repay', payee: `幫 ${person.name} 代墊`, isSplit: true, note: `原交易總額 ${totalAmount}`, isSettled: false });
-      }
-      onSave(txsToSave);
-  };
-
-  return (
-      <div className="space-y-5">
-          <div className="flex bg-gray-100 p-1 rounded-xl"><button onClick={() => setMode('simple')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${mode === 'simple' ? 'bg-white shadow text-blue-600' : 'text-gray-500'}`}>單一分類</button><button onClick={() => setMode('multi')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${mode === 'multi' ? 'bg-white shadow text-purple-600' : 'text-gray-500'}`}><ListPlus size={16} className="inline mr-1"/> 多重分類</button></div>
-          <div className="text-center py-2"><span className="text-3xl font-black text-gray-900">${totalAmount.toLocaleString()}</span></div>
-          {mode === 'simple' ? (<div className="space-y-4"><div className="relative"><span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span><input type="text" inputMode="decimal" value={baseData.amount} onChange={e => setBaseData({...baseData, amount: e.target.value})} className="w-full pl-8 pr-4 py-3 bg-gray-50 border-none rounded-xl text-xl font-bold" placeholder="0"/></div><div className="grid grid-cols-2 gap-3"><select value={baseData.categoryId} onChange={e => setBaseData({...baseData, categoryId: e.target.value, subCategoryId: categories.find(c=>c.id===e.target.value)?.subs[0].id})} className="p-3 bg-gray-50 rounded-xl font-bold text-gray-700">{categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select><select value={baseData.subCategoryId} onChange={e => setBaseData({...baseData, subCategoryId: e.target.value})} className="p-3 bg-gray-50 rounded-xl">{categories.find(c=>c.id===baseData.categoryId)?.subs.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></div></div>) : (<div className="space-y-2 max-h-60 overflow-y-auto">{rows.map((r, i) => (<div key={r.id} className="flex gap-2 items-center"><select value={r.categoryId} onChange={e => { const newRows=[...rows]; newRows[i].categoryId=e.target.value; newRows[i].subCategoryId=categories.find(c=>c.id===e.target.value)?.subs[0].id; setRows(newRows); }} className="w-24 p-2 bg-gray-50 rounded-lg text-sm">{categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select><input type="number" value={r.amount} onChange={e => { const newRows=[...rows]; newRows[i].amount=e.target.value; setRows(newRows); }} className="flex-1 p-2 bg-gray-50 rounded-lg text-sm font-bold" placeholder="金額"/><button onClick={() => setRows(rows.filter(x => x.id !== r.id))} className="text-red-400"><X size={16}/></button></div>))}<button onClick={() => setRows([...rows, { id: Date.now(), categoryId: categories[0].id, subCategoryId: categories[0].subs[0].id, amount: '' }])} className="w-full py-2 border border-dashed border-gray-300 rounded-lg text-gray-400 hover:text-blue-500 hover:border-blue-300 text-sm flex items-center justify-center gap-1"><Plus size={14}/> 新增項目</button></div>)}
-          <div className="grid grid-cols-2 gap-3"><select value={baseData.accountId} onChange={e => setBaseData({...baseData, accountId: e.target.value})} className="p-3 bg-gray-50 rounded-xl text-sm font-medium">{accounts.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select><input type="text" value={baseData.payee} onChange={e => setBaseData({...baseData, payee: e.target.value})} placeholder="店家/對象" className="p-3 bg-gray-50 rounded-xl text-sm"/></div>
-          <div className="border border-indigo-100 bg-indigo-50/50 rounded-xl p-3"><div className="flex items-center justify-between mb-2"><span className="text-sm font-bold text-indigo-800 flex items-center gap-1"><Users size={14}/> 分帳 (代墊)</span>{splitWith && <button onClick={() => setSplitWith('')} className="text-xs text-red-500">清除</button>}</div><div className="flex gap-2 mb-2 overflow-x-auto scrollbar-hide pb-1">{people.map(p => (<button key={p.id} onClick={() => { setSplitWith(p.id); setSplitRatio(p.defaultRatio); }} className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all ${splitWith === p.id ? 'bg-indigo-600 text-white shadow' : 'bg-white text-gray-500 border border-indigo-100'}`}>{p.name}</button>))}</div>{splitWith && (<div className="flex items-center gap-2 bg-white p-2 rounded-lg border border-indigo-100"><span className="text-xs text-gray-500">對方付</span><input type="number" value={splitRatio} onChange={e => setSplitRatio(Number(e.target.value))} className="w-12 text-center border-b border-indigo-200 focus:outline-none font-bold text-indigo-600"/><span className="text-xs text-gray-500">%</span><div className="flex-1 text-right text-xs text-indigo-400">代墊: <span className="font-bold text-indigo-700">${Math.round(totalAmount * splitRatio / 100)}</span></div></div>)}</div>
-          <button onClick={handleSave} className="w-full py-4 bg-gray-900 text-white rounded-2xl font-bold shadow-xl active:scale-95 transition-all">儲存交易</button>
-      </div>
-  );
-};
-
-// --- Smart Import ---
-const SmartImport = ({ onClose, onImport, categories, accounts, predictCategory }) => {
-    const [text, setText] = useState('');
-    const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [previews, setPreviews] = useState([]);
-    const [step, setStep] = useState('input');
-    const [expandedItems, setExpandedItems] = useState({});
-
-    const toggleExpand = (id) => setExpandedItems(prev => ({...prev, [id]: !prev[id]}));
-
-    const analyzeText = () => {
-        if (!text.trim()) return;
-        setIsAnalyzing(true);
-        setTimeout(() => {
-            let processedText = text.replace(/−/g, '-').replace(/([^\n])(?=20\d{2}\/\d{2}\/\d{2})/g, "$1\n").replace(/([\u4e00-\u9fa5a-zA-Z])(?=\d)/g, "$1 ").replace(/(\d)(?=-)/g, "$1 ").replace(/(-)(?=\d)/g, "$1 ");
-            const lines = processedText.split(/\n+/);
-            const detected = [];
-            const keywords = { '飲食': ['早餐', '午餐', '晚餐', '飲料', '星巴克', '麥當勞', '食', '飯', '茶', '咖啡', 'Eats', 'Foodpanda', '全家', '7-11', '統一超商'], '交通': ['Uber', '計程車', '高鐵', '台鐵', '捷運', '加油', '停車'], '娛樂': ['電影', 'Netflix', 'Spotify', '好樂迪', 'KTV'], '購物': ['全聯', '家樂福', '蝦皮', 'MOMO', 'PChome'], '居家': ['電費', '水費', '瓦斯', '房租', '中華電信'], '收入': ['薪資', '入帳', '利息'] };
-            
-            const guessCat = (desc, type) => {
-                let guessedCat = categories[0], guessedSub = categories[0].subs[0];
-                if (type === 'income') { const incCat = categories.find(c => c.type === 'income'); if(incCat) { guessedCat = incCat; guessedSub = incCat.subs[0]; } }
-                for (const [catName, keys] of Object.entries(keywords)) {
-                    if (keys.some(k => desc.toLowerCase().includes(k.toLowerCase()))) {
-                        const foundCat = categories.find(c => c.name === catName);
-                        if (foundCat && foundCat.type === type) { guessedCat = foundCat; guessedSub = foundCat.subs[0]; break; }
-                    }
-                }
-                return { categoryId: guessedCat.id, subCategoryId: guessedSub.id };
-            };
-
-            lines.forEach((line, idx) => {
-                let trimmed = line.trim();
-                if (!trimmed || trimmed.includes("交易日期") || trimmed.length < 2) return;
-                trimmed = trimmed.replace(/^[^\d]*(?=20\d{2}\/\d{2}\/\d{2})/, '');
-                let date = new Date().toISOString().split('T')[0];
-                const dateMatch = trimmed.match(/^(20\d{2}\/\d{2}\/\d{2})/);
-                
-                if (!dateMatch) {
-                    if (detected.length > 0) {
-                        const lastTx = detected[detected.length - 1];
-                        if (!trimmed.match(/^[-_=]*$/)) {
-                            lastTx.note = (lastTx.note ? lastTx.note + ' ' : '') + trimmed;
-                            const { categoryId, subCategoryId } = guessCat(lastTx.payee + ' ' + lastTx.note, lastTx.type);
-                            lastTx.categoryId = categoryId; lastTx.subCategoryId = subCategoryId;
-                        }
-                    }
-                    return;
-                }
-                date = dateMatch[1].replace(/\//g, '-');
-                trimmed = trimmed.replace(/^20\d{2}\/\d{2}\/\d{2}(\s+\d{2}:\d{2})?(\s*20\d{2}\/\d{2}\/\d{2})?/, '').trim();
-                
-                let amount = 0, type = 'expense', description = trimmed, extraInfo = '';
-                const bankRegex = /^(.*?)\s+([\d,]+|-)\s+([\d,]+|-)\s+([\d,]+|-)(.*)$/;
-                const match = trimmed.match(bankRegex);
-
-                if (match) {
-                    description = match[1].trim();
-                    const withdrawal = match[2].trim().replace(/,/g, '');
-                    const deposit = match[3].trim().replace(/,/g, '');
-                    extraInfo = match[5].trim();
-                    if (withdrawal && withdrawal !== '-' && !isNaN(Number(withdrawal)) && Number(withdrawal) > 0) { amount = withdrawal; type = 'expense'; }
-                    else if (deposit && deposit !== '-' && !isNaN(Number(deposit)) && Number(deposit) > 0) { amount = deposit; type = 'income'; }
-                } else {
-                    const numbers = trimmed.match(/[\d,]+/g);
-                    if (numbers) {
-                        const validNums = numbers.map(n => n.replace(/,/g, '')).filter(n => !isNaN(Number(n)));
-                        if (validNums.length > 0) { amount = validNums[validNums.length - 1]; description = description.replace(amount, '').trim(); type = 'expense'; }
-                    }
-                }
-                const { categoryId, subCategoryId } = guessCat(description + extraInfo, type);
-                if (amount > 0) detected.push({ tempId: Date.now() + idx, date, amount, payee: description || '未知交易', categoryId, subCategoryId, accountId: accounts[0].id, type, note: extraInfo || '', isSplit: false, splitDetail: '' });
-            });
-            const allExpanded = detected.reduce((acc, item) => ({ ...acc, [item.tempId]: true }), {});
-            setExpandedItems(allExpanded);
-            setPreviews(detected);
-            setIsAnalyzing(false);
-            setStep('review');
-        }, 800);
-    };
-
-    const updatePreview = (id, field, value) => {
-        setPreviews(prev => prev.map(p => {
-            if (p.tempId === id) {
-                const newData = { ...p, [field]: value };
-                if (field === 'categoryId') {
-                    const newCat = categories.find(c => c.id === value);
-                    if (newCat) newData.subCategoryId = newCat.subs[0].id;
-                }
-                return newData;
-            }
-            return p;
-        }));
-    };
-
-    const removePreview = (id) => setPreviews(prev => prev.filter(p => p.tempId !== id));
-    const confirmImport = () => { if (previews.length === 0) return; onImport(previews); onClose(); };
-
-    if (step === 'review') return (
-        <div className="space-y-4 h-full flex flex-col">
-            <div className="flex justify-between items-center bg-blue-50 p-3 rounded-2xl text-sm text-blue-800">
-                <span className="font-bold flex items-center gap-2"><Check size={16}/> 已識別 {previews.length} 筆資料</span>
-                <button onClick={() => setStep('input')} className="text-blue-600 hover:underline">重新輸入</button>
-            </div>
-            <div className="flex-1 overflow-y-auto space-y-3 pr-1">
-                {previews.map((item) => (
-                    <div key={item.tempId} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm transition-all">
-                         <div className="p-3 flex gap-2 items-center bg-gray-50 border-b border-gray-100">
-                            <button onClick={() => toggleExpand(item.tempId)} className="text-gray-400 hover:text-blue-600">{expandedItems[item.tempId] ? <ChevronUp size={20}/> : <ChevronDown size={20}/>}</button>
-                            <div className="flex-1 flex gap-2 items-center overflow-hidden"><span className="text-xs font-mono text-gray-500 bg-white px-1 rounded">{item.date}</span><span className="font-bold text-gray-700 truncate text-sm">{item.payee}</span></div>
-                            <span className={`font-bold text-sm ${item.type === 'income' ? 'text-green-600' : 'text-gray-800'}`}>{item.type === 'income' ? '+' : '-'}{item.amount}</span>
-                            <button onClick={() => removePreview(item.tempId)} className="text-red-300 hover:text-red-500 p-1"><X size={16}/></button>
-                         </div>
-                         {expandedItems[item.tempId] && (
-                            <div className="p-4 text-sm space-y-3 animate-in slide-in-from-top-1">
-                                <div className="grid grid-cols-2 gap-3">
-                                    <input type="text" value={item.payee} onChange={e => updatePreview(item.tempId, 'payee', e.target.value)} className="border rounded-xl p-2 bg-white font-medium text-gray-800" placeholder="摘要"/>
-                                    <input type="text" inputMode="decimal" value={item.amount} onChange={e => updatePreview(item.tempId, 'amount', e.target.value)} className="border rounded-xl p-2 bg-white font-bold text-gray-800"/>
-                                </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div><label className="text-xs text-gray-500 block mb-1">主分類</label><select value={item.categoryId} onChange={e => updatePreview(item.tempId, 'categoryId', e.target.value)} className="w-full border rounded-xl p-2 bg-white">{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
-                                    <div><label className="text-xs text-gray-500 block mb-1">子分類</label><select value={item.subCategoryId} onChange={e => updatePreview(item.tempId, 'subCategoryId', e.target.value)} className="w-full border rounded-xl p-2 bg-white">{categories.find(c => c.id === item.categoryId)?.subs.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div><label className="text-xs text-gray-500 block mb-1">扣款帳戶</label><select value={item.accountId} onChange={e => updatePreview(item.tempId, 'accountId', e.target.value)} className="w-full border rounded-xl p-2 bg-white">{accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
-                                    <div><label className="text-xs text-gray-500 block mb-1">備註說明</label><input type="text" value={item.note} onChange={e => updatePreview(item.tempId, 'note', e.target.value)} className="w-full border rounded-xl p-2 bg-white" placeholder="詳細備註..."/></div>
-                                </div>
-                                <div className="border border-blue-100 bg-blue-50/50 rounded-xl p-3">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <input type="checkbox" id={`split-${item.tempId}`} checked={item.isSplit} onChange={e => updatePreview(item.tempId, 'isSplit', e.target.checked)} className="rounded text-blue-600"/>
-                                        <label htmlFor={`split-${item.tempId}`} className="font-bold text-blue-700 flex items-center gap-1"><Users size={14}/> 啟用分帳 (代付/拆帳)</label>
-                                    </div>
-                                    {item.isSplit && <textarea value={item.splitDetail} onChange={e => updatePreview(item.tempId, 'splitDetail', e.target.value)} placeholder="輸入拆帳對象與金額 (例如: Andy 200, Jason 150)" className="w-full text-xs p-2 border rounded-lg bg-white h-16 resize-none focus:outline-none"/>}
-                                </div>
-                            </div>
-                         )}
-                    </div>
-                ))}
-            </div>
-            <div className="pt-4 border-t border-gray-100 flex gap-3">
-                <button onClick={() => setStep('input')} className="flex-1 py-3 border border-gray-300 rounded-xl text-gray-600 font-medium hover:bg-gray-50">取消</button>
-                <button onClick={confirmImport} disabled={previews.length === 0} className="flex-1 py-3 bg-gray-900 hover:bg-black text-white rounded-xl font-bold shadow-md disabled:bg-gray-300">確認匯入</button>
-            </div>
-        </div>
-    );
-
-    return (
-      <div className="space-y-4">
-        <div className="flex gap-2">
-          <button className="flex-1 py-3 bg-gray-50 border border-gray-200 rounded-xl flex flex-col items-center gap-1 text-gray-600 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-colors" onClick={() => setText(prev => prev + "2025/12/04 14:272025/12/04網銀轉帳565−155,115(013)0000012561990059\n")}>
-            <ClipboardList size={20} /> <span className="text-xs">範例(網銀)</span>
-          </button>
-          <button className="flex-1 py-3 bg-gray-50 border border-gray-200 rounded-xl flex flex-col items-center gap-1 text-gray-600 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-colors" onClick={() => setText(prev => prev + "Uber Eats 350\n")}>
-             <FileText size={20} /> <span className="text-xs">範例(文字)</span>
-          </button>
-        </div>
-        <div className="relative">
-           <textarea value={text} onChange={e => setText(e.target.value)} placeholder="請貼上交易明細..." className="w-full h-48 p-4 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-blue-500 resize-none font-mono text-sm leading-relaxed"/>
-          {text && <button onClick={() => setText('')} className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 bg-white rounded-full shadow-sm"><X size={14}/></button>}
-      </div>
-      <button onClick={analyzeText} disabled={!text || isAnalyzing} className="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-indigo-200">
-        {isAnalyzing ? <span className="animate-pulse">AI 正在分析...</span> : <><Sparkles size={18} /> 開始智慧分析</>}
-      </button>
-    </div>
-  );
-};
-
-// --- Shared Sidebar ---
-
-const Sidebar = ({ activeTab, setActiveTab, collapsed, setCollapsed, currentUser, userList, onSelectUser, onCreateUser, onEditUser, viewState, setViewState, syncStatus }) => {
-  const [isEditingUser, setIsEditingUser] = useState(false);
-  const [editName, setEditName] = useState(currentUser ? currentUser.name : '');
-  const [showUserMenu, setShowUserMenu] = useState(false);
-
-  useEffect(() => {
-      if (currentUser) setEditName(currentUser.name);
-  }, [currentUser]);
-
-  const handleSaveUser = (e) => {
-      e.stopPropagation();
-      onEditUser(currentUser.id, editName);
-      setIsEditingUser(false);
-  };
-
-  const handleCreateClick = () => {
-      const name = prompt("請輸入新使用者的名稱：");
-      if (name && name.trim()) {
-          onCreateUser(name.trim());
-          setShowUserMenu(false);
-      }
-  };
-
-  const menuItems = viewState === 'accounting' ? [
-      { id: 'dashboard', icon: LayoutGrid, label: '概覽' },
-      { id: 'history', icon: FileText, label: '明細' },
-      { id: 'analysis', icon: BarChart3, label: '報表' },
-      { id: 'settings', icon: Settings, label: '設定' }
-  ] : [
-      { id: 'dashboard', icon: LayoutGrid, label: '資產' },
-      { id: 'history', icon: FileText, label: '紀錄' },
-      { id: 'add', icon: Plus, label: '下單' },
-      { id: 'settings', icon: Settings, label: '設定' }
-  ];
-
-  return (
-    <div className={`hidden md:flex flex-col bg-white/80 backdrop-blur-xl border-r border-gray-200 h-screen sticky top-0 z-40 transition-all duration-300 ${collapsed ? 'w-20' : 'w-64'}`}>
-       <div className={`flex items-center gap-3 text-gray-900 font-black text-2xl p-6 ${collapsed ? 'justify-center' : ''}`}>
-         <div className={`text-white p-2 rounded-xl flex-shrink-0 shadow-lg ${viewState === 'accounting' ? 'bg-blue-600' : 'bg-purple-600'}`}>
-             {viewState === 'accounting' ? <Wallet size={24} /> : <TrendingUp size={24} />}
-         </div>
-         {!collapsed && <span className="whitespace-nowrap transition-opacity duration-300 text-lg">財富自由之路</span>}
-       </div>
-       
-       <button onClick={() => setCollapsed(!collapsed)} className="absolute -right-3 top-8 bg-white border border-gray-200 p-1.5 rounded-full shadow-sm text-gray-500 hover:text-gray-900 z-50">
-         {collapsed ? <ChevronRight size={14}/> : <ChevronDown size={14} className="rotate-90"/>}
-       </button>
-
-       <nav className="flex-1 space-y-2 px-3 mt-4">
-          {menuItems.map(item => (
-            <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full text-left px-3 py-3 rounded-2xl font-bold flex items-center gap-3 transition-all ${activeTab === item.id ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:bg-gray-50'} ${collapsed ? 'justify-center' : ''}`}>
-                <item.icon size={20} /> {!collapsed && item.label}
-            </button>
-          ))}
-       </nav>
-
-       <div className="p-4 border-t border-gray-100 relative">
-          {/* User Menu Popup */}
-          {showUserMenu && !collapsed && (
-              <div className="absolute bottom-full left-4 right-4 mb-2 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-2 z-50">
-                  <div className="max-h-48 overflow-y-auto p-1">
-                      {userList.map(u => (
-                          <button 
-                            key={u.id} 
-                            onClick={() => { onSelectUser(u); setShowUserMenu(false); }}
-                            className={`w-full text-left px-3 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-gray-50 transition-colors ${u.id === currentUser?.id ? 'bg-blue-50 text-blue-600' : 'text-gray-700'}`}
-                          >
-                              <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs text-gray-600">{u.name[0]}</div>
-                              <span className="truncate">{u.name}</span>
-                              {u.id === currentUser?.id && <Check size={14} className="ml-auto"/>}
-                          </button>
-                      ))}
-                  </div>
-                  <div className="border-t border-gray-100 p-1">
-                      <button onClick={handleCreateClick} className="w-full text-left px-3 py-2 rounded-xl text-sm font-bold flex items-center gap-2 text-blue-600 hover:bg-blue-50 transition-colors">
-                          <UserPlus size={16} /> 新增使用者
-                      </button>
-                  </div>
-              </div>
-          )}
-
-          {isEditingUser && !collapsed ? (
-              <div className="flex gap-1 items-center bg-gray-50 p-2 rounded-xl">
-                  <input value={editName} onChange={e => setEditName(e.target.value)} className="w-full bg-white border rounded px-2 py-1 text-sm outline-none focus:border-blue-500" autoFocus onClick={e => e.stopPropagation()}/>
-                  <button onClick={handleSaveUser} className="bg-green-500 text-white p-1 rounded hover:bg-green-600"><Check size={14}/></button>
-              </div>
-          ) : (
-              <div 
-                className={`flex items-center gap-3 p-2 rounded-2xl hover:bg-gray-50 transition-colors cursor-pointer group ${collapsed ? 'justify-center' : ''}`} 
-                onClick={() => !collapsed && setShowUserMenu(!showUserMenu)}
-              >
-                <div className={`w-10 h-10 rounded-full bg-gradient-to-tr ${viewState === 'accounting' ? 'from-blue-500 to-cyan-500' : 'from-purple-500 to-pink-500'} flex items-center justify-center text-white font-bold flex-shrink-0 relative`}>
-                    {currentUser?.name[0]}
-                    <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${syncStatus === 'loading' ? 'bg-blue-400 animate-pulse' : syncStatus === 'success' ? 'bg-green-400' : syncStatus === 'error' ? 'bg-red-400' : 'bg-gray-300'}`}></div>
-                </div>
-                {!collapsed && (
-                  <div className="flex-1 overflow-hidden text-left">
-                    <div className="text-xs text-gray-400 font-medium flex justify-between items-center">
-                        {viewState === 'accounting' ? '記帳中' : '投資中'} 
-                        {showUserMenu ? <ChevronDown size={12}/> : <ChevronUp size={12}/>}
-                    </div>
-                    <div className="font-bold text-gray-800 truncate group-hover:text-blue-600 transition-colors">{currentUser?.name}</div>
-                  </div>
-                )}
-                {!collapsed && (
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); setIsEditingUser(true); setShowUserMenu(false); }} 
-                        className="text-gray-300 hover:text-gray-600 p-1 rounded-full hover:bg-gray-200 transition-colors"
-                    >
-                        <Edit2 size={14}/>
-                    </button>
-                )}
-              </div>
-          )}
-          {!collapsed && <button onClick={() => setViewState('portal')} className="w-full mt-2 text-xs text-gray-400 flex items-center justify-center gap-1 hover:text-gray-600 bg-gray-50 py-2 rounded-xl transition-all"><LogOut size={12}/> 切換功能模組</button>}
-       </div>
-    </div>
-  );
-};
-
-// --- Main App ---
-
-export default function FinancePro() {
-  const [locked, setLocked] = useState(false); 
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [viewState, setViewState] = useState('portal'); // 'portal', 'accounting', 'investment'
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [settingsTab, setSettingsTab] = useState('accounts');
-  const [toast, setToast] = useState(null); 
-  const [collapsed, setCollapsed] = useState(false); 
-  const [syncStatus, setSyncStatus] = useState('idle'); // idle, loading, success, error
-
-  // --- Shared Data ---
-  const [userList, setUserList] = useState(() => JSON.parse(localStorage.getItem('fp_users')) || DEFAULT_USERS);
-  const [ghConfig, setGhConfig] = useState(() => JSON.parse(localStorage.getItem('fp_gh_config')) || { token: '', repo: '', path: 'wealth_backup.json' });
-
-  // --- Accounting Data ---
-  const [accounts, setAccounts] = useState(() => JSON.parse(localStorage.getItem('fp_accounts')) || DEFAULT_ACCOUNTS);
-  const [categories, setCategories] = useState(() => JSON.parse(localStorage.getItem('fp_categories')) || DEFAULT_CATEGORIES);
-  const [transactions, setTransactions] = useState(() => JSON.parse(localStorage.getItem('fp_transactions')) || []);
-  const [people, setPeople] = useState(() => JSON.parse(localStorage.getItem('fp_people')) || DEFAULT_PEOPLE);
-  
-  // --- Investment Data ---
-  const [stockTxs, setStockTxs] = useState(() => JSON.parse(localStorage.getItem('fp_stock_txs')) || []);
-
-  // --- Modal States ---
-  const [isTxModalOpen, setIsTxModalOpen] = useState(false);
-  const [isSmartModalOpen, setIsSmartModalOpen] = useState(false);
-  const [editingTx, setEditingTx] = useState(null); // For Accounting
-  const [editingStockTx, setEditingStockTx] = useState(null); // For Investment
-
-  // --- Persistence ---
-  useEffect(() => {
-    localStorage.setItem('fp_accounts', JSON.stringify(accounts));
-    localStorage.setItem('fp_categories', JSON.stringify(categories));
-    localStorage.setItem('fp_transactions', JSON.stringify(transactions));
-    localStorage.setItem('fp_people', JSON.stringify(people));
-    localStorage.setItem('fp_users', JSON.stringify(userList));
-    localStorage.setItem('fp_gh_config', JSON.stringify(ghConfig));
-    localStorage.setItem('fp_stock_txs', JSON.stringify(stockTxs));
-  }, [accounts, categories, transactions, people, userList, ghConfig, stockTxs]);
-
-  const showToast = (message, type = 'info') => { setToast({ message, type }); };
-
-  // --- GitHub Sync (Combined) ---
-  const githubSync = async (mode, silent = false) => {
-      const token = getGithubToken();
-      if (!token || !ENCRYPTED_CONFIG.REPO) return;
-      const url = `https://api.github.com/repos/${ENCRYPTED_CONFIG.REPO}/contents/${ENCRYPTED_CONFIG.PATH}`;
-      setSyncStatus('loading');
-      try {
-          if (mode === 'pull') {
-              if(!silent) showToast('正在同步雲端資料...', 'loading');
-              const res = await fetch(url, { headers: { Authorization: `token ${token}` } });
-              if (res.ok) {
-                  const data = await res.json();
-                  const parsed = JSON.parse(b64_
+        const TransactionCard = ({ tx, onDelete, onEdit, categories, accounts }) => {
+            const cat = categories.find(c => c.id === tx.categoryId);
+            const sub = cat?.subs.find(s => s.id === tx.subCategoryId);
+            const acc = accounts.find(a => a.id === tx.accountId);
+            return (
+                <div className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-white/60 shadow-sm hover:shadow-md transition-all flex items-center justify-between">
+                    <div className="flex items-center gap-4 overflow-hidden">
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${cat?.color || 'bg-gray-100 text-gray-500'}`}>{tx.type === 'expense' ? <Minus size={20} /> : <Plus size={20} />}</div>
+                        <div className="min-w-0"><div className="font-bold text-gray-800 truncate flex items-center gap-2 text-base">{cat?.name} {sub && <span className="text-xs font-normal text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-md">{sub.
