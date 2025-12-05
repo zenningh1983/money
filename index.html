@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>通往財富自由之路 - FinancePro</title>
+    <title>通往財富自由之路</title>
     
     <!-- 核心依賴 (使用 CDN，本地開啟需要網路載入這些基礎庫，載入後即可在瀏覽器運行) -->
     <!-- React 核心 -->
@@ -381,4 +381,402 @@
                 <div className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-white/60 shadow-sm hover:shadow-md transition-all flex items-center justify-between">
                     <div className="flex items-center gap-4 overflow-hidden">
                         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${cat?.color || 'bg-gray-100 text-gray-500'}`}>{tx.type === 'expense' ? <Minus size={20} /> : <Plus size={20} />}</div>
-                        <div className="min-w-0"><div className="font-bold text-gray-800 truncate flex items-center gap-2 text-base">{cat?.name} {sub && <span className="text-xs font-normal text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-md">{sub.
+                        <div className="min-w-0"><div className="font-bold text-gray-800 truncate flex items-center gap-2 text-base">{cat?.name} {sub && <span className="text-xs font-normal text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-md">{sub.name}</span>}</div><div className="text-xs text-gray-500 truncate flex items-center gap-1.5 mt-0.5"><span className="font-mono">{new Date(tx.date).toLocaleDateString()}</span><span className="w-1 h-1 bg-gray-300 rounded-full"></span><span>{acc?.name}</span>{tx.payee && <span className="bg-gray-100 px-1.5 rounded text-gray-600">{tx.payee}</span>}</div>{tx.note && <div className="text-xs text-gray-400 truncate mt-1 pl-2 border-l-2 border-gray-200">{tx.note}</div>}</div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1"><div className={`font-bold text-lg ${tx.type === 'income' ? 'text-green-600' : 'text-gray-900'}`}>{tx.type === 'income' ? '+' : '-'}{Number(tx.amount).toLocaleString()}</div><div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => onEdit(tx)} className="bg-blue-50 text-blue-600 p-1.5 rounded-lg hover:bg-blue-100"><Edit2 size={14}/></button><button onClick={() => onDelete(tx.id)} className="bg-red-50 text-red-500 p-1.5 rounded-lg hover:bg-red-100"><Trash2 size={14}/></button></div></div>
+                </div>
+            );
+        };
+
+        const HistoryView = ({ transactions, categories, accounts, onDeleteTx, onEditTx, setIsTxModalOpen, onRepayDebt }) => {
+            const [filterMonth, setFilterMonth] = useState(new Date().toISOString().slice(0, 7));
+            const [filterAccount, setFilterAccount] = useState('all');
+            const monthTxs = transactions.filter(tx => tx.date.startsWith(filterMonth)).sort((a, b) => new Date(b.date) - new Date(a.date));
+            const myTxs = monthTxs.filter(tx => !tx.isSplit && (filterAccount === 'all' || tx.accountId === filterAccount));
+            return (
+                <div className="space-y-6 animate-fade-in">
+                    <div className="flex justify-between gap-2"><MonthGridPicker value={filterMonth} onChange={setFilterMonth} /><div className="relative"><select value={filterAccount} onChange={e => setFilterAccount(e.target.value)} className="pl-9 pr-8 py-2 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 shadow-sm"><option value="all">所有帳戶</option>{accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</select><Filter size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"/><ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"/></div></div>
+                    <div className="space-y-3">{myTxs.length === 0 ? <div className="text-center text-gray-400 py-20 bg-white/50 rounded-3xl border border-dashed border-gray-200">本月無交易記錄</div> : myTxs.map(tx => <TransactionCard key={tx.id} tx={tx} onDelete={onDeleteTx} onEdit={(t) => { onEditTx(t); setIsTxModalOpen(true); }} categories={categories} accounts={accounts} />)}</div>
+                </div>
+            );
+        };
+
+        const AnalysisView = ({ transactions, categories }) => {
+            const [filterMonth, setFilterMonth] = useState(new Date().toISOString().slice(0, 7));
+            const filteredTxs = transactions.filter(tx => tx.date.startsWith(filterMonth) && tx.type === 'expense');
+            const totalExpense = filteredTxs.reduce((sum, t) => sum + Number(t.amount), 0);
+            const catStats = categories.filter(c => c.type === 'expense').map(cat => { const amount = filteredTxs.filter(t => t.categoryId === cat.id).reduce((sum, t) => sum + Number(t.amount), 0); return { ...cat, amount }; }).filter(c => c.amount > 0).sort((a, b) => b.amount - a.amount);
+            return (
+                <div className="space-y-6 animate-fade-in">
+                    <div className="flex justify-between items-center mb-4"><h2 className="font-bold text-2xl text-gray-800 flex items-center gap-2"><BarChart3 className="text-gray-400"/> 收支報表</h2><MonthGridPicker value={filterMonth} onChange={setFilterMonth} /></div>
+                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 text-center"><div className="text-gray-400 text-sm font-bold uppercase tracking-wider mb-1">本月總支出</div><div className="text-4xl font-black text-gray-900">${totalExpense.toLocaleString()}</div></div>
+                    <div className="space-y-3">{catStats.map(cat => { const percent = totalExpense > 0 ? Math.round((cat.amount / totalExpense) * 100) : 0; return (<div key={cat.id} className="bg-white p-4 rounded-2xl border border-gray-50 shadow-sm relative overflow-hidden"><div className="absolute left-0 top-0 bottom-0 bg-gray-50" style={{ width: `${percent}%` }}></div><div className="relative flex justify-between items-center z-10"><div className="flex items-center gap-3"><div className={`w-3 h-3 rounded-full ${cat.color.split(' ')[0]}`}></div><span className="font-bold text-gray-700">{cat.name}</span></div><div className="text-right"><div className="font-bold text-gray-900">${cat.amount.toLocaleString()}</div><div className="text-xs text-gray-400">{percent}%</div></div></div></div>); })}</div>
+                </div>
+            );
+        };
+
+        const SettingsPage = ({ accounts, setAccounts, categories, setCategories, backup, restore, settingsTab, setSettingsTab }) => {
+             // Account Settings Component
+             const AccountSettings = ({ accounts, setAccounts }) => {
+                const [newAccName, setNewAccName] = useState(''); const [newAccType, setNewAccType] = useState('cash');
+                const add = () => { if(!newAccName) return; setAccounts([...accounts, { id: generateId(), name: newAccName, type: newAccType, balance: 0, icon: newAccType==='credit'?'CreditCard':newAccType==='bank'?'Landmark':'Banknote' }]); setNewAccName(''); };
+                const remove = (id) => { if(confirm('確定刪除?')) setAccounts(accounts.filter(a => a.id !== id)); };
+                return (
+                    <div className="space-y-4">
+                        <div className="flex gap-2 mb-4"><select value={newAccType} onChange={e=>setNewAccType(e.target.value)} className="border rounded-xl p-2 text-sm"><option value="cash">現金</option><option value="bank">銀行</option><option value="credit">信用卡</option></select><input value={newAccName} onChange={e => setNewAccName(e.target.value)} placeholder="新帳戶名稱" className="border rounded-xl p-2 flex-1 text-sm"/><button onClick={add} className="bg-blue-600 text-white p-2 rounded-xl"><Plus size={20}/></button></div>
+                        <div className="space-y-2">{accounts.map(acc => (<div key={acc.id} className="bg-white border border-gray-100 rounded-xl p-3 flex items-center justify-between"><div className="flex items-center gap-3"><div className="p-2 bg-gray-100 rounded-lg"><IconComp name={acc.icon} size={18}/></div><div className="font-bold text-gray-700">{acc.name}</div><span className="text-xs text-gray-400 bg-gray-50 px-2 rounded">{acc.type}</span></div><button onClick={() => remove(acc.id)} className="p-1.5 hover:bg-red-50 text-red-500 rounded"><Trash2 size={16}/></button></div>))}</div>
+                    </div>
+                );
+            };
+
+            // Category Settings Component
+            const CategorySettings = ({ categories, setCategories }) => {
+                // 預設全展開，且不自動收合
+                const [expandedCats, setExpandedCats] = useState({});
+                useEffect(() => {
+                    const all = {}; categories.forEach(c => all[c.id] = true);
+                    setExpandedCats(prev => ({ ...all, ...prev })); // Merge to keep state
+                }, [categories]); // Run when categories change
+
+                const [newCatName, setNewCatName] = useState(''); const [newSubName, setNewSubName] = useState(''); const [newCatType, setNewCatType] = useState('expense');
+                const toggleExpand = (id) => setExpandedCats(prev => ({...prev, [id]: !prev[id]}));
+                
+                const addCategory = () => { if (!newCatName) return; const newId = generateId(); setCategories([...categories, { id: newId, name: newCatName, type: newCatType, color: newCatType === 'expense' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600', subs: [{ id: generateId(), name: '一般' }] }]); setNewCatName(''); };
+                const addSub = (catId) => { if (!newSubName) return; setCategories(categories.map(c => c.id === catId ? { ...c, subs: [...c.subs, { id: generateId(), name: newSubName }] } : c)); setNewSubName(''); };
+                const removeSub = (catId, subId) => { setCategories(categories.map(c => c.id === catId ? { ...c, subs: c.subs.filter(s => s.id !== subId) } : c)); };
+                const removeCat = (id) => { if(confirm('確定刪除?')) setCategories(categories.filter(c => c.id !== id)); };
+
+                return (
+                    <div className="space-y-4">
+                        <div className="flex gap-2 mb-4"><select value={newCatType} onChange={e => setNewCatType(e.target.value)} className="border rounded-xl p-2 text-sm bg-white"><option value="expense">支出</option><option value="income">收入</option></select><input value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder="新增大類" className="border rounded-xl p-2 flex-1 text-sm"/><button onClick={addCategory} className="bg-blue-600 text-white p-2 rounded-xl"><Plus size={20}/></button></div>
+                        <div className="space-y-2 max-h-[50vh] overflow-y-auto">
+                            {categories.map(cat => (
+                                <div key={cat.id} className="border border-gray-100 rounded-xl bg-white overflow-hidden">
+                                    <div className="flex items-center p-2 bg-gray-50"><div className="flex-1 flex items-center gap-2 cursor-pointer p-1" onClick={() => toggleExpand(cat.id)}>{expandedCats[cat.id] ? <ChevronDown size={16} className="text-gray-400"/> : <ChevronRight size={16} className="text-gray-400"/>}<span className={`font-bold ${cat.type === 'income' ? 'text-green-600' : 'text-gray-700'}`}>{cat.name}</span></div><button onClick={() => removeCat(cat.id)} className="p-1.5 text-red-300 hover:text-red-500"><Trash2 size={14}/></button></div>
+                                    {expandedCats[cat.id] && (<div className="p-3 border-t border-gray-100"><div className="flex flex-wrap gap-2 mb-3">{cat.subs.map(sub => (<div key={sub.id} className="bg-white border border-gray-200 px-2 py-1 rounded-lg text-sm flex items-center gap-1 group">{sub.name}<button onClick={() => removeSub(cat.id, sub.id)} className="text-gray-300 hover:text-red-500 ml-1"><X size={12}/></button></div>))}</div><div className="flex gap-2"><input value={newSubName} onChange={e => setNewSubName(e.target.value)} placeholder={`新增 ${cat.name} 子分類`} className="border rounded p-1.5 flex-1 text-sm bg-white" onKeyDown={e => {if(e.key === 'Enter'){addSub(cat.id); e.target.focus();}}} /><button onClick={() => addSub(cat.id)} className="bg-gray-200 text-gray-600 p-1.5 rounded hover:bg-gray-300"><Plus size={16}/></button></div></div>)}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            };
+
+            const CloudSettings = ({ backup, restore }) => (
+                <div className="space-y-6">
+                    <div className="bg-blue-50 p-6 rounded-3xl border border-blue-100 text-center">
+                        <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-blue-600"><Cloud size={32}/></div>
+                        <h3 className="font-bold text-lg text-blue-900 mb-2">雲端備份與還原</h3><p className="text-sm text-blue-700 mb-6 max-w-xs mx-auto">資料將安全地儲存於 GitHub 私有儲存庫。</p>
+                        <div className="grid grid-cols-2 gap-4"><button onClick={backup} className="flex flex-col items-center justify-center p-4 bg-white border-2 border-blue-200 rounded-2xl hover:border-blue-500 hover:shadow-lg transition-all"><CloudUpload size={24} className="text-blue-500 mb-2"/><span className="font-bold text-gray-700">立即備份</span></button><button onClick={restore} className="flex flex-col items-center justify-center p-4 bg-white border-2 border-blue-200 rounded-2xl hover:border-blue-500 hover:shadow-lg transition-all"><CloudDownload size={24} className="text-blue-500 mb-2"/><span className="font-bold text-gray-700">立即還原</span></button></div>
+                    </div>
+                </div>
+            );
+
+            return (
+                <div className="p-6 md:p-8 max-w-4xl mx-auto w-full animate-fade-in">
+                    <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-2"><Settings className="text-gray-400"/> 設定</h2>
+                    <div className="flex gap-2 overflow-x-auto pb-2 mb-6 scrollbar-hide">{[{ id: 'accounts', icon: Wallet, label: '帳戶' }, { id: 'categories', icon: Tag, label: '分類' }, { id: 'cloud', icon: Github, label: '系統' }].map(t => (<button key={t.id} onClick={() => setSettingsTab(t.id)} className={`px-4 py-2.5 rounded-xl font-bold whitespace-nowrap flex items-center gap-2 transition-all ${settingsTab === t.id ? 'bg-gray-900 text-white shadow-lg' : 'bg-white text-gray-500 hover:bg-gray-50'}`}><t.icon size={18}/> {t.label}</button>))}</div>
+                    <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-6 shadow-sm border border-white/60 min-h-[400px]">{settingsTab === 'cloud' && <CloudSettings backup={backup} restore={restore} />}{settingsTab === 'accounts' && <AccountSettings accounts={accounts} setAccounts={setAccounts} />}{settingsTab === 'categories' && <CategorySettings categories={categories} setCategories={setCategories} />}</div>
+                </div>
+            );
+        };
+
+        const TransactionForm = ({ initialData, onClose, onSave, categories, accounts }) => {
+            const [txType, setTxType] = useState(initialData?.type || 'expense'); 
+            const [baseData, setBaseData] = useState(initialData || { date: new Date().toISOString().split('T')[0], accountId: accounts[0]?.id, amount: '', categoryId: '', subCategoryId: '', payee: '', note: '' });
+            const availableCats = categories.filter(c => c.type === txType);
+            
+            useEffect(() => { if (!baseData.categoryId && availableCats.length > 0) setBaseData(prev => ({ ...prev, categoryId: availableCats[0].id, subCategoryId: availableCats[0].subs[0]?.id })); }, [txType]);
+
+            const handleSave = () => {
+                if (!baseData.amount) return;
+                onSave({ ...baseData, type: txType, id: initialData?.id || generateId() });
+            };
+
+            return (
+                <div className="space-y-5">
+                    <div className="flex bg-gray-100 p-1 rounded-xl"><button onClick={() => setTxType('expense')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${txType === 'expense' ? 'bg-white shadow text-red-600' : 'text-gray-500'}`}>支出</button><button onClick={() => setTxType('income')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${txType === 'income' ? 'bg-white shadow text-green-600' : 'text-gray-500'}`}>收入</button></div>
+                    <div className="relative"><span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span><input type="text" inputMode="decimal" value={baseData.amount} onChange={e => setBaseData({...baseData, amount: e.target.value})} className="w-full pl-8 pr-4 py-3 bg-gray-50 border-none rounded-xl text-xl font-bold" placeholder="0"/></div>
+                    <div className="grid grid-cols-2 gap-3"><select value={baseData.categoryId} onChange={e => setBaseData({...baseData, categoryId: e.target.value, subCategoryId: availableCats.find(c=>c.id===e.target.value)?.subs[0]?.id})} className="p-3 bg-gray-50 rounded-xl font-bold text-gray-700">{availableCats.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select><select value={baseData.subCategoryId} onChange={e => setBaseData({...baseData, subCategoryId: e.target.value})} className="p-3 bg-gray-50 rounded-xl">{availableCats.find(c=>c.id===baseData.categoryId)?.subs.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
+                    <div className="grid grid-cols-2 gap-3"><select value={baseData.accountId} onChange={e => setBaseData({...baseData, accountId: e.target.value})} className="p-3 bg-gray-50 rounded-xl text-sm font-medium">{accounts.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select><input type="text" value={baseData.payee} onChange={e => setBaseData({...baseData, payee: e.target.value})} placeholder="店家/對象" className="p-3 bg-gray-50 rounded-xl text-sm"/></div>
+                    <button onClick={handleSave} className="w-full py-4 bg-gray-900 text-white rounded-2xl font-bold shadow-xl active:scale-95 transition-all">儲存交易</button>
+                </div>
+            );
+        };
+
+        const StockTransactionForm = ({ initialData, onSave, onCancel, accounts }) => {
+            const [type, setType] = useState('BUY');
+            const [ticker, setTicker] = useState('');
+            const [date, setDate] = useState(new Date().toISOString().substr(0, 10));
+            const [shares, setShares] = useState('');
+            const [price, setPrice] = useState('');
+            const [fees, setFees] = useState('0');
+            
+            useEffect(() => { if (initialData) { setType(initialData.type); setTicker(initialData.ticker); setDate(initialData.date); setShares(initialData.shares); setPrice(initialData.price); setFees(initialData.fees); } }, [initialData]);
+
+            const handleSubmit = () => {
+                if (!ticker || !price) return;
+                onSave({ id: initialData?.id || generateId(), type, ticker: ticker.toUpperCase(), date, shares: Number(shares)||0, price: Number(price), fees: Number(fees), amount: type === 'DIVIDEND' ? Number(price) : (Number(shares) * Number(price)) });
+            };
+
+            return (
+                <div className="space-y-4">
+                    <div className="flex p-1 bg-gray-100 rounded-xl w-full">{['BUY', 'SELL', 'DIVIDEND'].map(t => (<button key={t} type="button" onClick={() => setType(t)} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${type === t ? (t === 'BUY' ? 'bg-green-500 text-white shadow' : t === 'SELL' ? 'bg-red-500 text-white shadow' : 'bg-yellow-500 text-white shadow') : 'text-gray-500 hover:text-gray-700'}`}>{t === 'BUY' ? '買入' : t === 'SELL' ? '賣出' : '股利'}</button>))}</div>
+                    <div className="grid grid-cols-2 gap-4"><div><label className="text-xs font-medium text-gray-500 mb-1 block">代號</label><input type="text" value={ticker} onChange={e => setTicker(e.target.value)} placeholder="2330" className="w-full p-3 rounded-xl bg-gray-50 border border-gray-200 font-bold"/></div><div><label className="text-xs font-medium text-gray-500 mb-1 block">日期</label><input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full p-3 rounded-xl bg-gray-50 border border-gray-200"/></div></div>
+                    {type !== 'DIVIDEND' && (<div><label className="text-xs font-medium text-gray-500 mb-1 block">股數</label><input type="number" value={shares} onChange={e => setShares(e.target.value)} placeholder="0" className="w-full p-3 rounded-xl bg-gray-50 border border-gray-200"/></div>)}
+                    <div><label className="text-xs font-medium text-gray-500 mb-1 block">{type === 'DIVIDEND' ? '實領金額' : '單價'}</label><input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="0.00" className="w-full p-3 rounded-xl bg-gray-50 border border-gray-200"/></div>
+                    <button onClick={handleSubmit} className="w-full py-4 bg-gray-900 text-white rounded-2xl font-bold shadow-lg hover:bg-black active:scale-95 transition-all">{initialData ? '儲存修改' : '確認紀錄'}</button>
+                </div>
+            );
+        };
+
+        const InvestmentDashboard = ({ portfolio }) => {
+            const pieData = portfolio.holdings.map(h => ({ name: h.ticker, value: h.shares * h.mktPrice }));
+            return (
+                <div className="space-y-6 animate-fade-in">
+                    <div className="bg-gradient-to-br from-indigo-900 to-purple-800 text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+                        <div className="relative z-10"><div className="flex justify-between items-start mb-6"><div><div className="text-indigo-200 text-sm font-medium mb-1 tracking-wider uppercase">證券總市值</div><div className="text-4xl font-bold tracking-tight">{formatCurrency(portfolio.mktVal)}</div></div></div><div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10"><div><div className="text-xs text-indigo-200 mb-1">總損益</div><div className={`text-xl font-bold ${portfolio.totalReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>{portfolio.totalReturn > 0 ? '+' : ''}{formatCurrency(portfolio.totalReturn)}</div></div><div><div className="text-xs text-indigo-200 mb-1">已領股利</div><div className="text-xl font-bold text-yellow-300">{formatCurrency(portfolio.div)}</div></div></div></div>
+                    </div>
+                    <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100"><h3 className="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2"><PieChartIcon size={20} className="text-purple-500"/> 持股分佈</h3><SimplePieChart data={pieData} /></div>
+                </div>
+            );
+        };
+
+        const StockHistoryView = ({ transactions, onEdit, onDelete }) => {
+            const grouped = useMemo(() => { const g = {}; transactions.forEach(t => { const m = t.date.substring(0, 7); if (!g[m]) g[m] = []; g[m].push(t); }); return Object.keys(g).sort().reverse().map(m => ({ month: m, txs: g[m] })); }, [transactions]);
+            return (
+                <div className="space-y-6 animate-fade-in">
+                    {grouped.map(g => (<div key={g.month} className="space-y-3"><div className="sticky top-0 bg-gray-50/95 backdrop-blur-sm py-2 px-1 z-10"><span className="text-sm font-bold text-gray-500 bg-gray-200 px-2 py-1 rounded-lg">{g.month}</span></div>{g.txs.map(t => (<div key={t.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between"><div className="flex items-center gap-4"><div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white shadow-sm ${t.type === 'BUY' ? 'bg-green-500' : t.type === 'SELL' ? 'bg-red-500' : 'bg-yellow-500'}`}>{t.type === 'BUY' ? '買' : t.type === 'SELL' ? '賣' : '息'}</div><div><div className="font-bold text-gray-800 text-lg">{t.ticker}</div><div className="text-xs text-gray-500">{t.date}</div></div></div><div className="text-right"><div className="font-bold text-gray-900">{t.type === 'DIVIDEND' ? formatCurrency(t.amount) : `${t.shares} 股`}</div><div className="flex gap-2 justify-end mt-1"><button onClick={() => onEdit(t)} className="text-blue-400"><Edit2 size={14}/></button><button onClick={() => onDelete(t.id)} className="text-red-400"><Trash2 size={14}/></button></div></div></div>))}</div>))}
+                </div>
+            );
+        };
+
+        // --- Application Shell ---
+        const FinancePro = () => {
+            const [viewState, setViewState] = useState('portal'); 
+            const [activeTab, setActiveTab] = useState('dashboard');
+            const [settingsTab, setSettingsTab] = useState('accounts');
+            const [selectedUser, setSelectedUser] = useState(null);
+            const [userList, setUserList] = useState(() => JSON.parse(localStorage.getItem('fp_users')) || DEFAULT_USERS);
+            const [accounts, setAccounts] = useState(() => JSON.parse(localStorage.getItem('fp_accounts')) || DEFAULT_ACCOUNTS);
+            const [categories, setCategories] = useState(() => JSON.parse(localStorage.getItem('fp_categories')) || DEFAULT_CATEGORIES);
+            const [transactions, setTransactions] = useState(() => JSON.parse(localStorage.getItem('fp_transactions')) || []);
+            const [stockTxs, setStockTxs] = useState(() => JSON.parse(localStorage.getItem('fp_stock_txs')) || []);
+            const [ghConfig, setGhConfig] = useState(() => JSON.parse(localStorage.getItem('fp_gh_config')) || { token: '', repo: '', path: 'wealth_freedom_v6.json' });
+            const [toast, setToast] = useState(null);
+            const [isTxModalOpen, setIsTxModalOpen] = useState(false);
+            const [editingTx, setEditingTx] = useState(null);
+            const [editingStockTx, setEditingStockTx] = useState(null);
+            const [syncStatus, setSyncStatus] = useState('idle'); // idle, loading, success, error
+            const [collapsed, setCollapsed] = useState(false);
+
+            useEffect(() => {
+                localStorage.setItem('fp_users', JSON.stringify(userList));
+                localStorage.setItem('fp_accounts', JSON.stringify(accounts));
+                localStorage.setItem('fp_categories', JSON.stringify(categories));
+                localStorage.setItem('fp_transactions', JSON.stringify(transactions));
+                localStorage.setItem('fp_stock_txs', JSON.stringify(stockTxs));
+                localStorage.setItem('fp_gh_config', JSON.stringify(ghConfig));
+            }, [userList, accounts, categories, transactions, stockTxs, ghConfig]);
+
+            const showToast = (msg, type = 'success') => setToast({ message: msg, type });
+
+            const githubSync = async (mode, silent = false) => {
+                const token = getGithubToken();
+                if (!token) return;
+                setSyncStatus('loading');
+                if(!silent) showToast('雲端同步中...', 'loading');
+                
+                try {
+                    const url = `https://api.github.com/repos/${ENCRYPTED_CONFIG.REPO}/contents/${ENCRYPTED_CONFIG.PATH}`;
+                    if (mode === 'pull') {
+                        const res = await fetch(url, { headers: { Authorization: `token ${token}` } });
+                        if (res.ok) {
+                            const data = await res.json();
+                            const parsed = JSON.parse(b64_to_utf8(data.content));
+                            if(parsed.accounts) setAccounts(parsed.accounts);
+                            if(parsed.categories) setCategories(parsed.categories);
+                            if(parsed.transactions) setTransactions(parsed.transactions);
+                            if(parsed.stockTxs) setStockTxs(parsed.stockTxs);
+                            if(parsed.userList) setUserList(parsed.userList);
+                            setSyncStatus('success');
+                            showToast('同步完成', 'success');
+                        }
+                    } else {
+                        let sha = null;
+                        try { const res = await fetch(url, { headers: { Authorization: `token ${token}` } }); if (res.ok) { const data = await res.json(); sha = data.sha; } } catch (e) {}
+                        const content = utf8_to_b64(JSON.stringify({ accounts, categories, transactions, stockTxs, userList }));
+                        await fetch(url, { method: 'PUT', headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'Auto-Sync', content, ...(sha ? { sha } : {}) }) });
+                        setSyncStatus('success');
+                        if(!silent) showToast('已備份至雲端', 'success');
+                    }
+                } catch (e) { 
+                    setSyncStatus('error'); 
+                    showToast('同步失敗', 'error'); 
+                }
+            };
+
+            const withAutoSync = (fn) => (...args) => { fn(...args); setTimeout(() => githubSync('push', true), 500); };
+
+            const handleCreateUser = (name) => {
+                const newUser = { id: generateId(), name };
+                setUserList(prev => [...prev, newUser]);
+                setSelectedUser(newUser);
+                showToast(`已建立並切換至 ${name}`);
+            };
+
+            // Derived States
+            const currentAccounts = useMemo(() => accounts.filter(a => (a.userId || 'u_default') === selectedUser?.id), [accounts, selectedUser]);
+            const currentTransactions = useMemo(() => transactions.filter(t => (t.userId || 'u_default') === selectedUser?.id), [transactions, selectedUser]);
+            const currentStockTxs = useMemo(() => stockTxs.filter(t => (t.userId || 'u_default') === selectedUser?.id), [stockTxs, selectedUser]);
+            
+            const portfolio = useMemo(() => {
+                const holdings = {};
+                let totalReturn = 0, div = 0;
+                [...currentStockTxs].sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(t => {
+                    if (!holdings[t.ticker]) holdings[t.ticker] = { ticker: t.ticker, shares: 0, cost: 0 };
+                    if (t.type === 'BUY') { holdings[t.ticker].shares += t.shares; holdings[t.ticker].cost += (t.shares*t.price+t.fees); }
+                    else if (t.type === 'SELL') { holdings[t.ticker].shares -= t.shares; totalReturn += ((t.shares*t.price-t.fees) - (holdings[t.ticker].cost/holdings[t.ticker].shares)*t.shares); }
+                    else if (t.type === 'DIVIDEND') { div += t.amount; totalReturn += t.amount; }
+                });
+                const list = Object.values(holdings).map(h => ({ ...h, avgPrice: h.shares > 0 ? h.cost/h.shares : 0, mktPrice: h.shares > 0 ? (h.cost/h.shares)*1.05 : 0 })).filter(h => h.shares > 0);
+                const mktVal = list.reduce((a, b) => a + (b.shares * b.mktPrice), 0);
+                return { holdings: list, mktVal, totalReturn, div };
+            }, [currentStockTxs]);
+
+            // Handlers
+            const handleSaveTx = withAutoSync((tx) => {
+                const newTx = { ...tx, userId: selectedUser.id };
+                if (editingTx) setTransactions(prev => prev.map(t => t.id === tx.id ? newTx : t));
+                else setTransactions(prev => [newTx, ...prev]);
+                
+                // Update account balance
+                if (tx.accountId) {
+                    const amt = tx.type === 'income' ? Number(tx.amount) : -Number(tx.amount);
+                    setAccounts(prev => prev.map(a => a.id === tx.accountId ? { ...a, balance: a.balance + amt } : a));
+                }
+                setIsTxModalOpen(false); setEditingTx(null);
+            });
+
+            const handleDeleteTx = withAutoSync((id) => {
+                setTransactions(prev => prev.filter(t => t.id !== id));
+            });
+
+            const handleSaveStock = withAutoSync((tx) => {
+                const newTx = { ...tx, userId: selectedUser.id };
+                if (editingStockTx) setStockTxs(prev => prev.map(t => t.id === tx.id ? newTx : t));
+                else setStockTxs(prev => [...prev, newTx]);
+                setIsTxModalOpen(false); setEditingStockTx(null);
+            });
+
+            const handleDeleteStock = withAutoSync((id) => {
+                setStockTxs(prev => prev.filter(t => t.id !== id));
+            });
+
+            if (viewState === 'portal') {
+                return <PortalScreen 
+                    userList={userList} 
+                    selectedUser={selectedUser || userList[0]} 
+                    onSelectUser={setSelectedUser} 
+                    onCreateUser={handleCreateUser}
+                    onSelect={(mode) => { 
+                        if (!selectedUser) setSelectedUser(userList[0]); 
+                        setViewState(mode); 
+                        setActiveTab('dashboard'); 
+                        githubSync('pull', true); 
+                    }} 
+                />;
+            }
+
+            return (
+                <div className="flex h-screen bg-slate-50 overflow-hidden flex-col md:flex-row">
+                    {/* Sidebar */}
+                    <div className={`bg-white/80 backdrop-blur border-r border-gray-200 flex flex-col transition-all duration-300 ${collapsed ? 'w-20' : 'w-64'} hidden md:flex`}>
+                        <div className="p-6 flex items-center gap-3 font-black text-2xl text-gray-800">
+                            {viewState === 'accounting' ? <Wallet className="text-blue-600"/> : <TrendingUp className="text-purple-600"/>}
+                            {!collapsed && <span className="text-lg">財富自由</span>}
+                        </div>
+                        <nav className="flex-1 px-3 space-y-2">
+                            {[
+                                { id: 'dashboard', icon: LayoutGrid, label: viewState === 'accounting' ? '概覽' : '資產' },
+                                { id: 'history', icon: FileText, label: viewState === 'accounting' ? '明細' : '紀錄' },
+                                ...(viewState === 'accounting' ? [{ id: 'analysis', icon: BarChart3, label: '報表' }] : [{ id: 'add', icon: Plus, label: '下單' }]),
+                                { id: 'settings', icon: Settings, label: '設定' }
+                            ].map(item => (
+                                <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold ${activeTab === item.id ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:bg-gray-50'} ${collapsed ? 'justify-center' : ''}`}>
+                                    <item.icon size={20}/> {!collapsed && item.label}
+                                </button>
+                            ))}
+                        </nav>
+                        <div className="p-4 border-t border-gray-100">
+                             <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-2xl cursor-pointer" onClick={() => setViewState('portal')}>
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold relative ${viewState === 'accounting' ? 'bg-blue-500' : 'bg-purple-500'}`}>
+                                    {selectedUser?.name?.[0]}
+                                    <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${syncStatus === 'loading' ? 'bg-blue-400' : syncStatus === 'success' ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                                </div>
+                                {!collapsed && <div className="flex-1 min-w-0"><div className="text-xs text-gray-400">切換模組</div><div className="font-bold text-gray-800 truncate">{selectedUser?.name}</div></div>}
+                                {!collapsed && <LogOut size={16} className="text-gray-400"/>}
+                             </div>
+                        </div>
+                    </div>
+
+                    {/* Mobile Header */}
+                    <div className="md:hidden bg-white p-4 flex justify-between items-center shadow-sm z-20">
+                        <div className="font-black text-lg flex items-center gap-2">{viewState === 'accounting' ? <Wallet className="text-blue-600"/> : <TrendingUp className="text-purple-600"/>} 財富自由</div>
+                        <button onClick={() => githubSync('pull')} className={`p-2 rounded-full ${syncStatus === 'loading' ? 'bg-blue-50 text-blue-500' : 'bg-gray-50 text-gray-600'}`}><Cloud size={20}/></button>
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="flex-1 overflow-y-auto p-4 md:p-8 relative">
+                        <button onClick={() => githubSync('pull')} className={`hidden md:flex absolute top-6 right-6 p-3 rounded-full shadow-lg transition-all z-50 ${syncStatus === 'loading' ? 'bg-blue-50 text-blue-500' : syncStatus === 'success' ? 'bg-green-50 text-green-500' : 'bg-white text-gray-400'}`} title="雲端同步"><Cloud size={20}/></button>
+
+                        {viewState === 'accounting' ? (
+                            <>
+                                {activeTab === 'dashboard' && <DashboardView accounts={currentAccounts} transactions={currentTransactions} onEditTx={setEditingTx} setIsTxModalOpen={setIsTxModalOpen} setIsSmartModalOpen={()=>{}} setActiveTab={setActiveTab} setSettingsTab={setSettingsTab} />}
+                                {activeTab === 'history' && <HistoryView transactions={currentTransactions} categories={categories} accounts={currentAccounts} onDeleteTx={handleDeleteTx} onEditTx={(t)=>{setEditingTx(t); setIsTxModalOpen(true);}} />}
+                                {activeTab === 'analysis' && <AnalysisView transactions={currentTransactions} categories={categories} />}
+                            </>
+                        ) : (
+                            <>
+                                {activeTab === 'dashboard' && <InvestmentDashboard portfolio={portfolio} />}
+                                {activeTab === 'history' && <StockHistoryView transactions={currentStockTxs} onEdit={(t)=>{setEditingStockTx(t); setIsTxModalOpen(true);}} onDelete={handleDeleteStock} />}
+                                {activeTab === 'add' && <div className="max-w-md mx-auto bg-white p-6 rounded-3xl shadow-sm"><h3 className="font-bold text-xl mb-4">新增證券交易</h3><StockTransactionForm onSave={(t) => { handleSaveStockTx(t); setActiveTab('dashboard'); }} /></div>}
+                            </>
+                        )}
+                        
+                        {activeTab === 'settings' && <SettingsPage accounts={currentAccounts} setAccounts={setAccounts} categories={categories} setCategories={setCategories} people={people} setPeople={setPeople} backup={()=>githubSync('push')} restore={()=>githubSync('pull')} settingsTab={settingsTab} setSettingsTab={setSettingsTab} />}
+                    </div>
+
+                    {/* Mobile Bottom Nav */}
+                    <div className="md:hidden bg-white border-t border-gray-100 p-2 flex justify-around absolute bottom-0 w-full z-20">
+                         <button onClick={() => setActiveTab('dashboard')} className={`flex flex-col items-center p-2 ${activeTab === 'dashboard' ? 'text-blue-600' : 'text-gray-400'}`}><LayoutGrid size={24}/><span className="text-[10px]">概覽</span></button>
+                         {viewState === 'accounting' ? (
+                             <>
+                                <button onClick={() => setActiveTab('analysis')} className={`flex flex-col items-center p-2 ${activeTab === 'analysis' ? 'text-blue-600' : 'text-gray-400'}`}><BarChart3 size={24}/><span className="text-[10px]">報表</span></button>
+                                <button onClick={() => { setEditingTx(null); setIsTxModalOpen(true); }} className="bg-blue-600 text-white p-4 rounded-full -mt-8 shadow-lg"><Plus size={28}/></button>
+                                <button onClick={() => setActiveTab('history')} className={`flex flex-col items-center p-2 ${activeTab === 'history' ? 'text-blue-600' : 'text-gray-400'}`}><FileText size={24}/><span className="text-[10px]">明細</span></button>
+                             </>
+                         ) : (
+                             <>
+                                <button onClick={() => setActiveTab('history')} className={`flex flex-col items-center p-2 ${activeTab === 'history' ? 'text-blue-600' : 'text-gray-400'}`}><FileText size={24}/><span className="text-[10px]">紀錄</span></button>
+                                <button onClick={() => { setEditingStockTx(null); setIsTxModalOpen(true); }} className="bg-purple-600 text-white p-4 rounded-full -mt-8 shadow-lg"><Plus size={28}/></button>
+                                <button onClick={() => setActiveTab('add')} className={`flex flex-col items-center p-2 ${activeTab === 'add' ? 'text-blue-600' : 'text-gray-400'}`}><Plus size={24}/><span className="text-[10px]">下單</span></button>
+                             </>
+                         )}
+                         <button onClick={() => setActiveTab('settings')} className={`flex flex-col items-center p-2 ${activeTab === 'settings' ? 'text-blue-600' : 'text-gray-400'}`}><Settings size={24}/><span className="text-[10px]">設定</span></button>
+                    </div>
+
+                    {/* Modals */}
+                    <Modal isOpen={isTxModalOpen} onClose={() => { setIsTxModalOpen(false); setEditingTx(null); setEditingStockTx(null); }} title={viewState === 'accounting' ? (editingTx ? '編輯收支' : '新增收支') : (editingStockTx ? '編輯投資' : '新增投資')}>
+                        {viewState === 'accounting' ? <TransactionForm initialData={editingTx} onClose={() => setIsTxModalOpen(false)} onSave={handleSaveTx} categories={categories} accounts={currentAccounts} people={people} /> : <StockTransactionForm initialData={editingStockTx} onSave={handleSaveStock} />}
+                    </Modal>
+
+                    {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<FinancePro />);
+    </script>
+</body>
+</html>
