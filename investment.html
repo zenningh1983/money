@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>通往財富自由之路 - 證券投資</title>
+    <!-- ... 同樣的依賴庫 ... -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/recharts@2.8.0/umd/Recharts.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f8fafc;}</style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        // ... (Icons & Utils) ...
+        const Icon = ({ d, className, ...p }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...p}>{Array.isArray(d)?d.map((p,i)=><path key={i} d={p}/>):<path d={d}/>}</svg>;
+        const Icons = {
+            TrendingUp: (p) => <Icon {...p} d={["M23 6l-9.5 9.5-5-5L1 18", "M17 6h6v6"]} />,
+            Wallet: (p) => <Icon {...p} d="M21 12V7H5a2 2 0 0 1 0-4h14v4M3 5v14a2 2 0 0 0 2 2h16v-5M18 12a2 2 0 0 0 0 4h4v-4Z" />,
+            LogOut: (p) => <Icon {...p} d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />,
+            LayoutGrid: (p) => <Icon {...p} d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z" />,
+        };
+
+        const App = () => {
+            const [currentUser, setCurrentUser] = useState(() => JSON.parse(localStorage.getItem('fp_current_user')));
+
+            useEffect(() => {
+                if (!currentUser) window.location.href = 'index.html';
+            }, [currentUser]);
+
+            return (
+                <div className="flex h-screen bg-slate-50 overflow-hidden flex-col md:flex-row">
+                    <div className="bg-white/80 backdrop-blur border-r border-gray-200 flex flex-col w-64 hidden md:flex">
+                        <div className="p-6 flex items-center gap-3 font-black text-2xl text-gray-800">
+                            <Icons.TrendingUp className="text-purple-600"/> <span className="text-lg">證券投資</span>
+                        </div>
+                        <nav className="flex-1 px-3 space-y-2">
+                             <button className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold bg-gray-100 text-gray-900"><Icons.LayoutGrid size={20}/> 資產</button>
+                        </nav>
+                        <div className="p-4 border-t border-gray-100">
+                             <div className="flex items-center gap-3 p-2 mb-2">
+                                <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white font-bold">{currentUser?.name?.[0]}</div>
+                                <div className="font-bold text-gray-800">{currentUser?.name}</div>
+                             </div>
+                             <button onClick={() => window.location.href='accounting.html'} className="w-full p-2 text-left hover:bg-gray-50 rounded flex items-center gap-2 text-blue-600 font-bold text-sm mb-1"><Icons.Wallet size={16}/> 前往現金帳本</button>
+                             <button onClick={() => window.location.href='index.html'} className="w-full p-2 text-left hover:bg-gray-50 rounded flex items-center gap-2 text-gray-500 font-bold text-sm"><Icons.LogOut size={16}/> 返回首頁</button>
+                        </div>
+                    </div>
+                    <div className="flex-1 p-8 overflow-auto">
+                       <h1 className="text-2xl font-bold mb-4">投資組合 - {currentUser?.name}</h1>
+                       <div className="mt-8 bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                            <h3 className="font-bold mb-4">功能建置中...</h3>
+                            <p className="text-gray-500">這裡是投資專用的獨立頁面。</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
