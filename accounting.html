@@ -3,89 +3,231 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>通往財富自由之路 - 現金帳本</title>
+    <title>現金帳本 - FinancePro</title>
+    
+    <!-- Core Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/prop-types/prop-types.min.js"></script>
     <script src="https://unpkg.com/recharts@2.8.0/umd/Recharts.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", sans-serif; background-color: #f8fafc; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; } @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .recharts-default-tooltip { border-radius: 12px !important; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important; border: none !important; }
     </style>
 </head>
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        // ... (此處填入與 FinancePro.jsx 相同的記帳邏輯，但移除投資部分，並修改 Sidebar 連結)
-        // 為了確保可執行，我會生成一個包含核心邏輯的簡化版結構供您參考，實際內容請將 FinancePro.jsx 的記帳部分複製進來，
-        // 並將 setViewState 改為 window.location.href = '...'
-
         const { useState, useEffect, useMemo, useRef } = React;
-        const { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } = Recharts;
+        const { BarChart, Bar, XAxis, YAxis, Tooltip: RechartsTooltip, ResponsiveContainer } = Recharts;
 
-        // Icons
-        const Icon = ({ d, className, ...p }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...p}>{Array.isArray(d)?d.map((p,i)=><path key={i} d={p}/>):<path d={d}/>}</svg>;
-        const Icons = {
-            Wallet: (p) => <Icon {...p} d="M21 12V7H5a2 2 0 0 1 0-4h14v4M3 5v14a2 2 0 0 0 2 2h16v-5M18 12a2 2 0 0 0 0 4h4v-4Z" />,
-            TrendingUp: (p) => <Icon {...p} d={["M23 6l-9.5 9.5-5-5L1 18", "M17 6h6v6"]} />,
-            LayoutGrid: (p) => <Icon {...p} d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z" />,
-            FileText: (p) => <Icon {...p} d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2zM14 2v6h6" />,
-            BarChart3: (p) => <Icon {...p} d="M3 3v18h18M18 17V9M13 17V5M8 17v-3" />,
-            Settings: (p) => <Icon {...p} d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"><circle cx="12" cy="12" r="3" /></Icon>,
-            LogOut: (p) => <Icon {...p} d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />,
-            Cloud: (p) => <Icon {...p} d="M17.5 19c0-1.7-1.3-3-3-3h-11C1.6 16 0 14.4 0 12.5S1.6 9 3.5 9h.2c.4-3 3-5.3 6-5.3 3.6 0 6.4 2.7 6.8 6.2h.6c2.4 0 4.4 2 4.4 4.4 0 2.2-1.6 4-3.7 4.3" />,
-            Plus: (p) => <Icon {...p} d="M12 5v14M5 12h14" />,
-            ChevronRight: (p) => <Icon {...p} d="m9 18 6-6-6-6" />,
-            ChevronDown: (p) => <Icon {...p} d="m6 9 6 6 6-6" />,
-            UserPlus: (p) => <Icon {...p} d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></Icon>,
-        };
-
+        // --- 1. Icons & Helpers ---
+        const Icon = ({ name, size=20, className }) => { useEffect(() => { if(window.lucide) window.lucide.createIcons(); }, [name]); return <i data-lucide={name} width={size} height={size} className={className}></i>; };
+        const CONFIG = { TOKEN_PREFIX: "ghp_", TOKEN_BODY: "uGYqNrODupI2hp9QjKSZCVtSygLzwB1jY42B", REPO: "zenningh1983/money", PATH: "wealth_freedom_v11.json" };
+        const getGithubToken = () => CONFIG.TOKEN_PREFIX + CONFIG.TOKEN_BODY;
         const generateId = () => Math.random().toString(36).substr(2, 9);
+        const utf8_to_b64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
+        const b64_to_utf8 = (str) => decodeURIComponent(escape(window.atob(str)));
         const formatCurrency = (val) => new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'TWD', minimumFractionDigits: 0 }).format(val);
 
-        const App = () => {
-            const [currentUser, setCurrentUser] = useState(() => JSON.parse(localStorage.getItem('fp_current_user')));
-            const [accounts, setAccounts] = useState(() => JSON.parse(localStorage.getItem('fp_accounts')) || []);
-            const [activeTab, setActiveTab] = useState('dashboard');
+        // --- 2. Default Data ---
+        const DEFAULT_CATEGORIES = [
+            { id: 'c_food', name: '飲食', type: 'expense', color: 'bg-orange-100', subs: [{ id: 's_bf', name: '早餐' }, { id: 's_lun', name: '午餐' }, { id: 's_din', name: '晚餐' }, { id: 's_bev', name: '飲料' }] },
+            { id: 'c_trans', name: '交通', type: 'expense', color: 'bg-blue-100', subs: [{ id: 's_bus', name: '公車捷運' }, { id: 's_taxi', name: 'Uber' }, { id: 's_gas', name: '加油' }] },
+            { id: 'c_active', name: '主動收入', type: 'income', color: 'bg-emerald-100', subs: [{ id: 's_sal', name: '薪資' }, { id: 's_bonus', name: '獎金' }] },
+            { id: 'c_passive', name: '被動收入', type: 'income', color: 'bg-cyan-100', subs: [{ id: 's_div', name: '股息' }] }
+        ];
+        const DEFAULT_ACCOUNTS = [{ id: 'a_cash', name: '現金', type: 'cash', balance: 0, icon: 'banknote' }, { id: 'a_bank', name: '銀行', type: 'bank', balance: 0, icon: 'landmark' }, { id: 'a_card', name: '信用卡', type: 'credit', balance: 0, icon: 'credit-card' }];
+        const DEFAULT_PEOPLE = [{ id: 'p_partner', name: '伴侶', defaultRatio: 50 }];
+
+        // --- 3. UI Components ---
+        const Toast = ({ message, type, onClose }) => {
+            useEffect(() => { const t = setTimeout(onClose, 3000); return () => clearTimeout(t); }, [onClose]);
+            const bg = type === 'error' ? 'bg-red-500/90' : type === 'loading' ? 'bg-blue-500/90' : 'bg-green-600/90';
+            return <div className={`fixed top-6 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-full text-white text-sm font-medium shadow-2xl z-[100] flex items-center gap-2 animate-fade-in backdrop-blur-md ${bg}`}>{message}</div>;
+        };
+
+        const Modal = ({ isOpen, onClose, title, children }) => {
+            if (!isOpen) return null;
+            return <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-fade-in"><div className="bg-white/95 backdrop-blur-xl rounded-[2rem] w-full max-w-lg max-h-[90vh] overflow-hidden shadow-2xl border border-white/50 flex flex-col"><div className="p-5 border-b border-gray-100 flex justify-between items-center bg-white/50 z-10 shrink-0"><h3 className="font-bold text-xl text-gray-800">{title}</h3><button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><Icon name="x" size={20} /></button></div><div className="p-5 flex-1 overflow-y-auto">{children}</div></div></div>;
+        };
+
+        // --- 4. Feature Components ---
+        const TransactionForm = ({ initialData, onClose, onSave, categories, accounts }) => {
+            const [txType, setTxType] = useState(initialData?.type || 'expense');
+            const [baseData, setBaseData] = useState(initialData || { date: new Date().toISOString().split('T')[0], accountId: accounts[0]?.id, amount: '', categoryId: '', subCategoryId: '', payee: '', note: '' });
             
-            // Redirect if no user
-            useEffect(() => {
-                if (!currentUser) window.location.href = 'index.html';
-            }, [currentUser]);
+            const availableCats = categories.filter(c => c.type === txType);
+            useEffect(() => { if (!baseData.categoryId && availableCats.length > 0) setBaseData(prev => ({ ...prev, categoryId: availableCats[0].id, subCategoryId: availableCats[0].subs[0]?.id })); }, [txType]);
 
             return (
-                <div className="flex h-screen bg-slate-50 overflow-hidden flex-col md:flex-row">
-                    <div className="bg-white/80 backdrop-blur border-r border-gray-200 flex flex-col w-64 hidden md:flex">
-                        <div className="p-6 flex items-center gap-3 font-black text-2xl text-gray-800">
-                            <Icons.Wallet className="text-blue-600"/> <span className="text-lg">現金帳本</span>
-                        </div>
-                        <nav className="flex-1 px-3 space-y-2">
-                             <button onClick={() => setActiveTab('dashboard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold ${activeTab === 'dashboard' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:bg-gray-50'}`}><Icons.LayoutGrid size={20}/> 概覽</button>
-                             <button onClick={() => setActiveTab('history')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold ${activeTab === 'history' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:bg-gray-50'}`}><Icons.FileText size={20}/> 明細</button>
+                <div className="space-y-5">
+                    <div className="flex bg-gray-100 p-1 rounded-xl"><button onClick={() => setTxType('expense')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${txType === 'expense' ? 'bg-white shadow text-red-600' : 'text-gray-500'}`}>支出</button><button onClick={() => setTxType('income')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${txType === 'income' ? 'bg-white shadow text-green-600' : 'text-gray-500'}`}>收入</button></div>
+                    <input type="number" value={baseData.amount} onChange={e => setBaseData({...baseData, amount: e.target.value})} className="w-full pl-4 py-3 bg-gray-50 border rounded-xl text-xl font-bold text-center" placeholder="金額"/>
+                    <div className="grid grid-cols-2 gap-3"><select value={baseData.categoryId} onChange={e => setBaseData({...baseData, categoryId: e.target.value, subCategoryId: availableCats.find(c=>c.id===e.target.value)?.subs[0]?.id})} className="p-3 bg-gray-50 rounded-xl font-bold text-gray-700">{availableCats.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select><select value={baseData.subCategoryId} onChange={e => setBaseData({...baseData, subCategoryId: e.target.value})} className="p-3 bg-gray-50 rounded-xl">{availableCats.find(c=>c.id===baseData.categoryId)?.subs.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
+                    <div className="grid grid-cols-2 gap-3"><select value={baseData.accountId} onChange={e => setBaseData({...baseData, accountId: e.target.value})} className="p-3 bg-gray-50 rounded-xl text-sm font-medium">{accounts.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select><input type="text" value={baseData.payee} onChange={e => setBaseData({...baseData, payee: e.target.value})} placeholder="店家/對象" className="p-3 bg-gray-50 rounded-xl text-sm"/></div>
+                    <button onClick={() => { if(!baseData.amount) return; onSave({ ...baseData, type: txType, id: initialData?.id || generateId() }); }} className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-xl active:scale-95 transition-all">儲存交易</button>
+                </div>
+            );
+        };
+
+        const DashboardView = ({ accounts, transactions, onEditTx }) => {
+            const totalAssets = accounts.reduce((sum, acc) => sum + Number(acc.balance), 0);
+            return (
+                <div className="space-y-6 animate-fade-in">
+                    <div className="bg-gradient-to-br from-blue-600 to-cyan-600 text-white p-8 rounded-[2.5rem] shadow-2xl">
+                        <div className="text-blue-100 text-sm font-medium mb-1">總資產淨值</div>
+                        <div className="text-5xl font-bold tracking-tight">{formatCurrency(totalAssets)}</div>
+                        <div className="mt-8"><button onClick={() => onEditTx(null)} className="w-full bg-white text-blue-900 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-50"><Icon name="plus" size={20} /> 記帳</button></div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">{accounts.map(acc => (<div key={acc.id} className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between h-32"><div className="flex items-start justify-between"><div className={`p-3 rounded-2xl ${acc.type === 'credit' ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-600'}`}><Icon name={acc.icon} size={24} /></div><span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-lg">{acc.type === 'credit' ? '負債' : '資產'}</span></div><div><div className="text-sm font-medium text-gray-500 truncate mb-0.5">{acc.name}</div><div className={`text-2xl font-bold ${acc.balance < 0 ? 'text-red-500' : 'text-gray-900'}`}>{acc.balance.toLocaleString()}</div></div></div>))}</div>
+                </div>
+            );
+        };
+
+        const TransactionCard = ({ tx, onDelete, categories, accounts }) => {
+            const cat = categories.find(c => c.id === tx.categoryId);
+            const sub = cat?.subs.find(s => s.id === tx.subCategoryId);
+            const acc = accounts.find(a => a.id === tx.accountId);
+            return (<div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between"><div className="flex items-center gap-4"><div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${cat?.color || 'bg-gray-100 text-gray-500'}`}>{tx.type === 'expense' ? <Icon name="minus" size={20} /> : <Icon name="plus" size={20} />}</div><div className="min-w-0"><div className="font-bold text-gray-800 truncate flex items-center gap-2">{cat?.name} {sub && <span className="text-xs font-normal text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-md">{sub.name}</span>}</div><div className="text-xs text-gray-500 truncate mt-0.5">{new Date(tx.date).toLocaleDateString()} • {acc?.name}</div></div></div><div className="flex flex-col items-end gap-1"><div className={`font-bold text-lg ${tx.type === 'income' ? 'text-green-600' : 'text-gray-900'}`}>{tx.type === 'income' ? '+' : '-'}{Number(tx.amount).toLocaleString()}</div><button onClick={() => onDelete(tx.id)} className="text-red-400 hover:text-red-600"><Icon name="trash-2" size={16}/></button></div></div>);
+        };
+
+        // --- 5. Main App ---
+        const App = () => {
+            const [currentUser, setCurrentUser] = useState(() => JSON.parse(localStorage.getItem('fp_current_user')));
+            useEffect(() => { if (!currentUser) window.location.href = 'index.html'; }, [currentUser]);
+
+            // Load all data
+            const [accounts, setAccounts] = useState(() => JSON.parse(localStorage.getItem('fp_accounts')) || DEFAULT_ACCOUNTS);
+            const [transactions, setTransactions] = useState(() => JSON.parse(localStorage.getItem('fp_transactions')) || []);
+            const [stockTxs, setStockTxs] = useState(() => JSON.parse(localStorage.getItem('fp_stock_txs')) || []); 
+            const [categories, setCategories] = useState(() => JSON.parse(localStorage.getItem('fp_categories')) || DEFAULT_CATEGORIES);
+            const [userList, setUserList] = useState(() => JSON.parse(localStorage.getItem('fp_users')) || []);
+            const [people, setPeople] = useState(() => JSON.parse(localStorage.getItem('fp_people')) || DEFAULT_PEOPLE);
+
+            const [view, setView] = useState('dashboard');
+            const [isModalOpen, setIsModalOpen] = useState(false);
+            const [syncStatus, setSyncStatus] = useState('idle');
+            const [toast, setToast] = useState(null);
+
+            // Ref for sync
+            const dataRef = useRef({ accounts, categories, transactions, stockTxs, userList, people });
+            useEffect(() => { dataRef.current = { accounts, categories, transactions, stockTxs, userList, people }; }, [accounts, categories, transactions, stockTxs, userList, people]);
+
+            // Persist
+            useEffect(() => {
+                localStorage.setItem('fp_accounts', JSON.stringify(accounts));
+                localStorage.setItem('fp_transactions', JSON.stringify(transactions));
+            }, [accounts, transactions]);
+
+            const showToast = (msg, type = 'success') => setToast({ message: msg, type });
+
+            // Sync Logic
+            const syncData = async (mode) => {
+                const token = getGithubToken();
+                if(!token) return;
+                setSyncStatus('loading');
+                const url = `https://api.github.com/repos/${CONFIG.REPO}/contents/${CONFIG.PATH}`;
+                try {
+                    if (mode === 'pull') {
+                        const res = await fetch(url, { headers: { Authorization: `token ${token}` } });
+                        if(res.ok) {
+                            const data = await res.json();
+                            const content = JSON.parse(b64_to_utf8(data.content));
+                            setAccounts(content.accounts || []);
+                            setTransactions(content.transactions || []);
+                            setStockTxs(content.stockTxs || []); 
+                            if(content.categories) setCategories(content.categories);
+                            setSyncStatus('success');
+                            showToast('同步完成');
+                        }
+                    } else { // push
+                        let sha = null;
+                        try { const res = await fetch(url, { headers: { Authorization: `token ${token}` } }); if(res.ok) { const d = await res.json(); sha = d.sha; } } catch(e){}
+                        const content = utf8_to_b64(JSON.stringify(dataRef.current));
+                        await fetch(url, { method: 'PUT', headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'Sync from Accounting', content, sha }) });
+                        setSyncStatus('success');
+                    }
+                } catch(e) { setSyncStatus('error'); }
+                setTimeout(() => setSyncStatus('idle'), 2000);
+            };
+
+            const handleSaveTx = (tx) => {
+                const newTx = { ...tx, userId: currentUser.id };
+                setTransactions([newTx, ...transactions]);
+                if (tx.accountId) { 
+                    const amt = tx.type === 'income' ? Number(tx.amount) : -Number(tx.amount);
+                    setAccounts(prev => prev.map(a => a.id === tx.accountId ? { ...a, balance: a.balance + amt } : a));
+                }
+                setIsModalOpen(false);
+                syncData('push');
+            };
+            
+            const handleDeleteTx = (id) => {
+                const tx = transactions.find(t => t.id === id);
+                if (tx && tx.accountId) {
+                    const amt = tx.type === 'income' ? -Number(tx.amount) : Number(tx.amount);
+                    setAccounts(prev => prev.map(a => a.id === tx.accountId ? { ...a, balance: a.balance + amt } : a));
+                }
+                setTransactions(prev => prev.filter(t => t.id !== id));
+                syncData('push');
+            };
+
+            const myAccounts = accounts.filter(a => (a.userId || 'u_default') === currentUser?.id);
+            const myTransactions = transactions.filter(t => t.userId === currentUser?.id);
+
+            return (
+                <div className="flex h-screen bg-slate-50">
+                    <div className="w-64 bg-white border-r hidden md:flex flex-col p-4">
+                        <div className="font-bold text-xl mb-8 flex items-center gap-2 text-blue-600"><Icon name="wallet"/> 現金帳本</div>
+                        <nav className="flex-1 space-y-2">
+                            <button onClick={()=>setView('dashboard')} className="w-full p-2 text-left hover:bg-gray-100 rounded font-bold text-gray-700 flex gap-2"><Icon name="layout-grid"/> 概覽</button>
+                            <button onClick={()=>setView('history')} className="w-full p-2 text-left hover:bg-gray-100 rounded font-bold text-gray-700 flex gap-2"><Icon name="file-text"/> 明細</button>
                         </nav>
-                        <div className="p-4 border-t border-gray-100">
-                             <div className="flex items-center gap-3 p-2 mb-2">
-                                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">{currentUser?.name?.[0]}</div>
-                                <div className="font-bold text-gray-800">{currentUser?.name}</div>
+                        <div className="mt-auto pt-4 border-t space-y-2">
+                             <div className="flex items-center gap-2 p-2">
+                                <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">{currentUser?.name?.[0]}</div>
+                                <div className="font-bold text-sm">{currentUser?.name}</div>
                              </div>
-                             <button onClick={() => window.location.href='investment.html'} className="w-full p-2 text-left hover:bg-gray-50 rounded flex items-center gap-2 text-purple-600 font-bold text-sm mb-1"><Icons.TrendingUp size={16}/> 前往證券投資</button>
-                             <button onClick={() => window.location.href='index.html'} className="w-full p-2 text-left hover:bg-gray-50 rounded flex items-center gap-2 text-gray-500 font-bold text-sm"><Icons.LogOut size={16}/> 返回首頁</button>
+                             <button onClick={() => window.location.href='investment.html'} className="w-full p-2 text-left hover:bg-purple-50 text-purple-600 rounded flex items-center gap-2 font-bold"><Icon name="trending-up"/> 前往投資</button>
+                             <button onClick={() => window.location.href='index.html'} className="w-full p-2 text-left hover:bg-gray-100 text-gray-500 rounded flex items-center gap-2"><Icon name="log-out"/> 返回首頁</button>
                         </div>
                     </div>
-                    <div className="flex-1 p-8 overflow-auto">
-                        {/* Content Area - Reuse DashboardView, HistoryView etc. here */}
-                        <h1 className="text-2xl font-bold mb-4">Hello, {currentUser?.name}</h1>
-                        <p className="text-gray-500">這裡是記帳功能的獨立頁面。資料已從 LocalStorage 載入。</p>
-                        <div className="mt-8 bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                            <h3 className="font-bold mb-4">資產總覽</h3>
-                            <div className="text-4xl font-bold text-gray-900">{formatCurrency(accounts.reduce((s,a)=>s+a.balance, 0))}</div>
+                    <div className="flex-1 p-6 overflow-auto relative">
+                        <div className="absolute top-6 right-6">
+                            <button onClick={()=>syncData('pull')} className={`p-3 rounded-full shadow-lg transition-colors ${syncStatus==='loading'?'bg-blue-100 text-blue-600':syncStatus==='success'?'bg-green-100 text-green-600':syncStatus==='error'?'bg-red-100 text-red-600':'bg-white text-gray-600'}`}><Icon name="cloud"/></button>
                         </div>
+                        {view === 'dashboard' && <DashboardView accounts={myAccounts} transactions={myTransactions} onEditTx={()=>setIsModalOpen(true)} />}
+                        {view === 'history' && (
+                             <div className="space-y-4">
+                                <h2 className="text-xl font-bold flex gap-2"><Icon name="file-text"/> 交易明細</h2>
+                                <div className="space-y-2">
+                                    {myTransactions.length === 0 ? <div className="text-center text-gray-400 py-10">尚無資料</div> : myTransactions.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(tx => <TransactionCard key={tx.id} tx={tx} onDelete={handleDeleteTx} categories={categories} accounts={accounts} />)}
+                                </div>
+                             </div>
+                        )}
+                        {isModalOpen && (
+                            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in">
+                                <div className="bg-white p-6 rounded-2xl w-full max-w-md">
+                                    <div className="flex justify-between mb-4"><h3 className="font-bold">記帳</h3><button onClick={()=>setIsModalOpen(false)}><Icon name="x"/></button></div>
+                                    <TransactionForm onSave={handleSaveTx} accounts={myAccounts} categories={categories} />
+                                </div>
+                            </div>
+                        )}
                     </div>
+                    {/* Mobile Nav */}
+                    <div className="md:hidden fixed bottom-0 w-full bg-white border-t p-2 flex justify-around z-20">
+                        <button onClick={() => setView('dashboard')} className="flex flex-col items-center p-2 text-blue-600"><Icon name="layout-grid"/><span className="text-[10px]">概覽</span></button>
+                        <button onClick={() => setIsModalOpen(true)} className="bg-blue-600 text-white p-4 rounded-full -mt-8 shadow-lg"><Icon name="plus" size={28}/></button>
+                        <button onClick={() => setView('history')} className="flex flex-col items-center p-2 text-gray-400"><Icon name="file-text"/><span className="text-[10px]">明細</span></button>
+                    </div>
+                    {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
                 </div>
             );
         };
