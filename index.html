@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>通往財富自由之路</title>
+    <title>入口 - 通往財富自由之路</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f8fafc;}</style>
 </head>
@@ -16,9 +16,9 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // --- Icons ---
+        // --- Icon Component ---
         const Icon = ({ name, size=24, className }) => {
-            useEffect(() => { lucide.createIcons(); }, [name]);
+            useEffect(() => { if (window.lucide) window.lucide.createIcons(); }, [name]);
             return <i data-lucide={name} width={size} height={size} className={className}></i>;
         };
 
@@ -26,28 +26,31 @@
         const DEFAULT_USERS = [{ id: 'u_default', name: '我 (主帳號)' }];
 
         const App = () => {
+            // 從 LocalStorage 讀取使用者列表，若無則使用預設
             const [users, setUsers] = useState(() => JSON.parse(localStorage.getItem('fp_users')) || DEFAULT_USERS);
             const [selectedUser, setSelectedUser] = useState(() => JSON.parse(localStorage.getItem('fp_current_user')) || users[0]);
             const [showMenu, setShowMenu] = useState(false);
 
+            // 當 Users 或 SelectedUser 改變時，存回 LocalStorage
             useEffect(() => {
                 localStorage.setItem('fp_users', JSON.stringify(users));
                 localStorage.setItem('fp_current_user', JSON.stringify(selectedUser));
-                lucide.createIcons();
+                if (window.lucide) window.lucide.createIcons();
             }, [users, selectedUser]);
 
             const handleCreateUser = () => {
                 const name = prompt("請輸入新使用者名稱：");
                 if (name && name.trim()) {
                     const newUser = { id: generateId(), name: name.trim() };
-                    setUsers([...users, newUser]);
+                    const newUsers = [...users, newUser];
+                    setUsers(newUsers);
                     setSelectedUser(newUser);
                     setShowMenu(false);
                 }
             };
 
             const handleNavigate = (page) => {
-                // 儲存當前使用者狀態，讓子頁面讀取
+                // 確保當前使用者已儲存
                 localStorage.setItem('fp_current_user', JSON.stringify(selectedUser));
                 window.location.href = page;
             };
@@ -65,7 +68,7 @@
                             </div>
                         </div>
 
-                        {/* User Switcher */}
+                        {/* 使用者切換器 */}
                         <div className="flex justify-center relative">
                             <button onClick={() => setShowMenu(!showMenu)} className="bg-white px-5 py-2.5 rounded-full shadow-sm border border-gray-200 flex items-center gap-3 text-sm text-gray-600 hover:bg-gray-50 transition-colors">
                                 <Icon name="user-cog" size={18} className="text-gray-400"/> 
@@ -94,7 +97,7 @@
                             )}
                         </div>
                         
-                        {/* Modules */}
+                        {/* 模組按鈕 */}
                         <div className="space-y-4">
                             <button onClick={() => handleNavigate('accounting.html')} className="w-full bg-white p-6 rounded-[2.5rem] shadow-lg border border-gray-100 flex items-center gap-6 hover:scale-[1.02] hover:shadow-2xl hover:border-blue-100 transition-all group relative overflow-hidden">
                                 <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm z-10"><Icon name="wallet" size={32} /></div>
@@ -111,7 +114,7 @@
                             </button>
                         </div>
                     </div>
-                    <div className="absolute bottom-8 text-[10px] text-gray-300 font-mono tracking-widest">SPLIT VERSION 1.0</div>
+                    <div className="absolute bottom-8 text-[10px] text-gray-300 font-mono tracking-widest">OFFLINE SUITE V1.0</div>
                 </div>
             );
         };
