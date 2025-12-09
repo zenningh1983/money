@@ -99,7 +99,7 @@
             TOKEN_PREFIX: "ghp_", 
             TOKEN_BODY: "uGYqNrODupI2hp9QjKSZCVtSygLzwB1jY42B", 
             REPO: "zenningh1983/money", 
-            PATH: "wealth_freedom_v27.json" 
+            PATH: "wealth_freedom_v31.json" 
         };
         const getGithubToken = () => CONFIG.TOKEN_PREFIX + CONFIG.TOKEN_BODY;
         
@@ -230,7 +230,7 @@
                             </button>
                         </div>
                     </div>
-                    <div className="absolute bottom-8 text-[10px] text-gray-300 font-mono tracking-widest">OFFLINE V27.0</div>
+                    <div className="absolute bottom-8 text-[10px] text-gray-300 font-mono tracking-widest">OFFLINE V31.0</div>
                 </div>
             );
         };
@@ -271,7 +271,7 @@
                     <div className="p-4 border-t border-gray-100 relative">
                         {showUserMenu && !collapsed && (<div className="absolute bottom-full left-4 right-4 mb-2 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden z-50"><div className="max-h-48 overflow-y-auto p-1">{userList.map(u => (<button key={u.id} onClick={() => { onSelectUser(u); setShowUserMenu(false); }} className={`w-full text-left px-3 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-gray-50 ${u.id === currentUser?.id ? 'bg-blue-50 text-blue-600' : 'text-gray-700'}`}><div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs text-gray-600">{u.name[0]}</div><span className="truncate">{u.name}</span></button>))}</div><div className="border-t border-gray-100 p-1"><button onClick={handleCreateClick} className="w-full text-left px-3 py-2 rounded-xl text-sm font-bold flex items-center gap-2 text-blue-600 hover:bg-blue-50"><Icon name="UserPlus" size={16} /> 新增</button></div></div>)}
                         
-                        {/* User Item with Inline Edit (Style matched to request) */}
+                        {/* User Item with Inline Edit (Fixed Style) */}
                         <div className={`flex items-center gap-3 p-2 rounded-2xl hover:bg-gray-50 transition-colors cursor-pointer group ${collapsed ? 'justify-center' : ''}`} onClick={() => !collapsed && !isRenaming && setShowUserMenu(!showUserMenu)}>
                             <div className={`w-10 h-10 rounded-full bg-gradient-to-tr ${viewState === 'accounting' ? 'from-blue-500 to-cyan-500' : 'from-purple-500 to-pink-500'} flex items-center justify-center text-white font-bold flex-shrink-0 relative`}>
                                 {currentUser?.name[0]}
@@ -380,6 +380,10 @@
                     // 1. My expense
                     onSave({ ...txToSave, amount: myAmount, note: `${txToSave.note} (總 ${txToSave.amount}, ${person.name}付${splitRatio}%)` });
                     
+                    // 2. Debt record (Transfer Out -> Repay Later) - Simplified as transfer
+                    // Ideally we create a 'transfer' type tx, but here we can just note it or add a separate record
+                    // For simplicity in this offline version, we just save the main expense adjusted. 
+                    // Advanced split logic can be added if needed.
                 } else {
                     onSave(txToSave);
                 }
@@ -397,95 +401,111 @@
             );
         };
 
-        // --- Smart Import (FIXED & IMPROVED) ---
+        // --- Smart Import (FIXED & IMPROVED v30) ---
         const SmartImport = ({ onClose, onImport, categories, accounts, predictCategory }) => {
             const [text, setText] = useState('');
             const [isAnalyzing, setIsAnalyzing] = useState(false);
             const [previews, setPreviews] = useState([]);
             const [step, setStep] = useState('input');
             const [expandedItems, setExpandedItems] = useState({});
+            
             const toggleExpand = (id) => setExpandedItems(prev => ({...prev, [id]: !prev[id]}));
 
             const analyzeText = () => {
                 if (!text.trim()) return;
                 setIsAnalyzing(true);
                 setTimeout(() => {
-                    let processedText = text.replace(/−/g, '-').replace(/\t/g, ' '); // Replace tabs with spaces
-                    processedText = processedText.replace(/([^\n])(?=20\d{2}\/\d{2}\/\d{2})/g, "$1\n"); 
-                    
+                    let processedText = text.replace(/−/g, '-').replace(/\t/g, ' ').replace(/　/g, ' '); 
                     const lines = processedText.split(/\n+/);
                     const detected = [];
 
+                    // Keyword matching helper
                     const guessCat = (desc, type) => {
-                        let guessedCat = categories[0];
-                        let guessedSub = categories[0].subs[0];
+                        let bestCat = categories[0];
+                        let bestSub = categories[0].subs[0];
+                        
+                        if (type === 'income') {
+                            const incCat = categories.find(c => c.type === 'income');
+                            if(incCat) { bestCat = incCat; bestSub = incCat.subs[0]; }
+                        }
+
                         const keywords = { 
                             '飲食': ['早餐', '午餐', '晚餐', '飲料', '星巴克', '麥當勞', '食', '飯', '茶', '咖啡', 'Eats', 'Foodpanda', '全家', '7-11', '統一超商'], 
                             '交通': ['Uber', '計程車', '高鐵', '台鐵', '捷運', '加油', '停車', 'yoxi', 'Line Taxi'], 
                             '娛樂': ['電影', 'Netflix', 'Spotify', '好樂迪', 'KTV', 'Steam'], 
-                            '生活': ['購物', '全聯', '家樂福', '蝦皮', 'MOMO', 'PChome'], 
                             '主動收入': ['薪資', '入帳', '利息', '轉帳'] 
                         };
-
-                        if (type === 'income') { 
-                            const incCat = categories.find(c => c.type === 'income'); 
-                            if(incCat) { guessedCat = incCat; guessedSub = incCat.subs[0]; } 
-                        }
 
                         for (const [catName, keys] of Object.entries(keywords)) {
                             if (keys.some(k => desc.toLowerCase().includes(k.toLowerCase()))) {
                                 const foundCat = categories.find(c => c.name === catName);
-                                if (foundCat && foundCat.type === type) { 
-                                    guessedCat = foundCat; 
-                                    guessedSub = foundCat.subs[0]; 
-                                    break; 
-                                }
+                                if (foundCat) { bestCat = foundCat; bestSub = foundCat.subs[0]; break; }
                             }
                         }
-                        return { categoryId: guessedCat.id, subCategoryId: guessedSub.id };
+                        return { categoryId: bestCat.id, subCategoryId: bestSub.id };
                     };
 
                     lines.forEach((line, idx) => {
-                        let trimmed = line.trim();
-                        if (!trimmed || trimmed.includes("交易日期") || trimmed.length < 5) return;
+                        const trimmed = line.trim();
+                        // Filter headers and invalid lines
+                        if (trimmed.length < 5 || /交易日期|餘額|帳務日期|備註/.test(trimmed)) return;
 
+                        // 1. Extract Date
                         let date = new Date().toISOString().split('T')[0];
-                        const dateMatch = trimmed.match(/(20\d{2}[\/\-]\d{2}[\/\-]\d{2})/);
+                        const dateMatch = trimmed.match(/(\d{4}[\/\-]\d{2}[\/\-]\d{2})/);
                         if (dateMatch) date = dateMatch[1].replace(/\//g, '-');
 
+                        // 2. Extract Amounts (Look for numbers with comma, excluding the date)
+                        // Strategy: Remove Date, then look for numbers
+                        const lineWithoutDate = trimmed.replace(dateMatch ? dateMatch[0] : '', '');
+                        
+                        // Find all number-like patterns (e.g., 1,158 or -)
+                        const numbers = lineWithoutDate.match(/([0-9,]+|[-−])/g);
+                        
                         let amount = 0;
                         let type = 'expense';
-                        
-                        // Extract Amount: look for numbers with optional separators
-                        const amountMatch = trimmed.match(/(-?[\d,]+)(\s*$|元)/);
-                        if (amountMatch) {
-                            let amtStr = amountMatch[1].replace(/,/g, '');
-                            if (!isNaN(Number(amtStr))) {
-                                amount = Number(amtStr);
-                                if (amount < 0) {
-                                    amount = Math.abs(amount);
-                                    // Usually negative in statement means expense, but let's default to expense
-                                    type = 'expense'; 
-                                }
+                        let payee = lineWithoutDate;
+
+                        if (numbers && numbers.length >= 1) {
+                            // Let's clean numbers
+                            const cleanNums = numbers.map(n => n.replace(/,/g, '').replace(/[-−]/g, '0'));
+                            
+                            // Guess logic based on common bank statement columns: [Withdrawal, Deposit, Balance]
+                            const val1 = Number(cleanNums[0]); // Withdraw column
+                            const val2 = cleanNums.length > 1 ? Number(cleanNums[1]) : 0; // Deposit column
+                            
+                            if (val1 > 0) {
+                                amount = val1;
+                                type = 'expense';
+                            } else if (val2 > 0) {
+                                amount = val2;
+                                type = 'income';
                             }
+                            
+                            // Clean payee: remove numbers
+                            payee = lineWithoutDate.replace(/[0-9,]+|[-−]/g, '').trim();
                         }
 
-                        // Extract Description
-                        let description = trimmed.replace(dateMatch ? dateMatch[0] : '', '').replace(/[\d,]+(元)?$/, '').trim();
-                        if (description.startsWith("網銀轉帳") || description.includes("入帳")) type = 'income';
+                        // Fallback: Simple line "Date Payee Amount"
+                        if (amount === 0) {
+                            const simpleMatch = trimmed.match(/(\d+[,.]?\d*)$/);
+                            if (simpleMatch) amount = Number(simpleMatch[1].replace(/,/g, ''));
+                            payee = trimmed.replace(dateMatch ? dateMatch[0] : '', '').replace(/[\d,]+$/, '').trim();
+                        }
 
                         if (amount > 0) {
-                            const { categoryId, subCategoryId } = guessCat(description, type);
+                            const { categoryId, subCategoryId } = guessCat(payee, type);
                             detected.push({
                                 tempId: Date.now() + idx,
                                 date,
                                 amount,
-                                payee: description || '未知交易',
+                                payee: payee || '未知交易',
                                 categoryId,
                                 subCategoryId,
                                 accountId: accounts[0].id,
                                 type,
-                                note: '', isSplit: false, splitDetail: ''
+                                uiType: type, // For dropdown
+                                note: ''
                             });
                         }
                     });
@@ -498,49 +518,99 @@
                 }, 800);
             };
 
-            const updatePreview = (id, field, value) => setPreviews(prev => prev.map(p => p.tempId === id ? { ...p, [field]: value } : p));
-            const removePreview = (id) => setPreviews(prev => prev.filter(p => p.tempId !== id));
+            const updatePreview = (id, field, value) => {
+                setPreviews(prev => prev.map(item => {
+                    if (item.tempId === id) {
+                        const updated = { ...item, [field]: value };
+                        if (field === 'uiType') updated.type = (value === 'income') ? 'income' : 'expense';
+                        return updated;
+                    }
+                    return item;
+                }));
+            };
+            
+            const removePreview = (id) => setPreviews(prev => prev.filter(item => item.tempId !== id));
             const confirmImport = () => { if (previews.length === 0) return; onImport(previews); onClose(); };
 
             if (step === 'review') {
                  return (
-                    <div className="space-y-4 h-full flex flex-col">
-                        <div className="flex justify-between items-center bg-blue-50 p-3 rounded-lg text-sm text-blue-800">
+                    <div className="h-[70vh] flex flex-col">
+                        <div className="flex justify-between items-center bg-blue-50 p-3 rounded-lg text-sm text-blue-800 mb-2">
                              <span className="font-bold flex items-center gap-2"><Icon name="Check" size={16}/> 已識別 {previews.length} 筆資料</span>
                              <button onClick={() => setStep('input')} className="text-blue-600 hover:underline">重新輸入</button>
                         </div>
-                        <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+                        <div className="flex-1 overflow-y-auto space-y-3 pr-1 pb-4">
                             {previews.map((item) => (
-                                <div key={item.tempId} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-                                    <div className="p-3 flex gap-2 items-center bg-gray-50 border-b border-gray-100">
-                                        <button onClick={() => toggleExpand(item.tempId)} className="text-gray-400">{expandedItems[item.tempId] ? <Icon name="ChevronUp"/> : <Icon name="ChevronDown"/>}</button>
-                                        <div className="flex-1 font-bold text-gray-700">{item.payee}</div>
-                                        <button onClick={() => removePreview(item.tempId)} className="text-red-300"><Icon name="X" size={16}/></button>
+                                <div key={item.tempId} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm transition-all hover:border-blue-300">
+                                    <div className="p-3 flex gap-2 items-center bg-slate-50 border-b border-slate-100 cursor-pointer" onClick={() => toggleExpand(item.tempId)}>
+                                        <div className={`p-1 rounded transition-colors ${expandedItems[item.tempId] ? 'bg-blue-100 text-blue-600' : 'text-slate-400'}`}>
+                                            <Icon name={expandedItems[item.tempId] ? "ChevronUp" : "ChevronDown"} size={16}/>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="font-bold text-slate-700 truncate">{item.payee}</div>
+                                            <div className="text-xs text-slate-500">{item.date} • ${item.amount}</div>
+                                        </div>
+                                        <div className={`text-xs px-2 py-1 rounded font-bold ${item.uiType === 'income' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                            {item.uiType === 'income' ? '收入' : '支出'}
+                                        </div>
+                                        <button onClick={(e) => { e.stopPropagation(); removePreview(item.tempId); }} className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"><Icon name="Trash2" size={16}/></button>
                                     </div>
+                                    
                                     {expandedItems[item.tempId] && (
-                                        <div className="p-3 space-y-2 text-sm">
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <input value={item.payee} onChange={e => updatePreview(item.tempId, 'payee', e.target.value)} className="border rounded p-1 bg-white" placeholder="摘要"/>
-                                                <input value={item.amount} type="number" onChange={e => updatePreview(item.tempId, 'amount', e.target.value)} className="border rounded p-1 bg-white font-bold"/>
+                                        <div className="p-4 bg-white grid grid-cols-2 gap-3 animate-fade-in text-sm">
+                                            <div className="col-span-2">
+                                                <label className="text-xs text-slate-400 block mb-1">摘要</label>
+                                                <input value={item.payee} onChange={e => updatePreview(item.tempId, 'payee', e.target.value)} className="w-full border border-slate-200 rounded-lg p-2 focus:border-blue-500 outline-none" />
                                             </div>
-                                            <div className="grid grid-cols-2 gap-2">
-                                                 <select value={item.categoryId} onChange={e => updatePreview(item.tempId, 'categoryId', e.target.value)} className="border rounded p-1 bg-white">{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
-                                                 <select value={item.subCategoryId} onChange={e => updatePreview(item.tempId, 'subCategoryId', e.target.value)} className="border rounded p-1 bg-white">{categories.find(c => c.id === item.categoryId)?.subs.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select>
+                                            <div>
+                                                <label className="text-xs text-slate-400 block mb-1">日期</label>
+                                                <input type="date" value={item.date} onChange={e => updatePreview(item.tempId, 'date', e.target.value)} className="w-full border border-slate-200 rounded-lg p-2" />
+                                            </div>
+                                            <div>
+                                                <label className="text-xs text-slate-400 block mb-1">金額</label>
+                                                <input type="number" value={item.amount} onChange={e => updatePreview(item.tempId, 'amount', e.target.value)} className="w-full border border-slate-200 rounded-lg p-2 font-bold" />
+                                            </div>
+                                            <div>
+                                                <label className="text-xs text-slate-400 block mb-1">類型</label>
+                                                <select value={item.uiType || 'expense'} onChange={e => updatePreview(item.tempId, 'uiType', e.target.value)} className="w-full border border-slate-200 rounded-lg p-2 bg-white">
+                                                    <option value="expense">支出</option>
+                                                    <option value="income">收入</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="text-xs text-slate-400 block mb-1">分類</label>
+                                                <select value={item.categoryId} onChange={e => {
+                                                    const newCat = categories.find(c => c.id === e.target.value);
+                                                    updatePreview(item.tempId, 'categoryId', e.target.value);
+                                                    if(newCat) updatePreview(item.tempId, 'subCategoryId', newCat.subs[0].id);
+                                                }} className="w-full border border-slate-200 rounded-lg p-2 bg-white">
+                                                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="text-xs text-slate-400 block mb-1">子分類</label>
+                                                <select value={item.subCategoryId} onChange={e => updatePreview(item.tempId, 'subCategoryId', e.target.value)} className="w-full border border-slate-200 rounded-lg p-2 bg-white">
+                                                    {categories.find(c => c.id === item.categoryId)?.subs.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                                </select>
                                             </div>
                                         </div>
                                     )}
                                 </div>
                             ))}
                         </div>
-                        <button onClick={confirmImport} className="w-full py-3 bg-gray-900 text-white rounded-xl font-bold">確認匯入</button>
+                        <button onClick={confirmImport} className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold shadow-lg hover:bg-black active:scale-95 transition-all flex items-center justify-center gap-2 mt-2">
+                            <Icon name="Check" size={20}/> 確認匯入 {previews.length} 筆
+                        </button>
                     </div>
                  );
             }
 
             return (
                 <div className="space-y-4">
-                    <textarea value={text} onChange={e => setText(e.target.value)} placeholder="請貼上信用卡或網銀明細 (例如: 2025/12/04 7-11 100元)..." className="w-full h-48 p-4 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-blue-500 resize-none font-mono text-sm leading-relaxed"/>
-                    <button onClick={analyzeText} disabled={!text || isAnalyzing} className="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-indigo-200">{isAnalyzing ? <span className="animate-pulse">AI 分析中...</span> : <><Icon name="Sparkles" size={18}/> 開始分析</>}</button>
+                    <textarea value={text} onChange={e => setText(e.target.value)} placeholder={`請貼上信用卡或網銀明細...\n\n支援格式：\n2025/12/09 網銀轉帳 1,158\n2025/12/10 薪資 50,000`} className="w-full h-64 p-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300 focus:border-blue-500 focus:ring-0 resize-none font-mono text-sm leading-relaxed outline-none transition-all"/>
+                    <button onClick={analyzeText} disabled={!text || isAnalyzing} className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-blue-200 hover:shadow-blue-300 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                        {isAnalyzing ? <><Icon name="RefreshCw" className="animate-spin"/> AI 分析中...</> : <><Icon name="Sparkles"/> 開始智慧分析</>}
+                    </button>
                 </div>
             );
         };
@@ -626,7 +696,7 @@
             const [transactions, setTransactions] = useState(() => JSON.parse(localStorage.getItem('fp_transactions')) || []);
             const [stockTxs, setStockTxs] = useState(() => JSON.parse(localStorage.getItem('fp_stock_txs')) || []);
             const [people, setPeople] = useState(() => JSON.parse(localStorage.getItem('fp_people')) || DEFAULT_PEOPLE);
-            const [ghConfig, setGhConfig] = useState(() => JSON.parse(localStorage.getItem('fp_gh_config')) || { token: '', repo: '', path: 'wealth_freedom_v26.json' });
+            const [ghConfig, setGhConfig] = useState(() => JSON.parse(localStorage.getItem('fp_gh_config')) || { token: '', repo: '', path: 'wealth_freedom_v30.json' });
             
             const [toast, setToast] = useState(null);
             const [isTxModalOpen, setIsTxModalOpen] = useState(false);
@@ -635,14 +705,6 @@
             const [editingStockTx, setEditingStockTx] = useState(null);
             const [syncStatus, setSyncStatus] = useState('idle'); 
             const [collapsed, setCollapsed] = useState(false);
-
-            const dataRef = useRef({ accounts, categories, transactions, stockTxs, userList, people });
-            
-            const [lastUpdated, setLastUpdated] = useState(() => Number(localStorage.getItem('fp_last_updated')) || Date.now());
-
-            useEffect(() => { 
-                dataRef.current = { accounts, categories, transactions, stockTxs, userList, people, lastUpdated }; 
-            }, [accounts, categories, transactions, stockTxs, userList, people, lastUpdated]);
 
             // Persistence
             useEffect(() => {
@@ -653,99 +715,24 @@
                 localStorage.setItem('fp_stock_txs', JSON.stringify(stockTxs));
                 localStorage.setItem('fp_people', JSON.stringify(people));
                 localStorage.setItem('fp_gh_config', JSON.stringify(ghConfig));
-                localStorage.setItem('fp_last_updated', lastUpdated);
-            }, [userList, accounts, categories, transactions, stockTxs, people, ghConfig, lastUpdated]);
+            }, [userList, accounts, categories, transactions, stockTxs, people, ghConfig]);
 
             const showToast = (msg, type = 'success') => setToast({ message: msg, type });
 
-            // 智慧同步邏輯
+            // Disabled Sync Logic
             const githubSync = async (mode, silent = false) => {
-                const token = getGithubToken();
-                if (!token) return;
-                
-                setSyncStatus('loading');
-                if(!silent && mode === 'pull') showToast('正在檢查雲端資料...', 'loading');
-                
-                try {
-                    const url = `https://api.github.com/repos/${ENCRYPTED_CONFIG.REPO}/contents/${ENCRYPTED_CONFIG.PATH}`;
-                    
-                    const res = await fetch(url, { headers: { Authorization: `token ${token}` } });
-                    
-                    if (res.ok) {
-                        const data = await res.json();
-                        const cloudData = JSON.parse(b64_to_utf8(data.content));
-                        const cloudTime = cloudData.lastUpdated || 0;
-                        const localTime = lastUpdated;
-
-                        if (mode === 'pull') {
-                            if (cloudTime > localTime) {
-                                if(cloudData.accounts) setAccounts(cloudData.accounts);
-                                if(cloudData.categories) setCategories(cloudData.categories);
-                                if(cloudData.transactions) setTransactions(cloudData.transactions);
-                                if(cloudData.stockTxs) setStockTxs(cloudData.stockTxs);
-                                if(cloudData.userList) {
-                                    setUserList(cloudData.userList);
-                                    if(selectedUser) {
-                                        const updatedUser = cloudData.userList.find(u => u.id === selectedUser.id);
-                                        if(updatedUser) setSelectedUser(updatedUser);
-                                    }
-                                }
-                                if(cloudData.people) setPeople(cloudData.people);
-                                setLastUpdated(cloudTime);
-                                setSyncStatus('success');
-                                showToast('已下載最新雲端資料', 'success');
-                            } else if (localTime > cloudTime) {
-                                setSyncStatus('success');
-                                if(!silent) showToast('本地資料較新，將自動上傳', 'success');
-                                await performPush(url, token, data.sha);
-                            } else {
-                                setSyncStatus('success');
-                                if(!silent) showToast('資料已是最新', 'success');
-                            }
-                        } else if (mode === 'push') {
-                            await performPush(url, token, data.sha);
-                        }
-                    } else if (res.status === 404 && mode === 'push') {
-                        await performPush(url, token, null);
-                    }
-                } catch (e) { 
-                    setSyncStatus('error'); 
-                    if (!silent) showToast('同步失敗，請檢查網路', 'error'); 
-                }
-                setTimeout(() => setSyncStatus('idle'), 3000);
+                 // Placeholder: Disabled for now
             };
 
-            const performPush = async (url, token, sha) => {
-                const content = utf8_to_b64(JSON.stringify(dataRef.current));
-                await fetch(url, { 
-                    method: 'PUT', 
-                    headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ message: `Auto-Sync ${new Date().toLocaleString()}`, content, ...(sha ? { sha } : {}) }) 
-                });
-                setSyncStatus('success');
-            };
-
-            const withAutoSync = (fn) => (...args) => { 
-                fn(...args); 
-                setLastUpdated(Date.now()); 
-                setTimeout(() => githubSync('push', true), 1000); 
-            };
-
-            useEffect(() => { githubSync('pull', true); }, []);
+            const withAutoSync = (fn) => (...args) => { fn(...args); };
 
             const handleCreateUser = (name) => {
                 const newUser = { id: generateId(), name };
-                setUserList(prev => {
-                    const newList = [...prev, newUser];
-                    dataRef.current.userList = newList; 
-                    return newList;
-                });
+                setUserList(prev => [...prev, newUser]);
                 setSelectedUser(newUser);
                 const newAccs = DEFAULT_ACCOUNTS.map(a => ({...a, id: generateId(), userId: newUser.id}));
                 setAccounts(prev => [...prev, ...newAccs]);
                 showToast(`已建立並切換至 ${name}`);
-                setLastUpdated(Date.now());
-                setTimeout(() => githubSync('push', true), 800);
             };
 
             const handleRenameUser = (newName) => {
@@ -753,8 +740,6 @@
                 setUserList(prev => prev.map(u => u.id === selectedUser.id ? updatedUser : u));
                 setSelectedUser(updatedUser);
                 showToast(`已更名為 ${newName}`);
-                setLastUpdated(Date.now());
-                setTimeout(() => githubSync('push', true), 500);
             };
 
             const currentAccounts = useMemo(() => accounts.filter(a => (a.userId || 'u_default') === selectedUser?.id), [accounts, selectedUser]);
@@ -823,14 +808,14 @@
                     <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} collapsed={collapsed} setCollapsed={setCollapsed} currentUser={selectedUser} userList={userList} viewState={viewState} setViewState={setViewState} syncStatus={syncStatus} onSelectUser={(u) => { setSelectedUser(u); showToast(`已切換至 ${u.name}`); githubSync('pull', true); }} onCreateUser={handleCreateUser} onRenameUser={handleRenameUser} />
                     <div className="flex-1 p-6 md:p-10 max-w-4xl mx-auto w-full relative overflow-y-auto">
                         <div className="hidden md:flex fixed right-6 top-6 z-50 gap-2">
-                            <button onClick={() => githubSync('pull')} className={`p-3 rounded-full shadow-xl border border-gray-100 hover:scale-110 transition-all ${syncStatus === 'loading' ? 'text-blue-500 bg-blue-50' : syncStatus === 'success' ? 'text-green-500 bg-green-50' : syncStatus === 'error' ? 'text-red-500 bg-red-50' : 'text-gray-600 bg-white'}`} title="從雲端同步"><Icon name="Cloud" className={syncStatus === 'loading' ? 'animate-bounce' : ''}/></button>
+                            <button disabled className="p-3 rounded-full shadow-xl border border-gray-100 opacity-50 cursor-not-allowed text-gray-400 bg-white"><Icon name="Cloud" /></button>
                         </div>
                         {viewState === 'accounting' ? (
                             <>
                                 {activeTab === 'dashboard' && <DashboardView accounts={currentAccounts} transactions={currentTransactions} onEditTx={setEditingTx} setIsTxModalOpen={setIsTxModalOpen} setIsSmartModalOpen={()=>{setIsSmartModalOpen(true)}} setActiveTab={setActiveTab} setSettingsTab={setSettingsTab} />}
                                 {activeTab === 'history' && <HistoryView transactions={currentTransactions} categories={categories} accounts={currentAccounts} onDeleteTx={handleDeleteTx} onEditTx={(t)=>{setEditingTx(t); setIsTxModalOpen(true);}} />}
                                 {activeTab === 'analysis' && <AnalysisView transactions={currentTransactions} categories={categories} />}
-                                {activeTab === 'settings' && <SettingsPage accounts={currentAccounts} setAccounts={setAccounts} categories={categories} setCategories={setCategories} people={people} setPeople={setPeople} backup={()=>githubSync('push')} restore={()=>githubSync('pull')} settingsTab={settingsTab} setSettingsTab={setSettingsTab} />}
+                                {activeTab === 'settings' && <SettingsPage accounts={currentAccounts} setAccounts={setAccounts} categories={categories} setCategories={setCategories} people={people} setPeople={setPeople} backup={()=>{}} restore={()=>{}} settingsTab={settingsTab} setSettingsTab={setSettingsTab} />}
                             </>
                         ) : (
                             <>
