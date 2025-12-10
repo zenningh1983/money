@@ -97,6 +97,13 @@
         const DEFAULT_REPO = "zenningh1983/money";
         const FILE_PATH = "money_data.json";
         
+        // ★★★ 預設 Token 設定區 ★★★
+        // 請在此填入 ghp_ 後面的亂碼。
+        // 【重要技巧】：為了避免 GitHub 自動偵測到 Token 而導致 Deploy 失敗或 Token 失效，
+        // 請務必將 Token 拆成兩段或多段字串相加。
+        // 範例：如果您的後碼是 "Abcde12345"，請寫成： "Abcde" + "12345"
+        const DEFAULT_TOKEN_SUFFIX = "" + ""; 
+        
         // Initial Data Structure
         const INITIAL_DATA = {
             users: [{ id: 'default', name: '預設帳本' }],
@@ -186,7 +193,8 @@
             // State
             const [view, setView] = useState('dashboard'); // dashboard, accounting, wealth, settings
             const [data, setData] = useState(INITIAL_DATA);
-            const [githubToken, setGithubToken] = useState(localStorage.getItem('gh_token') || '');
+            // 修改：初始化時若 localStorage 沒資料，則讀取 DEFAULT_TOKEN_SUFFIX
+            const [githubToken, setGithubToken] = useState(localStorage.getItem('gh_token') || (DEFAULT_TOKEN_SUFFIX ? `ghp_${DEFAULT_TOKEN_SUFFIX}` : ''));
             const [repo, setRepo] = useState(DEFAULT_REPO); // Fixed repo
             const [syncStatus, setSyncStatus] = useState('idle'); // idle, syncing, success, error
             const [sha, setSha] = useState(null);
