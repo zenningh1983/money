@@ -207,7 +207,12 @@
 
             // Initialize Lucide Icons
             useEffect(() => {
-                if (window.lucide) window.lucide.createIcons();
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                    // Fix: Add a small delay to ensure DOM is ready after view transitions
+                    // This fixes the issue where icons (like the eye) disappear when navigating back
+                    setTimeout(() => window.lucide.createIcons(), 50);
+                }
             }, [view, toast, inputModal.show, showAssets, selectedAccount, syncStatus]);
 
             // --- GitHub Sync Logic ---
