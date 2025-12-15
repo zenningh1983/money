@@ -45,10 +45,14 @@ const ExtraFieldsInput = ({ type, toAccountId, targetName, userAccounts, selecte
     return null;
 };
 
-const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, flatCategories, isWithOthersMode }) => {
+const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, flatCategories, isWithOthersMode, categoryGroups }) => {
     const totalAmount = parseFloat(amount) || 0;
     const safeSplits = Array.isArray(splits) ? splits : [];
     
+    // State for modal category selection
+    const [selectingCategoryIdx, setSelectingCategoryIdx] = useState(null);
+    const [selectedGroup, setSelectedGroup] = useState('food'); // Default group for selector
+
     // Auto-init "Me" row only if splits are completely empty and amount is set
     useEffect(() => {
         if (safeSplits.length === 0 && totalAmount > 0) {
@@ -157,58 +161,104 @@ const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, fla
                 </span>
             </div>
             <div className="space-y-2">
-                {safeSplits.map((s, idx) => (
-                    <div key={idx} className="flex flex-col gap-1 p-2 bg-white rounded border border-muji-border shadow-sm">
-                        <div className="flex gap-2">
-                            <select 
-                                className="w-1/3 p-1.5 bg-muji-bg rounded border border-muji-border text-xs text-muji-text font-bold" 
-                                value={s.owner === 'me' ? 'me' : s.name} 
-                                onChange={e => updateSplit(idx, 'owner', e.target.value)}
-                            >
-                                <option value="me">我</option>
-                                <optgroup label="分帳對象">
-                                    {debtTargets.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
-                                </optgroup>
-                                <option value="__add_new__">+ 新增對象...</option>
-                            </select>
-                            <select 
-                                className="flex-1 p-1.5 bg-muji-bg rounded border border-muji-border text-xs text-muji-text" 
-                                value={s.categoryId} 
-                                onChange={e => updateSplit(idx, 'categoryId', e.target.value)}
-                            >
-                                 {Object.entries(flatCategories).filter(([_, cat]) => cat.type === 'expense').map(([id, cat]) => (
-                                     <option key={id} value={id}>{cat.group} - {cat.name}</option>
-                                 ))}
-                            </select>
-                        </div>
-                        <div className="flex gap-2 items-center">
-                            <div className="relative w-20">
-                                <input 
-                                    type="number" 
-                                    className="w-full p-1.5 pl-1 pr-4 bg-white rounded border border-muji-border text-xs text-center text-muji-text font-mono" 
-                                    placeholder="%" 
-                                    value={s.percent || ''} 
-                                    onChange={e => updateSplit(idx, 'percent', e.target.value)} 
-                                />
-                                <span className="absolute right-1.5 top-1.5 text-xs text-muji-muted">%</span>
+                {safeSplits.map((s, idx) => {
+                    const cat = flatCategories[s.categoryId] || {};
+                    return (
+                        <div key={idx} className="flex flex-col gap-1 p-2 bg-white rounded border border-muji-border shadow-sm">
+                            <div className="flex gap-2">
+                                <select 
+                                    className="w-1/3 p-1.5 bg-muji-bg rounded border border-muji-border text-xs text-muji-text font-bold" 
+                                    value={s.owner === 'me' ? 'me' : s.name} 
+                                    onChange={e => updateSplit(idx, 'owner', e.target.value)}
+                                >
+                                    <option value="me">我</option>
+                                    <optgroup label="分帳對象">
+                                        {debtTargets.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
+                                    </optgroup>
+                                    <option value="__add_new__">+ 新增對象...</option>
+                                </select>
+                                
+                                {/* Trigger Category Selector */}
+                                <button 
+                                    className="flex-1 p-1.5 bg-muji-bg rounded border border-muji-border text-xs text-muji-text flex items-center justify-between"
+                                    onClick={() => {
+                                        setSelectingCategoryIdx(idx);
+                                        // Set initial group
+                                        if (cat.group) {
+                                            let foundGroupId = 'food';
+                                            for(let type in categoryGroups) {
+                                                for(let g of categoryGroups[type]) {
+                                                    if(g.label === cat.group) {
+                                                        foundGroupId = g.id;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                            setSelectedGroup(foundGroupId);
+                                        }
+                                    }}
+                                >
+                                    <span className="flex items-center gap-1">
+                                        {cat.icon && <i data-lucide={cat.icon} className="w-3 h-3"></i>}
+                                        {cat.name || '選擇分類'}
+                                    </span>
+                                    <i data-lucide="chevron-down" className="w-3 h-3 text-muji-muted"></i>
+                                </button>
                             </div>
-                            <span className="text-muji-muted text-xs">or</span>
-                            <div className="relative flex-1">
-                                <span className="absolute left-2 top-1.5 text-xs text-muji-muted">$</span>
-                                <input 
-                                    type="number" 
-                                    className="w-full p-1.5 pl-4 bg-white rounded border border-muji-border text-xs text-muji-text font-mono font-bold" 
-                                    placeholder="金額" 
-                                    value={s.amount} 
-                                    onChange={e => updateSplit(idx, 'amount', e.target.value)} 
-                                />
+                            <div className="flex gap-2 items-center">
+                                <div className="relative w-20">
+                                    <input 
+                                        type="number" 
+                                        className="w-full p-1.5 pl-1 pr-4 bg-white rounded border border-muji-border text-xs text-center text-muji-text font-mono" 
+                                        placeholder="%" 
+                                        value={s.percent || ''} 
+                                        onChange={e => updateSplit(idx, 'percent', e.target.value)} 
+                                    />
+                                    <span className="absolute right-1.5 top-1.5 text-xs text-muji-muted">%</span>
+                                </div>
+                                <span className="text-muji-muted text-xs">or</span>
+                                <div className="relative flex-1">
+                                    <span className="absolute left-2 top-1.5 text-xs text-muji-muted">$</span>
+                                    <input 
+                                        type="number" 
+                                        className="w-full p-1.5 pl-4 bg-white rounded border border-muji-border text-xs text-muji-text font-mono font-bold" 
+                                        placeholder="金額" 
+                                        value={s.amount} 
+                                        onChange={e => updateSplit(idx, 'amount', e.target.value)} 
+                                    />
+                                </div>
+                                <button onClick={() => removeSplit(idx)} className="p-1.5 text-muji-muted hover:text-muji-red hover:bg-muji-bg rounded transition-colors"><i data-lucide="trash-2" className="w-4 h-4"></i></button>
                             </div>
-                            <button onClick={() => removeSplit(idx)} className="p-1.5 text-muji-muted hover:text-muji-red hover:bg-muji-bg rounded transition-colors"><i data-lucide="trash-2" className="w-4 h-4"></i></button>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
             <button onClick={addSplit} className="w-full py-2 border border-dashed border-muji-accent text-muji-accent text-xs rounded hover:bg-white transition-colors flex items-center justify-center gap-1 mt-3"><i data-lucide="plus" className="w-3 h-3"></i> 新增明細 (分帳/多類別)</button>
+
+            {/* Category Selection Modal */}
+            {selectingCategoryIdx !== null && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-pop" onClick={() => setSelectingCategoryIdx(null)}>
+                    <div className="bg-muji-card w-full max-w-sm rounded-xl shadow-2xl overflow-hidden border border-muji-border flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
+                        <div className="p-4 border-b border-muji-border flex justify-between items-center bg-muji-bg">
+                            <h3 className="font-bold text-lg text-muji-text">選擇分類</h3>
+                            <button onClick={() => setSelectingCategoryIdx(null)} className="p-2 hover:bg-black/5 rounded-full"><i data-lucide="x" className="w-5 h-5 text-muji-muted"></i></button>
+                        </div>
+                        <div className="p-4 overflow-y-auto custom-scrollbar">
+                            <CategorySelector 
+                                type="expense" // Split is usually for expense
+                                categoryGroups={categoryGroups}
+                                selectedGroup={selectedGroup}
+                                setSelectedGroup={setSelectedGroup}
+                                onSelectCategory={(catId) => {
+                                    updateSplit(selectingCategoryIdx, 'categoryId', catId);
+                                    setSelectingCategoryIdx(null);
+                                }}
+                                currentCategory={safeSplits[selectingCategoryIdx]?.categoryId}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -380,25 +430,30 @@ window.TransactionModal = ({ onClose, isEditMode, newTx, setNewTx, isSplitMode, 
             <div className="space-y-4">
                 <div className="flex justify-between items-center overflow-x-auto no-scrollbar pb-2">
                     <div className="flex bg-muji-bg rounded-lg p-1">
-                        {Object.entries(window.TX_TYPES).map(([k, v]) => (
-                            <button 
-                                key={k} 
-                                disabled={isSplitMode && k !== 'expense'} 
-                                className={`px-3 py-1.5 rounded text-xs font-bold transition whitespace-nowrap ${newTx.type === k ? 'bg-muji-card shadow-sm text-muji-accent border border-muji-border' : 'text-muji-muted'} ${isSplitMode && k !== 'expense' ? 'opacity-50 cursor-not-allowed' : ''}`} 
-                                onClick={() => { 
-                                    let defCat = 'food_三餐'; 
-                                    let defGroup = 'food'; 
-                                    if(k === 'income') { defCat = 'active_薪資'; defGroup = 'active'; }
-                                    setNewTx({...newTx, type: k, categoryId: defCat}); 
-                                    setSelectedGroup(defGroup); 
-                                }}
-                            >
-                                {v.label}
-                            </button>
-                        ))}
+                        {Object.entries(window.TX_TYPES).map(([k, v]) => {
+                            // If Quick Add Mode, only show Expense
+                            if (newTx.isQuickAdd && k !== 'expense') return null;
+                            
+                            return (
+                                <button 
+                                    key={k} 
+                                    disabled={isSplitMode && k !== 'expense'} 
+                                    className={`px-3 py-1.5 rounded text-xs font-bold transition whitespace-nowrap ${newTx.type === k ? 'bg-muji-card shadow-sm text-muji-accent border border-muji-border' : 'text-muji-muted'} ${isSplitMode && k !== 'expense' ? 'opacity-50 cursor-not-allowed' : ''}`} 
+                                    onClick={() => { 
+                                        let defCat = 'food_三餐'; 
+                                        let defGroup = 'food'; 
+                                        if(k === 'income') { defCat = 'active_薪資'; defGroup = 'active'; }
+                                        setNewTx({...newTx, type: k, categoryId: defCat}); 
+                                        setSelectedGroup(defGroup); 
+                                    }}
+                                >
+                                    {v.label}
+                                </button>
+                            );
+                        })}
                     </div>
                     
-                    {newTx.type === 'expense' && (
+                    {newTx.type === 'expense' && !newTx.isQuickAdd && (
                         <div className="flex items-center gap-2 ml-2">
                             <span className="text-xs text-muji-text font-bold whitespace-nowrap">拆帳/代墊</span>
                             <button onClick={toggleSplitMode} className={`w-8 h-5 rounded-full p-0.5 transition-colors flex-shrink-0 ${isSplitMode ? 'bg-muji-accent' : 'bg-muji-border'}`}>
@@ -425,6 +480,7 @@ window.TransactionModal = ({ onClose, isEditMode, newTx, setNewTx, isSplitMode, 
                         flatCategories={flatCategories}
                         isWithOthersMode={true} 
                         onAddTarget={handleAddTarget}
+                        categoryGroups={categoryGroups} // Pass categoryGroups
                     />
                 ) : (
                     <>
@@ -453,6 +509,12 @@ window.TransactionModal = ({ onClose, isEditMode, newTx, setNewTx, isSplitMode, 
                     <input type="date" className="flex-1 p-3 bg-muji-card rounded-lg text-muji-text border border-muji-border" value={newTx.date} onChange={e => setNewTx({...newTx, date: e.target.value})} />
                     <input type="text" className="flex-[2] p-3 bg-muji-card rounded-lg text-muji-text border border-muji-border" placeholder="備註" value={newTx.note} onChange={e => setNewTx({...newTx, note: e.target.value})} />
                 </div>
+                
+                {newTx.isQuickAdd && (
+                    <div className="text-xs text-muji-muted text-center mt-1">
+                        (快速記帳模式：已鎖定為現金支出)
+                    </div>
+                )}
 
                 <div className="flex gap-3 pt-2">
                     {isEditMode && <button onClick={handleDeleteTransaction} className="flex-1 py-3 bg-muji-red/10 text-muji-red rounded-lg font-bold border border-muji-red/30">刪除</button>}
@@ -639,7 +701,7 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                 if (!note) note = "一般消費";
 
                 parsed.push({
-                    id: Date.now() + Math.random(),
+                    id: '', // Placeholder, will be assigned later
                     date: dateStr,
                     amount: amount,
                     note: note,
@@ -669,6 +731,13 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
         }
         if (currentBlock.length > 0) processMixedBlock(currentBlock);
         
+        // Re-assign IDs to preserve order when sorted by ID descending
+        // parsed[0] (Top of text) should have the LARGEST ID (Newest)
+        const baseTime = Date.now();
+        parsed.forEach((p, i) => {
+            p.id = (baseTime + (parsed.length - i)).toString();
+        });
+
         setPreviewData(parsed);
     };
 
@@ -724,7 +793,25 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
         setShowAdd(true); 
     };
 
-    const getFilteredTransactions = () => { const y = currentDate.getFullYear(); const m = currentDate.getMonth(); return data.transactions.filter(t => { const d = new Date(t.date); const isRelated = t.accountId === selectedAccount || t.toAccountId === selectedAccount; return d.getFullYear() === y && d.getMonth() === m && isRelated; }).sort((a, b) => new Date(b.date) - new Date(a.date)); };
+    const getFilteredTransactions = () => { 
+        const y = currentDate.getFullYear(); 
+        const m = currentDate.getMonth(); 
+        return data.transactions.filter(t => { 
+            const d = new Date(t.date); 
+            const isRelated = t.accountId === selectedAccount || t.toAccountId === selectedAccount; 
+            return d.getFullYear() === y && d.getMonth() === m && isRelated; 
+        }).sort((a, b) => {
+            // Sort by Date Descending
+            const dateDiff = new Date(b.date) - new Date(a.date);
+            if (dateDiff !== 0) return dateDiff;
+            // Secondary Sort by ID Descending (Newer created first)
+            // Since IDs are strings, we compare them as strings. 
+            // Note: Date.now() strings compare correctly.
+            if (b.id < a.id) return -1;
+            if (b.id > a.id) return 1;
+            return 0;
+        }); 
+    };
 
     if (selectedAccount) {
         const filteredTxs = getFilteredTransactions();
@@ -735,7 +822,11 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                     <div className="text-center text-lg font-bold text-muji-text mb-4">{currentAccount?.name}</div>
                     <div className="flex justify-between items-center relative">
                         <button onClick={() => { resetForm(); setShowAdd(true); }} className="text-xs bg-muji-accent text-white px-3 py-2 rounded-lg font-bold shadow-sm hover:opacity-90 flex items-center gap-1"><i data-lucide="plus" className="w-4 h-4"></i> 記一筆</button>
-                        <div className="flex items-center justify-center gap-2 bg-white border border-muji-border rounded-lg p-1 max-w-xs mx-auto absolute left-1/2 transform -translate-x-1/2"><button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))} className="p-1 hover:bg-muji-bg rounded"><i data-lucide="chevron-left" className="w-4 h-4"></i></button><div className="font-bold text-muji-text font-serif cursor-pointer w-24 text-center text-sm" onClick={() => setShowDatePicker(true)}>{currentDate.getFullYear()} / {currentDate.getMonth() + 1}</div><button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))} className="p-1 hover:bg-muji-bg rounded"><i data-lucide="chevron-right" className="w-4 h-4"></i></button></div>
+                        <div className="flex items-center justify-center gap-2 bg-white border border-muji-border rounded-lg p-1 max-w-xs mx-auto absolute left-1/2 transform -translate-x-1/2">
+                            <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))} className="p-1 hover:bg-muji-bg rounded"><i data-lucide="chevron-left" className="w-4 h-4"></i></button>
+                            <div className="font-bold text-muji-text font-serif cursor-pointer w-24 text-center text-sm" onClick={() => setShowDatePicker(true)}>{currentDate.getFullYear()} / {currentDate.getMonth() + 1}</div>
+                            <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))} className="p-1 hover:bg-muji-bg rounded"><i data-lucide="chevron-right" className="w-4 h-4"></i></button>
+                        </div>
                         <button onClick={() => { setImportText(''); setPreviewData([]); setShowImport(true); }} className="text-xs bg-muji-accent text-white px-3 py-2 rounded-lg font-bold shadow-sm hover:opacity-90 flex items-center gap-1"><i data-lucide="sparkles" className="w-4 h-4"></i> AI 記帳</button>
                     </div>
                 </div>
@@ -760,20 +851,55 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
 
                         return (<tr key={tx.id} onClick={() => openEdit(tx)} className={`cursor-pointer ${isSplit ? 'bg-orange-50/50 hover:bg-orange-100/50' : 'hover:bg-muji-hover'}`}><td className="p-4 text-center font-mono">{tx.date}</td><td className={`p-4 text-center font-bold ${txType.color}`}>{txType.label}</td><td className="p-4 text-center flex justify-center items-center gap-2">{(tx.type==='expense'||tx.type==='income')&&<i data-lucide={cat.icon || 'circle'} className="w-4 h-4"></i>}{display}</td><td className={`p-4 text-right font-mono font-bold ${txType.color}`}>{tx.type==='income'||tx.type==='repay'?'+':'-'}${amountVal.toLocaleString()}<span className="text-xs text-muji-muted block">{splitInfo}</span></td><td className="p-4 text-left text-muji-muted truncate max-w-[150px]">{tx.note}</td></tr>) })}</tbody></table>
                 </div>
-                <button onClick={() => { resetForm(); setShowAdd(true); }} className="fixed bottom-24 md:bottom-10 right-6 md:right-10 w-14 h-14 bg-muji-accent text-white rounded-full shadow-lg flex items-center justify-center z-20"><i data-lucide="plus" className="w-8 h-8"></i></button>
-                {showDatePicker && <window.Modal title="選擇日期" onClose={() => setShowDatePicker(false)}><div className="grid grid-cols-4 gap-2 p-4">{Array.from({length: 12}, (_, i) => i).map(m => (<button key={m} onClick={() => { setCurrentDate(new Date(currentDate.getFullYear(), m, 1)); setShowDatePicker(false); }} className={`py-3 rounded-lg text-sm font-bold ${currentDate.getMonth() === m ? 'bg-muji-accent text-white' : 'bg-muji-bg text-muji-text'}`}>{m+1}月</button>))}</div></window.Modal>}
+                
+                {/* Removed fixed + button as requested */}
+
+                {/* Year-Month Picker Modal */}
+                {showDatePicker && (
+                    <window.Modal title="選擇日期" onClose={() => setShowDatePicker(false)}>
+                        <div className="p-4">
+                            <div className="flex justify-between items-center mb-4 px-2">
+                                <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear() - 1, currentDate.getMonth(), 1))} className="p-2 hover:bg-muji-bg rounded-full"><i data-lucide="chevron-left" className="w-5 h-5"></i></button>
+                                <span className="text-xl font-bold font-mono">{currentDate.getFullYear()}</span>
+                                <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), 1))} className="p-2 hover:bg-muji-bg rounded-full"><i data-lucide="chevron-right" className="w-5 h-5"></i></button>
+                            </div>
+                            <div className="grid grid-cols-4 gap-2">
+                                {Array.from({length: 12}, (_, i) => i).map(m => (
+                                    <button 
+                                        key={m} 
+                                        onClick={() => { setCurrentDate(new Date(currentDate.getFullYear(), m, 1)); setShowDatePicker(false); }} 
+                                        className={`py-3 rounded-lg text-sm font-bold transition-colors ${currentDate.getMonth() === m ? 'bg-muji-accent text-white shadow-md' : 'bg-muji-bg text-muji-text hover:bg-gray-200'}`}
+                                    >
+                                        {m+1}月
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </window.Modal>
+                )}
+
                 {showImport && <window.SmartImportModal onClose={() => setShowImport(false)} importText={importText} setImportText={setImportText} previewData={previewData} setPreviewData={setPreviewData} saveData={saveData} data={data} handleSmartImport={handleSmartImport} flatCategories={flatCategories} userAccounts={userAccounts} selectedAccount={selectedAccount} />}
                 {showAdd && <window.TransactionModal onClose={() => setShowAdd(false)} isEditMode={isEditMode} newTx={newTx} setNewTx={setNewTx} isSplitMode={isSplitMode} setIsSplitMode={setIsSplitMode} splitTotal={splitTotal} setSplitTotal={setSplitTotal} splits={splits} setSplits={setSplits} categoryGroups={categoryGroups} flatCategories={flatCategories} userAccounts={userAccounts} selectedAccount={selectedAccount} saveTransaction={saveTransaction} handleDeleteTransaction={handleDelete} data={data} saveData={saveData} />}
             </div>
         );
     }
     
-    // 如果沒有 selectedAccount，顯示帳戶列表（這是修復的關鍵）
+    // Account List View
     const accounts = getCurrentUserAccounts();
     const accountTypes = data.settings?.accountTypes || window.DEFAULT_ACCOUNT_TYPES;
     return (
-        <div className="p-6 md:p-10 animate-fade">
-             <div className="flex justify-between items-center mb-6"><h3 className="text-2xl font-bold text-muji-text">我的帳戶</h3><button onClick={() => setInputModal({ show: true, title: '新增帳戶', value: '', type: 'add_account' })} className="text-muji-accent hover:bg-muji-bg px-3 py-2 rounded-lg transition">+ 新增</button></div>
+        <div className="p-6 md:p-10 animate-fade relative min-h-full">
+             {/* Sticky Header for Account List */}
+             <div className="sticky top-0 z-10 bg-muji-bg flex justify-between items-center py-4 mb-6 -mt-6 -mx-6 px-6 md:-mt-10 md:-mx-10 md:px-10 border-b border-muji-border/50 backdrop-blur-sm bg-muji-bg/95">
+                <h3 className="text-2xl font-bold text-muji-text">我的帳戶</h3>
+                <button 
+                    onClick={() => setInputModal({ show: true, title: '新增帳戶', value: '', value2: '', type: 'add_account' })} 
+                    className="bg-muji-card border border-muji-border hover:border-muji-accent text-muji-text hover:text-muji-accent px-4 py-2 rounded-lg transition flex items-center gap-2 font-bold shadow-sm"
+                >
+                    <i data-lucide="plus" className="w-4 h-4"></i> 新增帳戶
+                </button>
+             </div>
+
             {Object.entries(accountTypes).map(([typeKey, typeConfig]) => {
                 const typeAccounts = accounts.filter(a => a.type === typeKey);
                 if (typeAccounts.length === 0) return null;
@@ -788,11 +914,16 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                                 return (
                                     <div key={acc.id} onClick={() => setSelectedAccount(acc.id)} className="bg-white p-4 rounded-xl border border-muji-border hover:border-muji-accent hover:shadow-md transition-all cursor-pointer relative group">
                                         <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 flex gap-2">
-                                            <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '修改', value: acc.name, type: 'rename_account', data: acc.id, extra: acc.type });}} className="p-1 hover:bg-muji-bg rounded">
+                                            {/* Calibrate Button */}
+                                            <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '餘額校正', value: '', value2: '', type: 'calibrate_account', data: acc.id, extra: bal });}} className="p-1 hover:bg-muji-bg rounded text-muji-muted hover:text-muji-accent">
+                                                <i data-lucide="sliders-horizontal" className="w-3 h-3"></i>
+                                            </button>
+                                            {/* Edit Button */}
+                                            <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '修改帳戶', value: acc.name, value2: acc.balance || 0, type: 'edit_account', data: acc.id, extra: acc.type });}} className="p-1 hover:bg-muji-bg rounded text-muji-muted hover:text-muji-accent">
                                                 <i data-lucide="pencil" className="w-3 h-3"></i>
                                             </button>
-                                            <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '刪除', value: '確認', type: 'delete_account', data: acc.id });}} className="p-1 hover:bg-muji-bg rounded">
-                                                <i data-lucide="trash-2" className="w-3 h-3 text-muji-red"></i>
+                                            <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '刪除', value: '確認', type: 'delete_account', data: acc.id });}} className="p-1 hover:bg-muji-bg rounded text-muji-muted hover:text-muji-red">
+                                                <i data-lucide="trash-2" className="w-3 h-3"></i>
                                             </button>
                                         </div>
                                         <div className="flex items-center gap-3 mb-2">

@@ -190,7 +190,6 @@ window.SettingsView = ({ data, githubToken, setGithubToken, repo, saveData, setI
                     </div>
                 ))}
                 <div className="flex gap-2 mt-4">
-                    {/* 修改：新增 Enter 鍵觸發 */}
                     <input 
                         className="flex-1 p-2 bg-muji-bg rounded border-none text-sm text-muji-text" 
                         placeholder="新增帳本名稱" 
@@ -205,7 +204,15 @@ window.SettingsView = ({ data, githubToken, setGithubToken, repo, saveData, setI
             {/* 3. 帳戶類型管理 */}
             <CollapsibleSection title="帳戶類型管理" isOpen={expandedSection === 'account_type'} onToggle={() => toggleSection('account_type')}>
                 <div className="flex flex-wrap gap-2 mb-4">
-                    {Object.entries(accountTypes).map(([key, conf]) => (<div key={key} className="flex items-center gap-2 px-3 py-2 bg-muji-bg rounded-lg text-sm"><i data-lucide={conf.icon} className="w-4 h-4"></i> {conf.label} {['cash', 'bank', 'credit', 'ticket'].indexOf(key) === -1 && <button onClick={() => handleDeleteAccountType(key)} className="text-muji-red ml-1">×</button>}</div>))}
+                    {Object.entries(accountTypes).map(([key, conf]) => (
+                        <div key={key} className="flex items-center gap-2 px-3 py-2 bg-muji-bg rounded-lg text-sm">
+                            <i data-lucide={conf.icon} className="w-4 h-4"></i> {conf.label} 
+                            {/* Updated: Prevent deleting all default types including stock and pay */}
+                            {['cash', 'bank', 'credit', 'ticket', 'stock', 'pay'].indexOf(key) === -1 && 
+                                <button onClick={() => handleDeleteAccountType(key)} className="text-muji-red ml-1">×</button>
+                            }
+                        </div>
+                    ))}
                 </div>
                 <div className="flex gap-2">
                     <input className="flex-1 p-2 bg-muji-bg rounded border-none text-sm text-muji-text" placeholder="輸入類型名稱" value={newAccountTypeLabel} onChange={e => setNewAccountTypeLabel(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddAccountType()} />

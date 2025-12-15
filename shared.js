@@ -5,11 +5,14 @@ window.DEFAULT_REPO = "zenningh1983/money";
 window.FILE_PATH = "money_data.json";
 window.DEFAULT_TOKEN_SUFFIX = "hfFz2uYiriKFcVZlrD3YU79KRTdBvf0yd7PA"; 
 
+// Updated Account Types with new order and additions
 window.DEFAULT_ACCOUNT_TYPES = {
     cash: { label: '現金', icon: 'banknote' }, 
     bank: { label: '銀行', icon: 'landmark' },
     credit: { label: '信用卡', icon: 'credit-card' },
-    ticket: { label: '電子票卡', icon: 'ticket' }
+    stock: { label: '證券戶', icon: 'trending-up' },  // New
+    pay: { label: '行動支付', icon: 'smartphone' },   // New
+    ticket: { label: '電子票券', icon: 'ticket' }
 };
 
 window.TX_TYPES = {

@@ -20,7 +20,14 @@ window.DebtView = ({ data, saveData, showToast, openEditTransaction }) => {
             const isDirectDebt = (t.type === 'advance' || t.type === 'repay') && t.targetName === targetName;
             const isSplitDebt = t.type === 'expense' && t.splits && t.splits.some(s => s.name === targetName);
             return isOwner && (isDirectDebt || isSplitDebt);
-        }).sort((a, b) => new Date(b.date) - new Date(a.date));
+        }).sort((a, b) => {
+            const dateDiff = new Date(b.date) - new Date(a.date);
+            if (dateDiff !== 0) return dateDiff;
+            // Sort by ID descending (Newest first)
+            if (b.id < a.id) return -1;
+            if (b.id > a.id) return 1;
+            return 0;
+        });
     };
 
     // Calculate total whenever selection changes
