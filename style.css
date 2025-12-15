@@ -1,0 +1,41 @@
+/* style.css */
+/* Tailwind 色彩變數基於 index.html 的 Tailwind config */
+
+body { 
+    background-color: #FAFAFA; /* muji-bg */
+    color: #171717; /* muji-text */
+    font-family: 'Inter', sans-serif; 
+    -webkit-tap-highlight-color: transparent; 
+}
+
+/* 捲軸美化 - 淺色版 */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D4D4D8; border-radius: 3px; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Sticky Table Header Support */
+.sticky-header th { 
+    position: sticky; 
+    top: 0; 
+    z-index: 10; 
+    background-color: #FFFFFF; /* muji-card */
+    box-shadow: 0 1px 0 #E5E5E5; 
+}
+
+/* Toast style override - 維持深色背景以對比淺色主題 */
+.toast-bg { 
+    background-color: rgba(23, 23, 23, 0.9) !important; 
+    backdrop-filter: blur(4px); 
+    color: white; 
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 輸入框樣式覆蓋 - 改為淺色模式 */
+input, select, textarea { color-scheme: light; }
+
+@keyframes popIn { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.animate-pop { animation: popIn 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.animate-fade { animation: fadeIn 0.3s ease-out forwards; }
