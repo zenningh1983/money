@@ -10,14 +10,14 @@ window.DEFAULT_ACCOUNT_TYPES = {
     cash: { label: '現金', icon: 'banknote' }, 
     bank: { label: '銀行', icon: 'landmark' },
     credit: { label: '信用卡', icon: 'credit-card' },
-    stock: { label: '證券戶', icon: 'trending-up' },  // New
-    pay: { label: '行動支付', icon: 'smartphone' },   // New
+    stock: { label: '證券戶', icon: 'trending-up' },  
+    pay: { label: '行動支付', icon: 'smartphone' },   
     ticket: { label: '電子票券', icon: 'ticket' }
 };
 
 window.TX_TYPES = {
-    expense: { label: '支出', color: 'text-muji-text', icon: 'minus' },
-    income: { label: '收入', color: 'text-muji-green', icon: 'plus' },
+    expense: { label: '支出', color: 'text-rose-500', icon: 'minus' }, // Red for expense
+    income: { label: '收入', color: 'text-emerald-500', icon: 'plus' }, // Green for income
     transfer: { label: '轉帳', color: 'text-muji-blue', icon: 'arrow-right-left' },
     repay: { label: '還款', color: 'text-teal-600', icon: 'undo-2' }
 };
@@ -81,7 +81,11 @@ window.KEYWORD_MAPPING = {
     'YOUTUBE': 'play_APP訂閱', 'PREMIUM': 'play_APP訂閱', 'GPT': 'play_APP訂閱', 'DISNEY': 'play_APP訂閱', 'NETFLIX': 'play_APP訂閱', 'SPOTIFY': 'play_APP訂閱',
     '轉帳': 'other_手續費', '手續費': 'other_手續費', '紅包': 'other_人情紅包',
     '薪資': 'active_薪資', '薪水': 'active_薪資', '獎金': 'active_獎金',
-    '股息': 'passive_股息', '利息': 'passive_利息'
+    '股息': 'passive_股息', '利息': 'passive_利息',
+    '收益分配': 'passive_股息', '基金配息': 'passive_股息', '配息': 'passive_股息',
+    '存款息': 'passive_利息',
+    '交割股款': 'invest_ETF',
+    '管理費': 'home_管理費'
 };
 
 window.QUOTES = [
@@ -131,16 +135,10 @@ window.calculateMonthlyStats = (data, date = new Date()) => {
     const income = txs.reduce((sum, t) => t.type === 'income' ? sum + (t.amount || 0) : sum, 0); 
     
     // 支出計算：只計算屬於「我」的部分 (總額 - 分給別人的部分)
-    // Updated: Only subtract splits where owner is NOT 'me'
     const expense = txs.reduce((sum, t) => {
         if (t.type === 'expense') {
-            const splitDebtTotal = (t.splits || []).reduce((acc, s) => {
-                if (s.owner !== 'me') {
-                    return acc + (parseFloat(s.amount) || 0);
-                }
-                return acc;
-            }, 0);
-            return sum + ((t.amount || 0) - splitDebtTotal);
+            const splitTotal = (t.splits || []).reduce((acc, s) => acc + (parseFloat(s.amount) || 0), 0);
+            return sum + ((t.amount || 0) - splitTotal);
         }
         return sum;
     }, 0);
@@ -151,6 +149,24 @@ window.autoTag = (note) => {
     if(!note) return 'other_其他';
     const lowerNote = note.toLowerCase();
     
+    // Priority 0: Passive Income (High Priority)
+    if (lowerNote.includes('收益分配') || lowerNote.includes('基金配息') || lowerNote.includes('配息') || lowerNote.includes('股息')) {
+        return 'passive_股息';
+    }
+    if (lowerNote.includes('存款息') || lowerNote.includes('利息')) { 
+        return 'passive_利息';
+    }
+    
+    // Priority 1: Investment Expenses (High Priority)
+    if (lowerNote.includes('交割股款')) {
+        return 'invest_ETF'; // Could also be 'invest_個股'
+    }
+    
+    // Priority 1.5: Home Expenses
+    if (lowerNote.includes('管理費')) {
+        return 'home_管理費';
+    }
+
     // Group 1: Food
     if (lowerNote.includes('qburger') || lowerNote.includes('統一') || lowerNote.includes('餐飲') || lowerNote.includes('食堂')) {
         return 'food_三餐';
@@ -174,19 +190,16 @@ window.getDebtSummary = (data, userId) => {
     userTxs.forEach(tx => {
         const amount = tx.amount || 0;
         
-        // 還款：對方還我錢，我的債權減少
         if (tx.type === 'repay' && tx.targetName) debts[tx.targetName] = (debts[tx.targetName] || 0) - amount;
         
-        // 支出分帳/代墊：我付錢，分給別人 -> 別人欠我錢 (增加債權)
         if (tx.type === 'expense' && tx.splits && Array.isArray(tx.splits)) {
             tx.splits.forEach(split => {
-                if (split.name && split.owner !== 'me') { // 檢查 split.name 確保是有效的對象
+                if (split.name && split.owner !== 'me') { 
                     const name = split.name;
                     debts[name] = (debts[name] || 0) + (parseFloat(split.amount) || 0);
                 }
             });
         }
-        // Legacy advance support (If needed, although Advance is discouraged now)
         if (tx.type === 'advance' && tx.targetName) debts[tx.targetName] = (debts[tx.targetName] || 0) + amount;
     });
     return debts;
@@ -206,14 +219,26 @@ window.Toast = ({ message, type, onClose }) => {
     return <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"><div className="px-6 py-3 rounded-xl shadow-2xl text-sm font-medium tracking-wide animate-pop toast-bg">{message}</div></div>;
 };
 
-window.Modal = ({ children, onClose, title }) => (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-pop cursor-pointer" onClick={onClose}>
-        <div className="bg-muji-card w-full max-w-md rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-muji-border cursor-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="p-4 border-b border-muji-border flex justify-between items-center bg-muji-bg">
-                <h3 className="font-bold text-lg text-muji-text">{title}</h3>
-                <button onClick={onClose} className="p-2 hover:bg-black/5 rounded-full transition-colors"><i data-lucide="x" className="w-5 h-5 text-muji-muted"></i></button>
+window.Modal = ({ children, onClose, title }) => {
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                if (onClose) onClose('esc');
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [onClose]);
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-pop cursor-pointer" onClick={() => onClose && onClose('backdrop')}>
+            <div className="bg-muji-card w-full max-w-md rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-muji-border cursor-auto" onClick={(e) => e.stopPropagation()}>
+                <div className="p-4 border-b border-muji-border flex justify-between items-center bg-muji-bg">
+                    <h3 className="font-bold text-lg text-muji-text">{title}</h3>
+                    <button onClick={() => onClose && onClose('close_btn')} className="p-2 hover:bg-black/5 rounded-full transition-colors"><i data-lucide="x" className="w-5 h-5 text-muji-muted"></i></button>
+                </div>
+                <div className="overflow-y-auto p-6 custom-scrollbar text-muji-text">{children}</div>
             </div>
-            <div className="overflow-y-auto p-6 custom-scrollbar text-muji-text">{children}</div>
         </div>
-    </div>
-);
+    );
+};

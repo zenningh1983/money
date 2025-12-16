@@ -30,15 +30,61 @@ const CategorySelector = ({ type, categoryGroups, selectedGroup, setSelectedGrou
     );
 };
 
-const ExtraFieldsInput = ({ type, toAccountId, targetName, userAccounts, selectedAccount, onChange, debtTargets, onAddTarget }) => {
+const ExtraFieldsInput = ({ type, accountId, toAccountId, targetName, userAccounts, selectedAccount, onChange, debtTargets, onAddTarget }) => {
     if (type === 'transfer') {
+        const handleSwap = () => {
+            // Swap values: accountId <-> toAccountId
+            // We need to call onChange twice or pass a batch update if parent supports it.
+            // Here assuming simple individual updates. 
+            // Note: This relies on parent state update speed or batching. 
+            // Better: Parent should provide a swap function or handle multiple updates.
+            // For now, let's trigger onChange for both, but we need the new values.
+            // React state updates might be async, so this is tricky without a swap handler from parent.
+            // WORKAROUND: We will assume the parent 'TransactionModal' passes a specific swap handler or we can just try updating one then the other (might flicker).
+            // Actually, best way is to add a `onSwapAccounts` prop, but let's try to update `newTx` state directly if we could access it.
+            // Since we only have `onChange`, we can't atomically swap easily.
+            // Let's implement a swap logic using a timeout or just accept that one update might trigger a re-render.
+            
+            // To properly fix this, I will add a `onSwap` prop to this component in the next update if needed.
+            // For now, let's try to pass an object to onChange if the parent supports it (it doesn't: onChange(key, value)).
+            
+            // Let's hack it: We can't easily swap with current props. 
+            // I will modify TransactionModal to pass a `setNewTx` or similar, but to keep it simple, I'll pass a custom `onSwap` prop from parent.
+            // Wait, I am editing the file, so I can add `onSwap` to props here and in `TransactionModal`.
+            if (onChange) {
+                onChange('swap_accounts', { from: accountId, to: toAccountId });
+            }
+        };
+
         return (
-            <div className="flex flex-col gap-1 mt-1 w-full">
-                <label className="text-xs text-muji-muted">轉入帳戶</label>
-                <select className="p-2 bg-muji-card rounded border border-muji-border text-sm w-full text-muji-text" value={toAccountId} onChange={e => onChange('toAccountId', e.target.value)}>
-                    <option value="">選擇帳戶</option>
-                    {userAccounts.filter(a => a.id !== selectedAccount).map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                </select>
+            <div className="flex gap-2 mt-1 w-full items-end">
+                <div className="flex-1 flex flex-col gap-1">
+                    <label className="text-xs text-muji-muted">轉出帳戶 (From)</label>
+                    <select 
+                        className="p-2 bg-muji-card rounded border border-muji-border text-sm w-full text-muji-text" 
+                        value={accountId} 
+                        onChange={e => onChange('accountId', e.target.value)}
+                    >
+                        <option value="">選擇帳戶</option>
+                        {userAccounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                    </select>
+                </div>
+                <div className="flex items-center pb-2 text-muji-muted">
+                    <button onClick={handleSwap} className="p-1 hover:bg-muji-bg rounded-full transition-colors" title="交換帳戶">
+                        <i data-lucide="arrow-right-left" className="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div className="flex-1 flex flex-col gap-1">
+                    <label className="text-xs text-muji-muted">轉入帳戶 (To)</label>
+                    <select 
+                        className="p-2 bg-muji-card rounded border border-muji-border text-sm w-full text-muji-text" 
+                        value={toAccountId} 
+                        onChange={e => onChange('toAccountId', e.target.value)}
+                    >
+                        <option value="">選擇帳戶</option>
+                        {userAccounts.filter(a => a.id !== accountId).map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                    </select>
+                </div>
             </div>
         );
     }
@@ -49,11 +95,9 @@ const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, fla
     const totalAmount = parseFloat(amount) || 0;
     const safeSplits = Array.isArray(splits) ? splits : [];
     
-    // State for modal category selection
     const [selectingCategoryIdx, setSelectingCategoryIdx] = useState(null);
-    const [selectedGroup, setSelectedGroup] = useState('food'); // Default group for selector
+    const [selectedGroup, setSelectedGroup] = useState('food'); 
 
-    // Auto-init "Me" row only if splits are completely empty and amount is set
     useEffect(() => {
         if (safeSplits.length === 0 && totalAmount > 0) {
             setSplits([{ 
@@ -85,7 +129,6 @@ const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, fla
         let newSplit = { ...newSplits[idx], [field]: val };
 
         if(field === 'categoryId') {
-            // Just update category
         } else if (field === 'owner') {
             if (val === 'me') {
                 newSplit.name = '我';
@@ -121,7 +164,6 @@ const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, fla
 
         newSplits[idx] = newSplit;
 
-        // Auto-balance logic: Find first "Me" row and adjust it
         const mainMeIndex = newSplits.findIndex(s => s.owner === 'me');
         if (mainMeIndex !== -1 && idx !== mainMeIndex) {
             const otherSum = newSplits.reduce((sum, s, i) => {
@@ -140,7 +182,6 @@ const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, fla
     
     const removeSplit = (idx) => {
         let newSplits = safeSplits.filter((_, i) => i !== idx);
-        // If we removed a row, try to give back to "Me"
         const mainMeIndex = newSplits.findIndex(s => s.owner === 'me');
         if (mainMeIndex !== -1) {
              const otherSum = newSplits.reduce((sum, s, i) => {
@@ -178,12 +219,10 @@ const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, fla
                                     <option value="__add_new__">+ 新增對象...</option>
                                 </select>
                                 
-                                {/* Trigger Category Selector */}
                                 <button 
                                     className="flex-1 p-1.5 bg-muji-bg rounded border border-muji-border text-xs text-muji-text flex items-center justify-between"
                                     onClick={() => {
                                         setSelectingCategoryIdx(idx);
-                                        // Set initial group
                                         if (cat.group) {
                                             let foundGroupId = 'food';
                                             for(let type in categoryGroups) {
@@ -235,7 +274,6 @@ const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, fla
             </div>
             <button onClick={addSplit} className="w-full py-2 border border-dashed border-muji-accent text-muji-accent text-xs rounded hover:bg-white transition-colors flex items-center justify-center gap-1 mt-3"><i data-lucide="plus" className="w-3 h-3"></i> 新增明細 (分帳/多類別)</button>
 
-            {/* Category Selection Modal */}
             {selectingCategoryIdx !== null && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-pop" onClick={() => setSelectingCategoryIdx(null)}>
                     <div className="bg-muji-card w-full max-w-sm rounded-xl shadow-2xl overflow-hidden border border-muji-border flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
@@ -245,7 +283,7 @@ const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, fla
                         </div>
                         <div className="p-4 overflow-y-auto custom-scrollbar">
                             <CategorySelector 
-                                type="expense" // Split is usually for expense
+                                type="expense" 
                                 categoryGroups={categoryGroups}
                                 selectedGroup={selectedGroup}
                                 setSelectedGroup={setSelectedGroup}
@@ -268,6 +306,7 @@ window.SmartImportModal = ({ onClose, importText, setImportText, previewData, se
     const [editingPreviewIndex, setEditingPreviewIndex] = useState(null);
     const [selectedGroup, setSelectedGroup] = useState('food');
     const [targetAccountId, setTargetAccountId] = useState(selectedAccount || (userAccounts.length > 0 ? userAccounts[0].id : ''));
+    const [showExitConfirm, setShowExitConfirm] = useState(false);
     
     useEffect(() => { window.refreshIcons(); }, [showCategoryPicker, previewData]);
 
@@ -275,8 +314,25 @@ window.SmartImportModal = ({ onClose, importText, setImportText, previewData, se
         handleSmartImport(targetAccountId);
     };
 
+    const handleAttemptClose = (reason) => {
+        if (reason === 'close_btn') {
+            onClose();
+        } else {
+             if (previewData.length > 0 || importText.trim().length > 0) {
+                 setShowExitConfirm(true);
+             } else {
+                 onClose();
+             }
+        }
+    };
+
+    const confirmClose = () => {
+        setShowExitConfirm(false);
+        onClose();
+    };
+
     return (
-        <window.Modal title="AI 記帳" onClose={onClose}>
+        <window.Modal title="AI 記帳" onClose={handleAttemptClose}>
             {previewData.length === 0 ? (
                 <div className="space-y-4">
                     <div className="flex flex-col gap-1">
@@ -310,7 +366,7 @@ window.SmartImportModal = ({ onClose, importText, setImportText, previewData, se
                         <>
                             <div className="max-h-[60vh] overflow-y-auto space-y-3 custom-scrollbar pr-1">
                                 {previewData.map((item, idx) => (
-                                    <div key={idx} className="flex flex-col gap-2 p-3 bg-muji-card rounded-lg text-sm border border-muji-border shadow-sm">
+                                    <div key={item.id || idx} className="flex flex-col gap-2 p-3 bg-muji-card rounded-lg text-sm border border-muji-border shadow-sm">
                                         <div className="flex justify-between items-center gap-2">
                                             <input type="date" aria-label="交易日期" className="bg-transparent border-b border-muji-border focus:border-muji-accent outline-none font-mono text-muji-text w-28 text-xs" value={item.date} onChange={(e) => { const n = [...previewData]; n[idx].date = e.target.value; setPreviewData(n); }} />
                                             <select aria-label="交易類型" className={`bg-transparent font-bold outline-none cursor-pointer text-xs flex-1 ${window.TX_TYPES[item.type]?.color || 'text-muji-text'}`} value={item.type} onChange={(e) => { const n = [...previewData]; n[idx].type = e.target.value; n[idx].toAccountId = ''; n[idx].targetName = ''; setPreviewData(n); }}>{Object.entries(window.TX_TYPES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select>
@@ -318,7 +374,7 @@ window.SmartImportModal = ({ onClose, importText, setImportText, previewData, se
                                             <button aria-label="刪除" onClick={() => setPreviewData(previewData.filter((_, i) => i !== idx))} className="text-muji-muted hover:text-muji-red"><i data-lucide="trash-2" className="w-4 h-4"></i></button>
                                         </div>
                                         <div className="flex items-center gap-2"><span className="text-xs text-muji-muted whitespace-nowrap">帳戶:</span><select aria-label="帳戶" className="bg-transparent text-xs border-b border-muji-muted/30 focus:border-muji-accent outline-none flex-1 text-muji-text" value={item.accountId} onChange={(e) => { const n = [...previewData]; n[idx].accountId = e.target.value; setPreviewData(n); }}>{userAccounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}</select></div>
-                                        <div className="flex items-center gap-2">{(item.type === 'expense' || item.type === 'income') && (<button onClick={() => { setEditingPreviewIndex(idx); setShowCategoryPicker(true); }} className="flex-1 text-left px-2 py-1.5 rounded bg-white border border-muji-border text-xs flex items-center gap-2 hover:border-muji-accent text-muji-text"><i data-lucide={flatCategories[item.categoryId]?.icon || 'tag'} className="w-3 h-3"></i>{flatCategories[item.categoryId]?.name || '選擇分類'}</button>)}<ExtraFieldsInput type={item.type} toAccountId={item.toAccountId} targetName={item.targetName} userAccounts={userAccounts} selectedAccount={item.accountId} onChange={(k, v) => { const n = [...previewData]; n[idx][k] = v; setPreviewData(n); }} debtTargets={data.debtTargets} onAddTarget={() => {}} /></div>
+                                        <div className="flex items-center gap-2">{(item.type === 'expense' || item.type === 'income') && (<button onClick={() => { setEditingPreviewIndex(idx); setShowCategoryPicker(true); }} className="flex-1 text-left px-2 py-1.5 rounded bg-white border border-muji-border text-xs flex items-center gap-2 hover:border-muji-accent text-muji-text"><i data-lucide={flatCategories[item.categoryId]?.icon || 'tag'} className="w-3 h-3"></i>{flatCategories[item.categoryId]?.name || '選擇分類'}</button>)}<ExtraFieldsInput type={item.type} accountId={item.accountId} toAccountId={item.toAccountId} targetName={item.targetName} userAccounts={userAccounts} selectedAccount={item.accountId} onChange={(k, v) => { const n = [...previewData]; n[idx][k] = v; setPreviewData(n); }} debtTargets={data.debtTargets} onAddTarget={() => {}} /></div>
                                         <input type="text" aria-label="備註" className="w-full bg-transparent border-b border-muji-border focus:border-muji-accent outline-none text-muji-text text-xs placeholder-muji-muted" placeholder="備註..." value={item.note} onChange={(e) => { const n = [...previewData]; n[idx].note = e.target.value; setPreviewData(n); }} />
                                     </div>
                                 ))}
@@ -328,9 +384,27 @@ window.SmartImportModal = ({ onClose, importText, setImportText, previewData, se
                     ) : (
                         <div className="animate-fade">
                             <div className="flex justify-between items-center mb-4"><h4 className="font-bold text-muji-text">選擇分類</h4><button onClick={() => setShowCategoryPicker(false)} className="text-muji-muted">取消</button></div>
-                            <CategorySelector type={previewData[editingPreviewIndex].type} categoryGroups={window.DEFAULT_CATEGORY_GROUPS} selectedGroup={selectedGroup} setSelectedGroup={setSelectedGroup} onSelectCategory={(catId) => { const n = [...previewData]; n[editingPreviewIndex].categoryId = catId; setPreviewData(n); setShowCategoryPicker(false); }} currentCategory={previewData[editingPreviewIndex].categoryId} />
+                            <CategorySelector type={previewData[editingPreviewIndex].type} categoryGroups={window.DEFAULT_CATEGORY_GROUPS} selectedGroup={selectedGroup} setSelectedGroup={setSelectedGroup} onSelectCategory={(catId) => { 
+                                const n = [...previewData]; 
+                                n[editingPreviewIndex].categoryId = catId; 
+                                setPreviewData(n); 
+                                setShowCategoryPicker(false); 
+                            }} currentCategory={previewData[editingPreviewIndex].categoryId} />
                         </div>
                     )}
+                </div>
+            )}
+            
+            {showExitConfirm && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm animate-pop cursor-auto" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white p-6 rounded-xl shadow-xl border border-muji-border w-full max-w-sm">
+                        <h4 className="font-bold text-lg mb-2 text-muji-text">確認中斷</h4>
+                        <p className="text-sm text-muji-muted mb-4">內容尚未儲存，確定要中斷記帳嗎？</p>
+                        <div className="flex gap-3">
+                            <button onClick={() => setShowExitConfirm(false)} className="flex-1 py-2 rounded-lg border border-muji-border text-muji-muted hover:bg-muji-bg">繼續編輯</button>
+                            <button onClick={confirmClose} className="flex-1 py-2 rounded-lg bg-muji-red text-white font-bold shadow-sm">確定中斷</button>
+                        </div>
+                    </div>
                 </div>
             )}
         </window.Modal>
@@ -341,6 +415,7 @@ window.TransactionModal = ({ onClose, isEditMode, newTx, setNewTx, isSplitMode, 
     const [selectedGroup, setSelectedGroup] = useState(flatCategories[newTx.categoryId]?.group || 'food');
     const [showBalanceConfirm, setShowBalanceConfirm] = useState(false);
     const [pendingBalanceDiff, setPendingBalanceDiff] = useState(0);
+    const [showExitConfirm, setShowExitConfirm] = useState(false);
     const debtTargets = data.debtTargets || [];
     
     useEffect(() => { window.refreshIcons(); }, [newTx.type, selectedGroup, isSplitMode]);
@@ -361,7 +436,6 @@ window.TransactionModal = ({ onClose, isEditMode, newTx, setNewTx, isSplitMode, 
              const diff = total - splitSum;
              
              if (diff > 1) {
-                 // Trigger custom confirm modal
                  setPendingBalanceDiff(diff);
                  setShowBalanceConfirm(true);
                  return;
@@ -382,8 +456,16 @@ window.TransactionModal = ({ onClose, isEditMode, newTx, setNewTx, isSplitMode, 
         }
     };
 
+    // Modified update logic for transfer
+    const handleUpdateField = (key, value) => {
+        if (key === 'swap_accounts') {
+             setNewTx({ ...newTx, accountId: value.to, toAccountId: value.from });
+        } else {
+             setNewTx({...newTx, [key]: value});
+        }
+    };
+
     const handleConfirmBalance = () => {
-        // Auto-assign balance to 'Me'
         const safeSplits = (splits || []).filter(s => s.name && parseFloat(s.amount) > 0);
         safeSplits.push({
              owner: 'me',
@@ -424,14 +506,26 @@ window.TransactionModal = ({ onClose, isEditMode, newTx, setNewTx, isSplitMode, 
              setSplits([]);
          }
     }
+
+    const handleAttemptClose = (reason) => {
+        if (reason === 'close_btn') {
+            onClose();
+        } else {
+            setShowExitConfirm(true);
+        }
+    };
+
+    const confirmClose = () => {
+        setShowExitConfirm(false);
+        onClose();
+    };
     
     return (
-        <window.Modal title={isEditMode ? "編輯交易" : "記一筆"} onClose={onClose}>
+        <window.Modal title={isEditMode ? "編輯交易" : "記一筆"} onClose={handleAttemptClose}>
             <div className="space-y-4">
                 <div className="flex justify-between items-center overflow-x-auto no-scrollbar pb-2">
                     <div className="flex bg-muji-bg rounded-lg p-1">
                         {Object.entries(window.TX_TYPES).map(([k, v]) => {
-                            // If Quick Add Mode, only show Expense
                             if (newTx.isQuickAdd && k !== 'expense') return null;
                             
                             return (
@@ -480,7 +574,7 @@ window.TransactionModal = ({ onClose, isEditMode, newTx, setNewTx, isSplitMode, 
                         flatCategories={flatCategories}
                         isWithOthersMode={true} 
                         onAddTarget={handleAddTarget}
-                        categoryGroups={categoryGroups} // Pass categoryGroups
+                        categoryGroups={categoryGroups} 
                     />
                 ) : (
                     <>
@@ -494,11 +588,12 @@ window.TransactionModal = ({ onClose, isEditMode, newTx, setNewTx, isSplitMode, 
                         />
                         <ExtraFieldsInput 
                             type={newTx.type} 
+                            accountId={newTx.accountId}
                             toAccountId={newTx.toAccountId} 
                             targetName={newTx.targetName} 
                             userAccounts={userAccounts} 
                             selectedAccount={selectedAccount} 
-                            onChange={(k, v) => setNewTx({...newTx, [k]: v})} 
+                            onChange={handleUpdateField} // Use custom handler for swap support
                             debtTargets={debtTargets} 
                             onAddTarget={() => {}} 
                         />
@@ -538,6 +633,20 @@ window.TransactionModal = ({ onClose, isEditMode, newTx, setNewTx, isSplitMode, 
                     </div>
                 </div>
             )}
+
+            {/* Custom Confirm Modal for Exit */}
+            {showExitConfirm && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm animate-pop cursor-auto" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white p-6 rounded-xl shadow-xl border border-muji-border w-full max-w-sm">
+                        <h4 className="font-bold text-lg mb-2 text-muji-text">確認中斷</h4>
+                        <p className="text-sm text-muji-muted mb-4">內容尚未儲存，確定要中斷記帳嗎？</p>
+                        <div className="flex gap-3">
+                            <button onClick={() => setShowExitConfirm(false)} className="flex-1 py-2 rounded-lg border border-muji-border text-muji-muted hover:bg-muji-bg">繼續編輯</button>
+                            <button onClick={confirmClose} className="flex-1 py-2 rounded-lg bg-muji-red text-white font-bold shadow-sm">確定中斷</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </window.Modal>
     );
 };
@@ -549,36 +658,66 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
     const [isSplitMode, setIsSplitMode] = useState(false); const [splitTotal, setSplitTotal] = useState(''); const [splits, setSplits] = useState([]);
     const [newTx, setNewTx] = useState({ amount: '', note: '', type: 'expense', categoryId: 'food_伙食', date: new Date().toISOString().split('T')[0], toAccountId: '', targetName: '', splits: [] });
 
+    // Multi-selection state
+    const [selectedTxIds, setSelectedTxIds] = useState([]);
+    const [showDeleteBatchConfirm, setShowDeleteBatchConfirm] = useState(false);
+
+    const [expandedTypes, setExpandedTypes] = useState(['recent']); 
+
     const categoryGroups = data.settings?.categoryGroups || window.DEFAULT_CATEGORY_GROUPS;
     const flatCategories = useMemo(() => window.getFlatCategories(categoryGroups), [categoryGroups]);
     
-    useEffect(() => { if (window.lucide && (showAdd || showImport || showDatePicker)) setTimeout(() => window.lucide.createIcons(), 50); }, [showAdd, isEditMode, showImport, previewData, showDatePicker]);
+    useEffect(() => { if (window.lucide && (showAdd || showImport || showDatePicker)) setTimeout(() => window.lucide.createIcons(), 50); }, [showAdd, isEditMode, showImport, previewData, showDatePicker, expandedTypes]);
 
     const getCurrentUserAccounts = () => data.accounts.filter(a => a.userId === data.currentUser || (!a.userId && data.currentUser === 'default'));
     const userAccounts = getCurrentUserAccounts();
 
-    const handleSmartImport = (targetAccountId) => {
+    // Helper to calculate recent accounts
+    const getRecentAccounts = () => {
+        const txs = data.transactions
+            .filter(t => userAccounts.some(acc => acc.id === t.accountId))
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        const recentAccountIds = [...new Set(txs.map(t => t.accountId))].slice(0, 3);
+        return userAccounts.filter(acc => recentAccountIds.includes(acc.id));
+    };
+
+    const handleSmartImport = (targetAccountId, hintType) => {
         const rawLines = importText.split('\n').map(l => l.trim()).filter(l => l);
         const parsed = [];
         const currentYear = new Date().getFullYear();
         const parseNum = (str) => parseFloat(str.replace(/,/g, ''));
         const isNum = (str) => /^\d{1,3}(,\d{3})*(\.\d+)?$/.test(str);
         
-        // --- 混合區塊模式 (Mixed Block Mode) ---
-        // 策略：以「日期」作為區塊分割點。
-        // 只要遇到 YYYY/MM/DD 或 MM/DD，就視為一筆新交易的開始。
-        // 然後在該區塊內搜尋金額、關鍵字、備註。
+        // Regex patterns
+        const dateRegexFull = /^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})/;
+        const dateRegexShort = /^(\d{1,2})[\/\-\.](\d{1,2})/;
         
-        const dateRegexFull = /^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})/; // YYYY/MM/DD
-        const dateRegexShort = /^(\d{1,2})[\/\-\.](\d{1,2})/; // MM/DD
+        // Auto-detect transfer target from note
+        const detectTransferTarget = (note) => {
+             // Example logic from user request
+             if (note.includes('(013)') || note.includes('國泰')) {
+                  const targetAcc = userAccounts.find(a => a.name.includes('國泰') || a.name.includes('銀行'));
+                  if (targetAcc) return targetAcc.id;
+             }
+             if (note.includes('(012)') || note.includes('富邦信用卡')) {
+                 const targetAcc = userAccounts.find(a => a.name.includes('富邦') || a.name.includes('信用卡'));
+                 if (targetAcc) return targetAcc.id;
+             }
+             if (note.includes('(823)') || note.includes('將來')) {
+                  const targetAcc = userAccounts.find(a => a.name.includes('將來'));
+                  if (targetAcc) return targetAcc.id;
+             }
+             return null;
+        };
         
         let currentBlock = [];
-        
-        const processMixedBlock = (block) => {
+
+        const processBlock = (block) => {
             if (block.length === 0) return;
             try {
-                // 1. 抓日期
-                const dateLine = block[0]; // 區塊第一行必然包含日期
+                // Determine Date
+                const dateLine = block[0];
                 let dateMatch = dateLine.match(dateRegexFull);
                 let dateStr = "";
                 
@@ -596,46 +735,36 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                 if (isNaN(valid.getTime())) return;
                 dateStr = valid.toISOString().split('T')[0];
 
-                // 2. 抓金額與類型 (使用 Token 分析法)
+                // Find Amount and Type using Token Analysis
                 let amount = 0;
                 let type = 'expense';
                 let foundAmount = false;
-                
+
+                // Loop through lines to find amount
                 for (let i = 0; i < block.length; i++) {
                     let content = block[i].replace(/−/g, '-').replace(/\t/g, ' ');
-                    
-                    // 分割成 Token
                     const tokens = content.split(/\s+/).filter(t => t.trim() !== '');
-                    
-                    // 掃描 Token 序列
                     for (let j = 0; j < tokens.length; j++) {
                         const token = tokens[j];
                         const nextToken = tokens[j+1];
+                        if (token.includes('/') || token.includes(':')) continue; // Skip dates/times
                         
-                        // 略過明顯的日期 (避免誤判)
-                        if (token.includes('/') || token.includes(':')) continue;
-
                         if (isNum(token)) {
-                            // 規則 1: [金額] [減號] -> 支出 (Withdrawal)
-                            // 例子: "1,158" "-"
+                             // [Amount] [Hyphen] -> Withdrawal (Expense)
                             if (nextToken === '-') {
                                 amount = parseNum(token);
                                 type = 'expense';
                                 foundAmount = true;
                                 break;
                             }
-                            
-                            // 規則 2: 純數字行 (且不含其他雜訊) -> 可能是 Type 2 垂直格式
-                            // 如果整行就只有這個數字，且還沒找到金額
+                            // Just a number in a line (Table format often has amount on new line)
                             if (tokens.length === 1 && !foundAmount) {
                                 amount = parseNum(token);
-                                type = 'expense'; // 預設支出
+                                type = 'expense';
                                 foundAmount = true;
-                                // 不 break，繼續找是否有更明確的匹配? 不，純數字行通常就是金額。
                                 break;
                             }
-                            
-                            // 規則 3: TWD [金額]
+                            // TWD [Amount]
                             if (token.toUpperCase() === 'TWD' && isNum(nextToken)) {
                                 amount = parseNum(nextToken);
                                 type = 'expense';
@@ -643,8 +772,7 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                                 break;
                             }
                         } else if (token === '-') {
-                            // 規則 4: [減號] [金額] -> 收入 (Deposit)
-                            // 例子: "-" "1,158"
+                            // [Hyphen] [Amount] -> Deposit (Income)
                             if (isNum(nextToken)) {
                                 amount = parseNum(nextToken);
                                 type = 'income';
@@ -655,25 +783,21 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                     }
                     if (foundAmount) break;
                 }
-                
+
                 if (!foundAmount || amount === 0) return;
 
-                // 3. 抓備註 (將剩餘文字串接)
+                // Construct Note
                 let noteParts = [];
                 block.forEach((line, i) => {
                     let content = line.replace(/−/g, '-').replace(/\t/g, ' ');
-                    // 移除已提取的日期 (只移除第一行的日期)
+                     // Remove extracted date
                     if (i === 0 && dateMatch) content = content.replace(dateMatch[0], '');
                     
-                    // 移除特定雜訊關鍵字
-                    const noise = ['網銀轉帳', '信用卡款', '電子轉出', '跨行提款', '交易資訊', '備註', '說明', 'TWD', 'TW', '新臺幣金額', '交易說明'];
+                    const noise = ['網銀轉帳', '信用卡款', '電子轉出', '跨行提款', '交易資訊', '備註', '說明', 'TWD', 'TW', '新臺幣金額', '交易說明', '消費日', '消費店家', '金額'];
                     noise.forEach(n => content = content.replace(n, ''));
-                    
-                    // 移除無意義符號
                     content = content.replace(/-/g, '').trim();
                     
-                    // 移除我們剛剛找到的金額 (避免重複出現在備註)
-                    // 這比較難精準，簡單起見，我們移除符合金額格式且數值等於 amount 的字串
+                    // Try to remove the amount string to avoid dupes in note
                     const tokens = content.split(/\s+/);
                     const cleanTokens = tokens.filter(t => {
                         if (isNum(t) && parseNum(t) === amount) return false;
@@ -686,57 +810,52 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                 
                 let note = noteParts.join(' ');
                 
-                // 補回關鍵字到備註開頭 (如果原始區塊有)
-                const typeKeywords = ['網銀轉帳', '信用卡款', '電子轉出', '跨行提款', '餐飲', '全聯', '7-11'];
-                for(const kw of typeKeywords) {
-                    if (block.some(l => l.includes(kw))) {
-                        // 避免重複添加
-                        if (!note.includes(kw)) {
-                            note = (kw + ' ' + note).trim();
-                        }
-                        break;
-                    }
+                // Force Income rules
+                if (note.includes('配息') || note.includes('轉入') || note.includes('存款息')) {
+                    type = 'income';
+                }
+                
+                // Smart Transfer Logic
+                let toAccountId = '';
+                const detectedTransferId = detectTransferTarget(note);
+                if (detectedTransferId && type === 'expense') {
+                    type = 'transfer';
+                    toAccountId = detectedTransferId;
                 }
                 
                 if (!note) note = "一般消費";
 
                 parsed.push({
-                    id: '', // Placeholder, will be assigned later
+                    id: '', 
                     date: dateStr,
                     amount: amount,
                     note: note,
                     type: type,
                     categoryId: window.autoTag(note),
                     accountId: targetAccountId,
-                    toAccountId: '', targetName: '', splits: []
+                    toAccountId: toAccountId, 
+                    targetName: '', 
+                    splits: []
                 });
 
             } catch(e) { console.error("Block parse error", e); }
-        };
+        }
 
-        // 執行區塊掃描
         for (let i = 0; i < rawLines.length; i++) {
             const line = rawLines[i];
-            // 判斷是否為新區塊的開始：必須是日期開頭
             const isDateStart = dateRegexFull.test(line) || (dateRegexShort.test(line) && line.length < 50 && (line.includes('/') || line.includes('-')));
-            
             if (isDateStart) {
-                if (currentBlock.length > 0) {
-                    processMixedBlock(currentBlock);
-                }
+                if (currentBlock.length > 0) processBlock(currentBlock);
                 currentBlock = [line];
             } else {
                 currentBlock.push(line);
             }
         }
-        if (currentBlock.length > 0) processMixedBlock(currentBlock);
+        if (currentBlock.length > 0) processBlock(currentBlock);
         
-        // Re-assign IDs to preserve order when sorted by ID descending
-        // parsed[0] (Top of text) should have the LARGEST ID (Newest)
+        // Re-assign IDs
         const baseTime = Date.now();
-        parsed.forEach((p, i) => {
-            p.id = (baseTime + (parsed.length - i)).toString();
-        });
+        parsed.forEach((p, i) => { p.id = (baseTime + (parsed.length - i)).toString(); });
 
         setPreviewData(parsed);
     };
@@ -777,6 +896,34 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
         saveData({ ...data, transactions: updatedTransactions, debtTargets: updatedDebtTargets }); setShowAdd(false); resetForm();
     };
     const handleDelete = () => { const updated = data.transactions.filter(t => t.id !== editingTxId); saveData({ ...data, transactions: updated }); setShowAdd(false); };
+    
+    // Batch Delete Logic
+    const toggleSelectTx = (id) => {
+        if (selectedTxIds.includes(id)) {
+            setSelectedTxIds(selectedTxIds.filter(tid => tid !== id));
+        } else {
+            setSelectedTxIds([...selectedTxIds, id]);
+        }
+    };
+
+    const toggleSelectAll = (filteredTxs) => {
+        if (selectedTxIds.length === filteredTxs.length) {
+            setSelectedTxIds([]);
+        } else {
+            setSelectedTxIds(filteredTxs.map(t => t.id));
+        }
+    };
+
+    const confirmBatchDelete = () => {
+        if (selectedTxIds.length > 0) {
+            const updated = data.transactions.filter(t => !selectedTxIds.includes(t.id));
+            saveData({ ...data, transactions: updated });
+            setSelectedTxIds([]);
+            setShowDeleteBatchConfirm(false);
+            showToast('已刪除選取項目');
+        }
+    };
+
     const openEdit = (tx) => { 
         setNewTx({ ...tx, amount: tx.amount.toString() }); 
         if(tx.splits && tx.splits.length > 0) { 
@@ -801,59 +948,150 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
             const isRelated = t.accountId === selectedAccount || t.toAccountId === selectedAccount; 
             return d.getFullYear() === y && d.getMonth() === m && isRelated; 
         }).sort((a, b) => {
-            // Sort by Date Descending
             const dateDiff = new Date(b.date) - new Date(a.date);
             if (dateDiff !== 0) return dateDiff;
-            // Secondary Sort by ID Descending (Newer created first)
-            // Since IDs are strings, we compare them as strings. 
-            // Note: Date.now() strings compare correctly.
             if (b.id < a.id) return -1;
             if (b.id > a.id) return 1;
             return 0;
         }); 
     };
 
+    const toggleSection = (key) => {
+        if (expandedTypes.includes(key)) {
+            setExpandedTypes(expandedTypes.filter(k => k !== key));
+        } else {
+            setExpandedTypes([...expandedTypes, key]);
+        }
+        window.refreshIcons();
+    };
+
     if (selectedAccount) {
         const filteredTxs = getFilteredTransactions();
         const currentAccount = data.accounts.find(a => a.id === selectedAccount);
         return (
-            <div className="pb-24 md:pb-0 animate-fade">
-                <div className="bg-white/95 backdrop-blur-sm sticky top-0 z-10 p-4 pt-10 rounded-t-xl">
+            <div className="pb-24 md:pb-0 animate-fade flex flex-col h-full relative">
+                {/* Account Details Header & Controls */}
+                <div className="bg-muji-bg p-4 pt-4 mb-0 border-b border-muji-border/50">
                     <div className="text-center text-lg font-bold text-muji-text mb-4">{currentAccount?.name}</div>
+                    
                     <div className="flex justify-between items-center relative">
-                        <button onClick={() => { resetForm(); setShowAdd(true); }} className="text-xs bg-muji-accent text-white px-3 py-2 rounded-lg font-bold shadow-sm hover:opacity-90 flex items-center gap-1"><i data-lucide="plus" className="w-4 h-4"></i> 記一筆</button>
-                        <div className="flex items-center justify-center gap-2 bg-white border border-muji-border rounded-lg p-1 max-w-xs mx-auto absolute left-1/2 transform -translate-x-1/2">
+                        <button onClick={() => { resetForm(); setShowAdd(true); }} className="text-xs bg-muji-accent text-white px-3 py-2 rounded-lg font-bold shadow-sm hover:opacity-90 flex items-center gap-1">
+                            <i data-lucide="plus" className="w-4 h-4"></i> 記一筆
+                        </button>
+                        
+                        <div className="flex items-center justify-center gap-2 bg-transparent border border-muji-border rounded-lg p-1 max-w-xs mx-auto absolute left-1/2 transform -translate-x-1/2">
                             <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))} className="p-1 hover:bg-muji-bg rounded"><i data-lucide="chevron-left" className="w-4 h-4"></i></button>
                             <div className="font-bold text-muji-text font-serif cursor-pointer w-24 text-center text-sm" onClick={() => setShowDatePicker(true)}>{currentDate.getFullYear()} / {currentDate.getMonth() + 1}</div>
                             <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))} className="p-1 hover:bg-muji-bg rounded"><i data-lucide="chevron-right" className="w-4 h-4"></i></button>
                         </div>
-                        <button onClick={() => { setImportText(''); setPreviewData([]); setShowImport(true); }} className="text-xs bg-muji-accent text-white px-3 py-2 rounded-lg font-bold shadow-sm hover:opacity-90 flex items-center gap-1"><i data-lucide="sparkles" className="w-4 h-4"></i> AI 記帳</button>
-                    </div>
-                </div>
-                <div className="overflow-x-auto bg-white mx-4 md:mx-6 mb-20 md:mb-0 rounded-xl border border-muji-border">
-                    <table className="w-full text-left text-sm whitespace-nowrap"><thead className="bg-muji-bg text-muji-muted font-medium sticky top-0 z-10"><tr><th className="p-4 text-center w-[15%]">日期</th><th className="p-4 text-center w-[10%]">類型</th><th className="p-4 text-center w-[20%]">類別/對象</th><th className="p-4 text-center w-[20%]">金額</th><th className="p-4 text-center w-[35%]">備註</th></tr></thead><tbody className="divide-y divide-muji-border">{filteredTxs.length === 0 ? <tr><td colSpan="5" className="text-center py-10 text-muji-muted">無紀錄</td></tr> : filteredTxs.map(tx => { 
-                        const cat = flatCategories[tx.categoryId] || { icon: 'help-circle', name: '未分類' }; 
-                        const txType = window.TX_TYPES[tx.type] || { label: '未知', color: 'text-gray-500' }; 
-                        let display = cat.name; 
-                        if(tx.type === 'transfer') { const to = userAccounts.find(a=>a.id===tx.toAccountId); display = to ? `-> ${to.name}` : '轉帳'; } 
-                        else if(tx.type === 'repay') display = tx.targetName || '-'; 
                         
-                        const amountVal = tx.amount || 0;
-                        let splitInfo = "";
-                        let isSplit = false;
-                        if(tx.splits && tx.splits.length > 0) {
-                            const otherSplits = tx.splits.filter(s => s.owner !== 'me').reduce((a,c)=>a+(parseFloat(c.amount)||0),0);
-                            const myPart = amountVal - otherSplits;
-                            let others = tx.splits.filter(s => s.owner !== 'me').map(s => `${s.name}: $${(parseFloat(s.amount) || 0).toLocaleString()}`).join(', ');
-                            splitInfo = ` (我: $${myPart.toLocaleString()}${others ? ', ' + others : ''})`;
-                            if (tx.splits.length > 1 || otherSplits > 0) isSplit = true;
-                        }
+                        <button onClick={() => { setImportText(''); setPreviewData([]); setShowImport(true); }} className="text-xs bg-muji-accent text-white px-3 py-2 rounded-lg font-bold shadow-sm hover:opacity-90 flex items-center gap-1">
+                            <i data-lucide="sparkles" className="w-4 h-4"></i> AI 記帳
+                        </button>
+                    </div>
 
-                        return (<tr key={tx.id} onClick={() => openEdit(tx)} className={`cursor-pointer ${isSplit ? 'bg-orange-50/50 hover:bg-orange-100/50' : 'hover:bg-muji-hover'}`}><td className="p-4 text-center font-mono">{tx.date}</td><td className={`p-4 text-center font-bold ${txType.color}`}>{txType.label}</td><td className="p-4 text-center flex justify-center items-center gap-2">{(tx.type==='expense'||tx.type==='income')&&<i data-lucide={cat.icon || 'circle'} className="w-4 h-4"></i>}{display}</td><td className={`p-4 text-right font-mono font-bold ${txType.color}`}>{tx.type==='income'||tx.type==='repay'?'+':'-'}${amountVal.toLocaleString()}<span className="text-xs text-muji-muted block">{splitInfo}</span></td><td className="p-4 text-left text-muji-muted truncate max-w-[150px]">{tx.note}</td></tr>) })}</tbody></table>
+                    {/* Batch Delete Action Bar */}
+                    {selectedTxIds.length > 0 && (
+                        <div className="mt-2 flex justify-between items-center bg-muji-red/10 p-2 rounded-lg border border-muji-red/30">
+                            <span className="text-xs text-muji-red font-bold">已選取 {selectedTxIds.length} 筆</span>
+                            <button onClick={() => setShowDeleteBatchConfirm(true)} className="text-xs bg-muji-red text-white px-2 py-1 rounded font-bold hover:opacity-80">
+                                刪除選取項目
+                            </button>
+                        </div>
+                    )}
                 </div>
                 
-                {/* Removed fixed + button as requested */}
+                {/* Transaction List Container - Fixed Header Logic */}
+                <div className="flex-1 overflow-y-auto bg-white mx-4 md:mx-6 mb-20 md:mb-0 rounded-xl border border-muji-border min-h-[50vh] max-h-[calc(100vh-250px)] relative">
+                    <table className="w-full text-left text-sm whitespace-nowrap relative">
+                        {/* Table Header - Sticky top-0 within the scroll container */}
+                        <thead className="bg-muji-bg text-muji-muted font-medium sticky top-0 z-20 shadow-sm border-b border-muji-border">
+                            <tr>
+                                <th className="p-4 w-10 text-center">
+                                    <input 
+                                        type="checkbox" 
+                                        className="w-4 h-4 accent-muji-accent"
+                                        checked={filteredTxs.length > 0 && selectedTxIds.length === filteredTxs.length}
+                                        onChange={() => toggleSelectAll(filteredTxs)}
+                                    />
+                                </th>
+                                <th className="p-4 text-center w-[15%]">日期</th>
+                                <th className="p-4 text-center w-[10%]">類型</th>
+                                <th className="p-4 text-center w-[20%]">類別/對象</th>
+                                <th className="p-4 text-center w-[20%]">金額</th>
+                                <th className="p-4 text-center w-[35%]">備註</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-muji-border">
+                            {filteredTxs.length === 0 ? <tr><td colSpan="6" className="text-center py-10 text-muji-muted">無紀錄</td></tr> : filteredTxs.map(tx => { 
+                                const cat = flatCategories[tx.categoryId] || { icon: 'help-circle', name: '未分類' }; 
+                                const txType = window.TX_TYPES[tx.type] || { label: '未知', color: 'text-gray-500' }; 
+                                let display = cat.name; 
+                                
+                                // Transfer Logic Display
+                                if(tx.type === 'transfer') { 
+                                    const to = userAccounts.find(a=>a.id===tx.toAccountId); 
+                                    const from = userAccounts.find(a=>a.id===tx.accountId);
+                                    
+                                    if (selectedAccount === tx.accountId) {
+                                        display = to ? `-> ${to.name}` : '轉出';
+                                    } else if (selectedAccount === tx.toAccountId) {
+                                        display = from ? `<- ${from.name}` : '轉入';
+                                    }
+                                } else if(tx.type === 'repay') {
+                                    display = tx.targetName || '-'; 
+                                }
+                                
+                                const amountVal = tx.amount || 0;
+                                let splitInfo = "";
+                                let isSplit = false;
+                                if(tx.splits && tx.splits.length > 0) {
+                                    const otherSplits = tx.splits.filter(s => s.owner !== 'me').reduce((a,c)=>a+(parseFloat(c.amount)||0),0);
+                                    const myPart = amountVal - otherSplits;
+                                    let others = tx.splits.filter(s => s.owner !== 'me').map(s => `${s.name}: $${(parseFloat(s.amount) || 0).toLocaleString()}`).join(', ');
+                                    splitInfo = ` (我: $${myPart.toLocaleString()}${others ? ', ' + others : ''})`;
+                                    if (tx.splits.length > 1 || otherSplits > 0) isSplit = true;
+                                }
 
+                                const textColorClass = tx.type === 'expense' ? 'text-rose-500' : (tx.type === 'income' ? 'text-emerald-500' : txType.color);
+                                let sign = '';
+                                if (tx.type === 'expense') sign = '-';
+                                else if (tx.type === 'income') sign = '+';
+                                else if (tx.type === 'transfer') {
+                                    if (selectedAccount === tx.accountId) {
+                                         sign = '-';
+                                    } else {
+                                         sign = '+';
+                                    }
+                                } else if (tx.type === 'repay') {
+                                     sign = '+';
+                                }
+
+                                return (
+                                    <tr key={tx.id} onClick={() => openEdit(tx)} className={`cursor-pointer ${isSplit ? 'bg-orange-50/50 hover:bg-orange-100/50' : 'hover:bg-muji-hover'}`}>
+                                        <td className="p-4 text-center" onClick={(e) => e.stopPropagation()}>
+                                            <input 
+                                                type="checkbox" 
+                                                className="w-4 h-4 accent-muji-accent"
+                                                checked={selectedTxIds.includes(tx.id)}
+                                                onChange={() => toggleSelectTx(tx.id)}
+                                            />
+                                        </td>
+                                        <td className="p-4 text-center font-mono">{tx.date}</td>
+                                        <td className={`p-4 text-center font-bold ${txType.color}`}>{txType.label}</td>
+                                        <td className="p-4 text-center flex justify-center items-center gap-2">{(tx.type==='expense'||tx.type==='income')&&<i data-lucide={cat.icon || 'circle'} className="w-4 h-4"></i>}{display}</td>
+                                        <td className={`p-4 text-right font-mono font-bold ${textColorClass}`}>
+                                            {sign}${amountVal.toLocaleString()}
+                                            <span className="text-xs text-muji-muted block">{splitInfo}</span>
+                                        </td>
+                                        <td className="p-4 text-left text-muji-muted truncate max-w-[150px]">{tx.note}</td>
+                                    </tr>
+                                ) 
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+                
                 {/* Year-Month Picker Modal */}
                 {showDatePicker && (
                     <window.Modal title="選擇日期" onClose={() => setShowDatePicker(false)}>
@@ -878,6 +1116,20 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                     </window.Modal>
                 )}
 
+                {/* Batch Delete Confirm Modal */}
+                {showDeleteBatchConfirm && (
+                    <window.Modal title="刪除確認" onClose={() => setShowDeleteBatchConfirm(false)}>
+                        <div className="p-4 text-center space-y-4">
+                            <p className="text-muji-text">確定要刪除選取的 <span className="font-bold">{selectedTxIds.length}</span> 筆資料嗎？</p>
+                            <p className="text-xs text-muji-red">此操作無法復原！</p>
+                            <div className="flex gap-3">
+                                <button onClick={() => setShowDeleteBatchConfirm(false)} className="flex-1 py-3 border border-muji-border rounded-lg">取消</button>
+                                <button onClick={confirmBatchDelete} className="flex-1 py-3 bg-muji-red text-white font-bold rounded-lg shadow-sm">確認刪除</button>
+                            </div>
+                        </div>
+                    </window.Modal>
+                )}
+
                 {showImport && <window.SmartImportModal onClose={() => setShowImport(false)} importText={importText} setImportText={setImportText} previewData={previewData} setPreviewData={setPreviewData} saveData={saveData} data={data} handleSmartImport={handleSmartImport} flatCategories={flatCategories} userAccounts={userAccounts} selectedAccount={selectedAccount} />}
                 {showAdd && <window.TransactionModal onClose={() => setShowAdd(false)} isEditMode={isEditMode} newTx={newTx} setNewTx={setNewTx} isSplitMode={isSplitMode} setIsSplitMode={setIsSplitMode} splitTotal={splitTotal} setSplitTotal={setSplitTotal} splits={splits} setSplits={setSplits} categoryGroups={categoryGroups} flatCategories={flatCategories} userAccounts={userAccounts} selectedAccount={selectedAccount} saveTransaction={saveTransaction} handleDeleteTransaction={handleDelete} data={data} saveData={saveData} />}
             </div>
@@ -887,6 +1139,8 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
     // Account List View
     const accounts = getCurrentUserAccounts();
     const accountTypes = data.settings?.accountTypes || window.DEFAULT_ACCOUNT_TYPES;
+    const recentAccounts = getRecentAccounts();
+
     return (
         <div className="p-6 md:p-10 animate-fade relative min-h-full">
              {/* Sticky Header for Account List */}
@@ -899,44 +1153,91 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                     <i data-lucide="plus" className="w-4 h-4"></i> 新增帳戶
                 </button>
              </div>
-
-            {Object.entries(accountTypes).map(([typeKey, typeConfig]) => {
-                const typeAccounts = accounts.filter(a => a.type === typeKey);
-                if (typeAccounts.length === 0) return null;
-                return (
-                    <div key={typeKey} className="mb-6">
-                        <h4 className="text-muji-muted text-sm font-bold mb-3 border-b border-muji-border pb-1 flex items-center gap-2">
-                            <i data-lucide={typeConfig.icon} className="w-4 h-4"></i> {typeConfig.label}
+             
+             {/* Recent Accounts */}
+             {recentAccounts.length > 0 && (
+                 <div className="mb-6">
+                    <button 
+                        onClick={() => toggleSection('recent')}
+                        className="w-full text-left flex items-center gap-2 mb-3 pb-1 border-b border-muji-border"
+                    >
+                        <i data-lucide={expandedTypes.includes('recent') ? "chevron-down" : "chevron-right"} className="w-4 h-4 text-muji-muted"></i>
+                        <h4 className="text-muji-muted text-sm font-bold flex items-center gap-2">
+                             <i data-lucide="clock" className="w-4 h-4"></i> 最近記帳
                         </h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {typeAccounts.map(acc => { 
-                                const bal = window.calculateBalance(data, acc.id); 
+                    </button>
+                    {expandedTypes.includes('recent') && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 animate-fade">
+                            {recentAccounts.map(acc => { 
+                                const bal = window.calculateBalance(data, acc.id);
+                                const isPositive = bal >= 0;
+                                const typeConfig = accountTypes[acc.type] || { icon: 'circle-help' };
                                 return (
-                                    <div key={acc.id} onClick={() => setSelectedAccount(acc.id)} className="bg-white p-4 rounded-xl border border-muji-border hover:border-muji-accent hover:shadow-md transition-all cursor-pointer relative group">
-                                        <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 flex gap-2">
-                                            {/* Calibrate Button */}
-                                            <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '餘額校正', value: '', value2: '', type: 'calibrate_account', data: acc.id, extra: bal });}} className="p-1 hover:bg-muji-bg rounded text-muji-muted hover:text-muji-accent">
-                                                <i data-lucide="sliders-horizontal" className="w-3 h-3"></i>
-                                            </button>
-                                            {/* Edit Button */}
-                                            <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '修改帳戶', value: acc.name, value2: acc.balance || 0, type: 'edit_account', data: acc.id, extra: acc.type });}} className="p-1 hover:bg-muji-bg rounded text-muji-muted hover:text-muji-accent">
-                                                <i data-lucide="pencil" className="w-3 h-3"></i>
-                                            </button>
-                                            <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '刪除', value: '確認', type: 'delete_account', data: acc.id });}} className="p-1 hover:bg-muji-bg rounded text-muji-muted hover:text-muji-red">
-                                                <i data-lucide="trash-2" className="w-3 h-3"></i>
-                                            </button>
-                                        </div>
+                                    <div key={'recent_' + acc.id} onClick={() => setSelectedAccount(acc.id)} className="bg-white p-4 rounded-xl border border-muji-border hover:border-muji-accent hover:shadow-md transition-all cursor-pointer relative group">
                                         <div className="flex items-center gap-3 mb-2">
                                             <div className="w-10 h-10 rounded-full border-2 border-muji-text/20 flex items-center justify-center text-muji-text text-xl">
                                                 <i data-lucide={typeConfig.icon} className="w-5 h-5"></i>
                                             </div>
                                             <div className="font-bold text-base text-muji-text truncate">{acc.name}</div>
                                         </div>
-                                        <div className={`text-xl font-mono font-bold ${bal < 0 ? 'text-muji-red' : 'text-muji-text'}`}>${bal.toLocaleString()}</div>
+                                        {/* Color logic: Positive Green, Negative Red */}
+                                        <div className={`text-xl font-mono font-bold ${isPositive ? 'text-emerald-500' : 'text-rose-500'}`}>${bal.toLocaleString()}</div>
                                     </div>
                                 ); 
                             })}
                         </div>
+                    )}
+                 </div>
+             )}
+
+            {Object.entries(accountTypes).map(([typeKey, typeConfig]) => {
+                const typeAccounts = accounts.filter(a => a.type === typeKey);
+                if (typeAccounts.length === 0) return null;
+                const isExpanded = expandedTypes.includes(typeKey);
+                
+                return (
+                    <div key={typeKey} className="mb-6">
+                        <button 
+                            onClick={() => toggleSection(typeKey)}
+                            className="w-full text-left flex items-center gap-2 mb-3 pb-1 border-b border-muji-border"
+                        >
+                            <i data-lucide={isExpanded ? "chevron-down" : "chevron-right"} className="w-4 h-4 text-muji-muted"></i>
+                            <h4 className="text-muji-muted text-sm font-bold flex items-center gap-2">
+                                <i data-lucide={typeConfig.icon} className="w-4 h-4"></i> {typeConfig.label}
+                            </h4>
+                        </button>
+                        
+                        {isExpanded && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 animate-fade">
+                                {typeAccounts.map(acc => { 
+                                    const bal = window.calculateBalance(data, acc.id); 
+                                    const isPositive = bal >= 0;
+                                    return (
+                                        <div key={acc.id} onClick={() => setSelectedAccount(acc.id)} className="bg-white p-4 rounded-xl border border-muji-border hover:border-muji-accent hover:shadow-md transition-all cursor-pointer relative group">
+                                            <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 flex gap-2">
+                                                <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '餘額校正', value: '', value2: '', type: 'calibrate_account', data: acc.id, extra: bal });}} className="p-1 hover:bg-muji-bg rounded text-muji-muted hover:text-muji-accent">
+                                                    <i data-lucide="sliders-horizontal" className="w-3 h-3"></i>
+                                                </button>
+                                                <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '修改帳戶', value: acc.name, value2: acc.balance || 0, type: 'edit_account', data: acc.id, extra: acc.type });}} className="p-1 hover:bg-muji-bg rounded text-muji-muted hover:text-muji-accent">
+                                                    <i data-lucide="pencil" className="w-3 h-3"></i>
+                                                </button>
+                                                <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '刪除', value: '確認', type: 'delete_account', data: acc.id });}} className="p-1 hover:bg-muji-bg rounded text-muji-muted hover:text-muji-red">
+                                                    <i data-lucide="trash-2" className="w-3 h-3"></i>
+                                                </button>
+                                            </div>
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <div className="w-10 h-10 rounded-full border-2 border-muji-text/20 flex items-center justify-center text-muji-text text-xl">
+                                                    <i data-lucide={typeConfig.icon} className="w-5 h-5"></i>
+                                                </div>
+                                                <div className="font-bold text-base text-muji-text truncate">{acc.name}</div>
+                                            </div>
+                                            {/* Updated color logic: Positive Green, Negative Red */}
+                                            <div className={`text-xl font-mono font-bold ${isPositive ? 'text-emerald-500' : 'text-rose-500'}`}>${bal.toLocaleString()}</div>
+                                        </div>
+                                    ); 
+                                })}
+                            </div>
+                        )}
                     </div>
                 );
             })}
