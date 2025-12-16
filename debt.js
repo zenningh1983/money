@@ -10,6 +10,8 @@ window.DebtView = ({ data, saveData, showToast, openEditTransaction }) => {
     
     const userAccounts = data.accounts.filter(a => a.userId === data.currentUser || (!a.userId && data.currentUser === 'default'));
     const debts = window.getDebtSummary(data, data.currentUser);
+    const categoryGroups = data.settings?.categoryGroups || window.DEFAULT_CATEGORY_GROUPS;
+    const flatCategories = useMemo(() => window.getFlatCategories(categoryGroups), [categoryGroups]);
 
     useEffect(() => { window.refreshIcons(); }, [viewingTarget]);
 
@@ -20,14 +22,7 @@ window.DebtView = ({ data, saveData, showToast, openEditTransaction }) => {
             const isDirectDebt = (t.type === 'advance' || t.type === 'repay') && t.targetName === targetName;
             const isSplitDebt = t.type === 'expense' && t.splits && t.splits.some(s => s.name === targetName);
             return isOwner && (isDirectDebt || isSplitDebt);
-        }).sort((a, b) => {
-            const dateDiff = new Date(b.date) - new Date(a.date);
-            if (dateDiff !== 0) return dateDiff;
-            // Sort by ID descending (Newest first)
-            if (b.id < a.id) return -1;
-            if (b.id > a.id) return 1;
-            return 0;
-        });
+        }).sort((a, b) => new Date(b.date) - new Date(a.date));
     };
 
     // Calculate total whenever selection changes
@@ -93,8 +88,7 @@ window.DebtView = ({ data, saveData, showToast, openEditTransaction }) => {
             categoryId: '' 
         });
 
-        // Modification 1: Removed logic that creates adjustment repayment/expense for settlement
-        // We only record the actual repayment amount now.
+        // Modification: No extra adjustment transactions as requested previously
         
         saveData({ ...data, transactions: [...data.transactions, ...newTxs] }); 
         setViewingTarget(null); 
@@ -123,107 +117,144 @@ window.DebtView = ({ data, saveData, showToast, openEditTransaction }) => {
          }
     };
     
-    // Render detail list
-    const renderDetailList = () => {
-        if (!viewingTarget) return null;
+    // If viewing a target, show the Detail View (Full Page)
+    if (viewingTarget) {
         const txs = getTargetTransactions(viewingTarget);
-        
-        let selectedTotal = 0;
-        txs.forEach(tx => {
+        const debtTxs = txs.filter(t => t.type !== 'repay');
+        const selectedTotal = txs.reduce((acc, tx) => {
             if(selectedDebtTxIds.includes(tx.id)) {
-                 if (tx.type === 'advance') selectedTotal += tx.amount;
-                 else if (tx.type === 'expense') {
+                 if (tx.type === 'advance') return acc + tx.amount;
+                 if (tx.type === 'expense') {
                       const split = tx.splits?.find(s => s.name === viewingTarget);
-                      if (split) selectedTotal += parseFloat(split.amount);
+                      return acc + (parseFloat(split?.amount || 0));
                  }
             }
-        });
+            return acc;
+        }, 0);
 
         return (
-            <div className="space-y-4">
-                <div className="flex justify-between items-center mb-2">
-                    <div className="font-bold text-lg">{viewingTarget} 明細</div>
+            <div className="h-full flex flex-col animate-fade p-6 md:p-10 relative">
+                {/* Header */}
+                <div className="flex items-center gap-4 mb-4">
+                    <button 
+                        onClick={() => setViewingTarget(null)} 
+                        className="p-2 hover:bg-black/5 rounded-full transition-colors"
+                    >
+                        <i data-lucide="arrow-left" className="w-6 h-6 text-muji-text"></i>
+                    </button>
+                    <h3 className="text-2xl font-bold text-muji-text flex-1">{viewingTarget} 的往來明細</h3>
                 </div>
-                <div className="max-h-[50vh] overflow-y-auto custom-scrollbar space-y-2 p-1 border border-muji-border rounded-lg">
-                    <div className="flex justify-between items-center p-2 bg-muji-bg rounded-t-lg">
-                         <button onClick={() => toggleSelectAll(txs)} className="text-xs text-muji-accent underline font-bold px-1">
-                             {selectedDebtTxIds.length === txs.filter(t => t.type !== 'repay').length ? '取消全選' : '全選未還'}
-                         </button>
-                         <span className="text-xs text-muji-muted">點擊明細可編輯</span>
-                    </div>
-                    {txs.map(tx => { 
-                        let amount = 0; 
-                        let label = ''; 
-                        let isDebt = false;
 
-                        if(tx.type === 'advance') { amount = tx.amount; label = '代墊借出'; isDebt = true; } 
-                        else if(tx.type === 'repay') { amount = tx.amount; label = '已還款'; } 
-                        else if (tx.type === 'expense') { 
-                            // Ensure splits and split amounts exist before accessing
-                            const split = tx.splits?.find(s => s.name === viewingTarget); 
-                            amount = parseFloat(split?.amount || 0); 
-                            label = '分帳支出'; 
-                            isDebt = true;
-                        } 
-                        
-                        return (
-                            <div 
-                                key={tx.id} 
-                                className={`flex items-center p-3 border rounded-lg transition-colors ${isDebt ? 'bg-white border-muji-border' : 'bg-teal-50/20 border-teal-200 opacity-75'}`}
-                                onClick={() => { 
-                                    // Modification 2: Click anywhere on the row (except checkbox) opens edit
-                                    setViewingTarget(null); // Close the detail modal
-                                    openEditTransaction(tx); // Open the transaction edit modal
-                                }}
-                            >
-                                {isDebt && (
+                {/* Table Container */}
+                <div className="flex-1 overflow-auto bg-white rounded-xl border border-muji-border shadow-sm mb-4 relative">
+                    <table className="w-full text-left text-sm whitespace-nowrap">
+                        <thead className="bg-muji-bg text-muji-muted font-medium sticky top-0 z-10 border-b border-muji-border">
+                            <tr>
+                                <th className="p-4 w-10 text-center">
                                     <input 
                                         type="checkbox" 
-                                        className="mr-3 w-5 h-5 accent-muji-accent"
-                                        checked={selectedDebtTxIds.includes(tx.id)}
-                                        onChange={() => toggleSelectTx(tx.id)}
-                                        onClick={(e) => e.stopPropagation()} // Stop propagation to prevent opening edit modal when clicking checkbox
+                                        className="w-4 h-4 accent-muji-accent cursor-pointer"
+                                        checked={debtTxs.length > 0 && selectedDebtTxIds.length === debtTxs.length}
+                                        onChange={() => toggleSelectAll(txs)}
                                     />
-                                )}
-                                <div className="flex-1 cursor-pointer">
-                                    <div className="flex justify-between items-center">
-                                        <div>
-                                            <div className="text-xs text-muji-muted mb-0.5">{tx.date} <span className="ml-2 font-bold">{label}</span></div>
-                                            {tx.note && <div className="text-sm text-muji-text font-medium mt-0.5">{tx.note}</div>}
-                                        </div>
-                                        <div className={`font-mono font-bold ${isDebt ? 'text-orange-500' : 'text-teal-600'}`}>
-                                            {isDebt ? '+' : '-'}${amount.toLocaleString()}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ); 
-                    })}
+                                </th>
+                                <th className="p-4">日期</th>
+                                <th className="p-4">分類</th>
+                                <th className="p-4">備註</th>
+                                <th className="p-4 text-right">金額</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-muji-border">
+                            {txs.map(tx => { 
+                                let amount = 0; 
+                                let catName = ''; 
+                                let isDebt = false;
+
+                                if(tx.type === 'advance') { 
+                                    amount = tx.amount; 
+                                    catName = '代墊'; 
+                                    isDebt = true; 
+                                } else if(tx.type === 'repay') { 
+                                    amount = tx.amount; 
+                                    catName = '還款'; 
+                                } else if (tx.type === 'expense') { 
+                                    const split = tx.splits?.find(s => s.name === viewingTarget); 
+                                    amount = parseFloat(split?.amount || 0); 
+                                    const cat = flatCategories[tx.categoryId] || {};
+                                    catName = cat.name || '分帳';
+                                    isDebt = true;
+                                } 
+                                
+                                return (
+                                    <tr 
+                                        key={tx.id} 
+                                        className={`hover:bg-muji-hover transition-colors cursor-pointer ${!isDebt ? 'bg-teal-50/30' : ''}`}
+                                        onClick={() => openEditTransaction(tx)}
+                                    >
+                                        <td className="p-4 text-center" onClick={(e) => e.stopPropagation()}>
+                                            {isDebt && (
+                                                <input 
+                                                    type="checkbox" 
+                                                    className="w-4 h-4 accent-muji-accent cursor-pointer"
+                                                    checked={selectedDebtTxIds.includes(tx.id)}
+                                                    onChange={() => toggleSelectTx(tx.id)}
+                                                />
+                                            )}
+                                        </td>
+                                        <td className="p-4 font-mono text-muji-muted">{tx.date}</td>
+                                        <td className="p-4">
+                                            <span className={`px-2 py-1 rounded text-xs font-bold ${!isDebt ? 'bg-teal-100 text-teal-700' : 'bg-muji-bg text-muji-text border border-muji-border'}`}>
+                                                {catName}
+                                            </span>
+                                        </td>
+                                        <td className="p-4 text-muji-text truncate max-w-[150px]">{tx.note || '-'}</td>
+                                        <td className={`p-4 text-right font-mono font-bold ${isDebt ? 'text-orange-500' : 'text-teal-600'}`}>
+                                            {isDebt ? '+' : '-'}{amount.toLocaleString()}
+                                        </td>
+                                    </tr>
+                                ); 
+                            })}
+                            {txs.length === 0 && <tr><td colSpan="5" className="p-8 text-center text-muji-muted">無交易紀錄</td></tr>}
+                        </tbody>
+                    </table>
                 </div>
-                
-                {/* Repay Action Area */}
-                <div className="pt-4 border-t border-muji-border">
-                    <div className="flex flex-col gap-3">
-                         <div className="flex justify-between items-center text-sm font-bold">
-                             <span>選取總額: <span className="text-muji-muted font-normal">${selectedTotal.toLocaleString()}</span></span>
-                         </div>
-                         <div className="flex items-center gap-2">
-                             <label className="text-sm font-bold whitespace-nowrap">實際還款:</label>
-                             <input 
-                                type="number" 
-                                className="flex-1 p-2 bg-white rounded border border-muji-border text-sm font-mono font-bold text-muji-accent"
-                                placeholder="輸入金額"
-                                value={repayAmount}
-                                onChange={(e) => setRepayAmount(e.target.value)}
-                             />
-                         </div>
-                         <select className="w-full p-2 bg-muji-card rounded border border-muji-border text-sm" value={repayAccountId} onChange={e => setRepayAccountId(e.target.value)}>
-                            <option value="">選擇存入帳戶 (還款來源)...</option>
-                            {userAccounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                         </select>
-                         <button onClick={handlePreRepay} disabled={selectedDebtTxIds.length === 0 || !repayAccountId} className={`w-full py-3 rounded-lg font-bold shadow-sm text-white ${selectedDebtTxIds.length > 0 && repayAccountId ? 'bg-muji-accent' : 'bg-gray-300'}`}>
-                             確認還款
-                         </button>
+
+                {/* Fixed Bottom Action Bar */}
+                <div className="bg-white p-4 rounded-xl border border-muji-border shadow-lg space-y-4">
+                    <div className="flex flex-col md:flex-row gap-4 items-end md:items-center">
+                        <div className="flex-1 w-full space-y-1">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-muji-muted">選取總額</span>
+                                <span className="font-mono font-bold text-muji-text">${selectedTotal.toLocaleString()}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <label className="text-sm font-bold whitespace-nowrap text-muji-text">實際還款</label>
+                                <input 
+                                    type="number" 
+                                    className="flex-1 p-2 bg-muji-bg rounded border border-muji-border text-sm font-mono font-bold text-muji-accent focus:border-muji-accent outline-none"
+                                    placeholder="輸入金額"
+                                    value={repayAmount}
+                                    onChange={(e) => setRepayAmount(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                        <div className="flex-1 w-full">
+                            <select 
+                                className="w-full p-2.5 bg-muji-bg rounded border border-muji-border text-sm text-muji-text focus:border-muji-accent outline-none" 
+                                value={repayAccountId} 
+                                onChange={e => setRepayAccountId(e.target.value)}
+                            >
+                                <option value="">選擇存入帳戶 (還款來源)...</option>
+                                {userAccounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                            </select>
+                        </div>
+                        <button 
+                            onClick={handlePreRepay} 
+                            disabled={selectedDebtTxIds.length === 0 || !repayAccountId} 
+                            className={`w-full md:w-auto px-6 py-2.5 rounded-lg font-bold shadow-sm text-white transition-colors whitespace-nowrap ${selectedDebtTxIds.length > 0 && repayAccountId ? 'bg-muji-accent hover:opacity-90' : 'bg-gray-300 cursor-not-allowed'}`}
+                        >
+                            確認還款
+                        </button>
                     </div>
                 </div>
 
@@ -248,26 +279,24 @@ window.DebtView = ({ data, saveData, showToast, openEditTransaction }) => {
                 )}
             </div>
         );
-    };
+    }
 
+    // Default Debt List View
     return (
-        <React.Fragment> 
-            <div className="p-6 md:p-10 animate-fade space-y-8">
-                <h3 className="text-2xl font-bold text-muji-text mb-4">債務管理</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {Object.entries(debts).map(([name, amount]) => {
-                        if (amount === 0) return null;
-                        return (
-                            <div key={name} onClick={() => { setViewingTarget(name); setSelectedDebtTxIds([]); }} className="bg-muji-card p-5 rounded-xl border border-muji-border shadow-sm flex flex-col justify-between h-32 cursor-pointer hover:shadow-md transition-all group">
-                                <div className="flex justify-between items-start"><div className="font-bold text-lg text-muji-text group-hover:text-muji-accent transition-colors">{name}</div><span className={`text-xs px-2 py-1 rounded ${amount > 0 ? 'bg-orange-100 text-orange-600 border border-orange-500/30' : 'bg-teal-100 text-teal-600 border border-teal-500/30'}`}>{amount > 0 ? '欠款' : '溢繳'}</span></div>
-                                <div className="flex justify-between items-end"><div className={`text-2xl font-mono font-bold ${amount > 0 ? 'text-orange-500' : 'text-teal-400'}`}>${Math.abs(amount).toLocaleString()}</div><div className="text-xs text-muji-muted">點擊查看/還款</div></div>
-                            </div>
-                        );
-                    })}
-                    {Object.keys(debts).length === 0 && <div className="col-span-full text-center py-8 text-muji-muted border border-dashed border-muji-border rounded-xl">目前沒有債務紀錄</div>}
-                </div>
-                {viewingTarget && <window.Modal title={`${viewingTarget} 的往來明細`} onClose={() => setViewingTarget(null)}>{renderDetailList()}</window.Modal>}
+        <div className="p-6 md:p-10 animate-fade space-y-8">
+            <h3 className="text-2xl font-bold text-muji-text mb-4">債務管理</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {Object.entries(debts).map(([name, amount]) => {
+                    if (amount === 0) return null;
+                    return (
+                        <div key={name} onClick={() => { setViewingTarget(name); setSelectedDebtTxIds([]); }} className="bg-muji-card p-5 rounded-xl border border-muji-border shadow-sm flex flex-col justify-between h-32 cursor-pointer hover:shadow-md transition-all group">
+                            <div className="flex justify-between items-start"><div className="font-bold text-lg text-muji-text group-hover:text-muji-accent transition-colors">{name}</div><span className={`text-xs px-2 py-1 rounded ${amount > 0 ? 'bg-orange-100 text-orange-600 border border-orange-500/30' : 'bg-teal-100 text-teal-600 border border-teal-500/30'}`}>{amount > 0 ? '欠款' : '溢繳'}</span></div>
+                            <div className="flex justify-between items-end"><div className={`text-2xl font-mono font-bold ${amount > 0 ? 'text-orange-500' : 'text-teal-400'}`}>${Math.abs(amount).toLocaleString()}</div><div className="text-xs text-muji-muted">點擊查看/還款</div></div>
+                        </div>
+                    );
+                })}
+                {Object.keys(debts).length === 0 && <div className="col-span-full text-center py-8 text-muji-muted border border-dashed border-muji-border rounded-xl">目前沒有債務紀錄</div>}
             </div>
-        </React.Fragment>
+        </div>
     );
 };

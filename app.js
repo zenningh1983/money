@@ -105,14 +105,15 @@ window.DashboardView = ({ data, setData, saveData, setView, setSelectedAccount, 
                 )}
             </div>
 
-            <div className="bg-white rounded-2xl p-10 text-center shadow-[0_0_30px_rgba(14,165,233,0.1)] border border-muji-border relative min-h-[160px] flex flex-col justify-center items-center backdrop-blur-sm z-10">
-                <div className="text-muji-muted text-sm font-medium mb-4 flex items-center justify-center gap-2 font-mono tracking-widest uppercase">
+            {/* Total Assets Card - Resized to match Debt Management card height (h-32) */}
+            <div className="bg-white rounded-2xl p-6 text-center shadow-[0_0_30px_rgba(14,165,233,0.1)] border border-muji-border relative h-32 flex flex-col justify-center items-center backdrop-blur-sm z-10">
+                <div className="text-muji-muted text-sm font-medium mb-2 flex items-center justify-center gap-2 font-mono tracking-widest uppercase">
                     總資產 
                     <button onClick={(e) => { e.stopPropagation(); setShowAssets(!showAssets); }} className="hover:text-muji-accent transition p-1 rounded-full flex items-center justify-center w-6 h-6" key={`eye-${showAssets}`}>
                         {showAssets ? <i data-lucide="eye" className="w-4 h-4"></i> : <i data-lucide="eye-off" className="w-4 h-4"></i>}
                     </button>
                 </div>
-                <div className="text-6xl font-bold text-muji-text tracking-tighter tabular-nums font-mono drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">{showAssets ? `$${totalAssets.toLocaleString()}` : '****'}</div>
+                <div className="text-5xl font-bold text-muji-text tracking-tighter tabular-nums font-mono drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">{showAssets ? `$${totalAssets.toLocaleString()}` : '****'}</div>
             </div>
 
             {monthlyStats.expense > monthlyStats.income && (
@@ -154,8 +155,7 @@ window.App = () => {
     const [editMode, setEditMode] = useState(false);
     const [transactionData, setTransactionData] = useState(null);
 
-    // inputModal extended with value2 for Amounts
-    const [inputModal, setInputModal] = useState({ show: false, title: '', value: '', value2: '', type: '', data: null, extra: null });
+    const [inputModal, setInputModal] = useState({ show: false, title: '', value: '', type: '', data: null, extra: null });
     const dailyQuote = useMemo(() => { const d = new Date().getDate(); return window.QUOTES[(d - 1) % window.QUOTES.length] || window.QUOTES[0]; }, []);
     const showToast = useCallback((msg, type = 'info') => setToast({ message: msg, type }), []);
     useEffect(() => { if (window.lucide) { window.lucide.createIcons(); setTimeout(() => window.lucide.createIcons(), 50); } });
@@ -207,9 +207,8 @@ window.App = () => {
 
     const handleInputConfirm = () => {
         const val = inputModal.value ? inputModal.value.trim() : '';
-        const val2 = inputModal.value2 ? parseFloat(inputModal.value2) : 0; // Amount / Balance
         
-        if (!val && !inputModal.type.includes('delete') && inputModal.type !== 'reset_settings' && inputModal.type !== 'calibrate_account') {
+        if (!val && !inputModal.type.includes('delete') && inputModal.type !== 'reset_settings') {
              showToast('請輸入名稱', 'error');
              return;
         }
@@ -240,43 +239,15 @@ window.App = () => {
                     id: `acc_${Date.now()}`, 
                     name: val, 
                     type: inputModal.extra || 'cash', 
-                    balance: val2, // Initial Balance
+                    balance: 0, 
                     userId: newData.currentUser 
                 });
                 successMessage = '已新增帳戶';
                 break;
                 
-            case 'edit_account': // Handles both Rename & Initial Balance & Type
-                newData.accounts = newData.accounts.map(a => a.id === inputModal.data ? { 
-                    ...a, 
-                    name: val, 
-                    type: inputModal.extra || a.type,
-                    balance: val2 
-                } : a);
-                successMessage = '帳戶資訊已更新';
-                break;
-
-            case 'calibrate_account':
-                const accountId = inputModal.data;
-                const currentCalculated = window.calculateBalance(newData, accountId);
-                const diff = val2 - currentCalculated;
-                
-                if (Math.abs(diff) > 0) {
-                    const newTx = {
-                        id: Date.now().toString(),
-                        date: new Date().toISOString().split('T')[0],
-                        type: diff > 0 ? 'income' : 'expense',
-                        accountId: accountId,
-                        amount: Math.abs(diff),
-                        note: '餘額校正',
-                        categoryId: 'other_其他',
-                        splits: []
-                    };
-                    newData.transactions.push(newTx);
-                    successMessage = `已校正餘額 (新增${diff > 0 ? '收入' : '支出'} $${Math.abs(diff).toLocaleString()})`;
-                } else {
-                    successMessage = '餘額一致，無需調整';
-                }
+            case 'rename_account': 
+                newData.accounts = newData.accounts.map(a => a.id === inputModal.data ? { ...a, name: val, type: inputModal.extra || a.type } : a);
+                successMessage = '帳戶名稱已更新';
                 break;
                 
             case 'delete_account': 
@@ -376,74 +347,7 @@ window.App = () => {
             {toast && <window.Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
             
             {/* Input Modal */}
-            {inputModal.show && (
-                <window.Modal title={inputModal.title} onClose={() => setInputModal({ ...inputModal, show: false })}>
-                    <div className="space-y-4">
-                        
-                        {(inputModal.type === 'add_account' || inputModal.type === 'edit_account') && (
-                            <>
-                                <div className="flex bg-muji-bg rounded-lg p-1 mb-2 overflow-x-auto no-scrollbar">
-                                    {Object.entries(data.settings?.accountTypes || window.DEFAULT_ACCOUNT_TYPES).map(([key, config]) => (
-                                        <button key={key} onClick={() => setInputModal({...inputModal, extra: key})} className={`flex-1 min-w-[3rem] py-2 rounded text-xs font-bold transition flex flex-col items-center gap-1 ${inputModal.extra === key || (!inputModal.extra && key === 'cash') ? 'bg-white shadow-sm text-muji-accent' : 'text-muji-muted'}`}>
-                                            <i data-lucide={config.icon} className="w-4 h-4"></i> {config.label}
-                                        </button>
-                                    ))}
-                                </div>
-                                <input autoFocus className="w-full p-3 bg-muji-bg rounded-lg border-none focus:ring-1 focus:ring-muji-accent" value={inputModal.value} onChange={(e) => setInputModal({ ...inputModal, value: e.target.value })} placeholder="帳戶名稱" />
-                                <div className="relative">
-                                    <span className="absolute left-3 top-3 text-muji-muted text-xs font-bold z-10">初始金額</span>
-                                    <input 
-                                        type="number" 
-                                        className="w-full p-3 pl-20 bg-muji-bg rounded-lg border-none focus:ring-1 focus:ring-muji-accent text-right font-mono font-bold" 
-                                        value={inputModal.value2} 
-                                        onChange={(e) => setInputModal({ ...inputModal, value2: e.target.value })} 
-                                        placeholder="0" 
-                                    />
-                                </div>
-                                <button onClick={handleInputConfirm} className="w-full py-3 rounded-lg font-bold shadow-sm text-white bg-muji-accent">確認</button>
-                            </>
-                        )}
-                        
-                        {inputModal.type === 'calibrate_account' && (
-                            <>
-                                <div className="text-center mb-4 p-4 bg-muji-bg rounded-xl">
-                                    <div className="text-xs text-muji-muted mb-1">系統計算餘額</div>
-                                    <div className="text-3xl font-bold font-mono text-muji-text">${(inputModal.extra || 0).toLocaleString()}</div>
-                                </div>
-                                <div className="relative">
-                                    <span className="absolute left-3 top-3 text-muji-muted text-xs font-bold z-10">實際餘額</span>
-                                    <input 
-                                        type="number" 
-                                        autoFocus 
-                                        className="w-full p-3 pl-20 bg-muji-bg rounded-lg border-none focus:ring-1 focus:ring-muji-accent text-right font-mono font-bold text-lg" 
-                                        value={inputModal.value2} 
-                                        onChange={(e) => setInputModal({ ...inputModal, value2: e.target.value })} 
-                                        placeholder="輸入實際金額" 
-                                    />
-                                </div>
-                                <p className="text-xs text-muji-muted text-center">系統將自動新增一筆收支以補平差額</p>
-                                <button onClick={handleInputConfirm} className="w-full py-3 rounded-lg font-bold shadow-sm text-white bg-muji-accent">確認校正</button>
-                            </>
-                        )}
-
-                        {(inputModal.type.includes('delete') || inputModal.type === 'reset_settings') && (
-                            <div className="text-center">
-                                <p className="text-muji-muted text-sm mb-4">此操作無法復原。</p>
-                                <button autoFocus onClick={handleInputConfirm} className="w-full py-3 rounded-lg font-bold shadow-sm text-white bg-muji-red">確認刪除/重置</button>
-                            </div>
-                        )}
-                        
-                        {/* Fallback for simple rename ledger / generic inputs */}
-                        {(inputModal.type === 'rename_ledger' || inputModal.type === 'rename_account' /* Legacy fallback */) && (
-                            <>
-                                <input autoFocus className="w-full p-3 bg-muji-bg rounded-lg border-none focus:ring-1 focus:ring-muji-accent" value={inputModal.value} onChange={(e) => setInputModal({ ...inputModal, value: e.target.value })} onKeyDown={(e) => e.key === 'Enter' && handleInputConfirm()} placeholder="請輸入名稱" />
-                                <button onClick={handleInputConfirm} className="w-full py-3 rounded-lg font-bold shadow-sm text-white bg-muji-accent">確認</button>
-                            </>
-                        )}
-
-                    </div>
-                </window.Modal>
-            )}
+            {inputModal.show && <window.Modal title={inputModal.title} onClose={() => setInputModal({ ...inputModal, show: false })}><div className="space-y-4">{(inputModal.type === 'add_account' || inputModal.type === 'rename_account') && <div className="flex bg-muji-bg rounded-lg p-1 mb-2 overflow-x-auto no-scrollbar">{Object.entries(data.settings?.accountTypes || window.DEFAULT_ACCOUNT_TYPES).map(([key, config]) => (<button key={key} onClick={() => setInputModal({...inputModal, extra: key})} className={`flex-1 min-w-[3rem] py-2 rounded text-xs font-bold transition flex flex-col items-center gap-1 ${inputModal.extra === key || (!inputModal.extra && key === 'cash') ? 'bg-white shadow-sm text-muji-accent' : 'text-muji-muted'}`}><i data-lucide={config.icon} className="w-4 h-4"></i> {config.label}</button>))}</div>}{(inputModal.type.includes('delete') || inputModal.type === 'reset_settings') ? <div className="text-center"><p className="text-muji-muted text-sm mb-4">此操作無法復原。</p><button autoFocus onClick={handleInputConfirm} className="w-full py-3 rounded-lg font-bold shadow-sm text-white bg-muji-red">確認刪除/重置</button></div> : <><input autoFocus className="w-full p-3 bg-muji-bg rounded-lg border-none focus:ring-1 focus:ring-muji-accent" value={inputModal.value} onChange={(e) => setInputModal({ ...inputModal, value: e.target.value })} onKeyDown={(e) => e.key === 'Enter' && handleInputConfirm()} placeholder="請輸入名稱" /><button onClick={handleInputConfirm} className="w-full py-3 rounded-lg font-bold shadow-sm text-white bg-muji-accent">確認</button></>}</div></window.Modal>}
             
             {isTransactionModalOpen && (
                 <window.TransactionModal 

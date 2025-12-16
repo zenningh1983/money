@@ -165,9 +165,8 @@ window.autoTag = (note) => {
     if (lowerNote.includes('008') && (lowerNote.includes('118100075578'))) {
         return 'parenting_補習班';
     }
-    // New rule for 安親班
-    if (lowerNote.includes('007') && (lowerNote.includes('16768032983'))) {
-        return 'parenting_安親班'; // Ensure this category exists or map to parenting_補習班 if not
+    if (lowerNote.includes('007') && (lowerNote.includes('0000016768032983'))) {
+        return 'parenting_安親班';
     }
     
     // Priority 2: Investment Expenses
@@ -179,7 +178,6 @@ window.autoTag = (note) => {
     if (lowerNote.includes('管理費')) {
         return 'home_管理費';
     }
-    // New rule for food
     if (lowerNote.includes('電支交易') || lowerNote.includes('一卡通票證')) {
         return 'food_三餐';
     }
