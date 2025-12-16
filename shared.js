@@ -85,7 +85,11 @@ window.KEYWORD_MAPPING = {
     '收益分配': 'passive_股息', '基金配息': 'passive_股息', '配息': 'passive_股息',
     '存款息': 'passive_利息',
     '交割股款': 'invest_ETF',
-    '管理費': 'home_管理費'
+    '管理費': 'home_管理費',
+    '電支交易': 'food_三餐',
+    '一卡通票證': 'food_三餐',
+    '0080000118100075578': 'parenting_補習班',
+    '0070000016768032983': 'parenting_安親班'
 };
 
 window.QUOTES = [
@@ -157,14 +161,27 @@ window.autoTag = (note) => {
         return 'passive_利息';
     }
     
-    // Priority 1: Investment Expenses (High Priority)
-    if (lowerNote.includes('交割股款')) {
-        return 'invest_ETF'; // Could also be 'invest_個股'
+    // Priority 1: Specific Account Rules (High Priority)
+    if (lowerNote.includes('008') && (lowerNote.includes('118100075578'))) {
+        return 'parenting_補習班';
+    }
+    // New rule for 安親班
+    if (lowerNote.includes('007') && (lowerNote.includes('16768032983'))) {
+        return 'parenting_安親班'; // Ensure this category exists or map to parenting_補習班 if not
     }
     
-    // Priority 1.5: Home Expenses
+    // Priority 2: Investment Expenses
+    if (lowerNote.includes('交割股款')) {
+        return 'invest_ETF'; 
+    }
+    
+    // Priority 3: Home/Life/Food
     if (lowerNote.includes('管理費')) {
         return 'home_管理費';
+    }
+    // New rule for food
+    if (lowerNote.includes('電支交易') || lowerNote.includes('一卡通票證')) {
+        return 'food_三餐';
     }
 
     // Group 1: Food

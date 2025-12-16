@@ -77,11 +77,9 @@ const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, fla
     const totalAmount = parseFloat(amount) || 0;
     const safeSplits = Array.isArray(splits) ? splits : [];
     
-    // State for modal category selection
     const [selectingCategoryIdx, setSelectingCategoryIdx] = useState(null);
-    const [selectedGroup, setSelectedGroup] = useState('food'); // Default group for selector
+    const [selectedGroup, setSelectedGroup] = useState('food'); 
 
-    // Auto-init "Me" row only if splits are completely empty and amount is set
     useEffect(() => {
         if (safeSplits.length === 0 && totalAmount > 0) {
             setSplits([{ 
@@ -113,7 +111,6 @@ const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, fla
         let newSplit = { ...newSplits[idx], [field]: val };
 
         if(field === 'categoryId') {
-            // Just update category
         } else if (field === 'owner') {
             if (val === 'me') {
                 newSplit.name = '我';
@@ -149,7 +146,6 @@ const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, fla
 
         newSplits[idx] = newSplit;
 
-        // Auto-balance logic: Find first "Me" row and adjust it
         const mainMeIndex = newSplits.findIndex(s => s.owner === 'me');
         if (mainMeIndex !== -1 && idx !== mainMeIndex) {
             const otherSum = newSplits.reduce((sum, s, i) => {
@@ -168,7 +164,6 @@ const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, fla
     
     const removeSplit = (idx) => {
         let newSplits = safeSplits.filter((_, i) => i !== idx);
-        // If we removed a row, try to give back to "Me"
         const mainMeIndex = newSplits.findIndex(s => s.owner === 'me');
         if (mainMeIndex !== -1) {
              const otherSum = newSplits.reduce((sum, s, i) => {
@@ -206,12 +201,10 @@ const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, fla
                                     <option value="__add_new__">+ 新增對象...</option>
                                 </select>
                                 
-                                {/* Trigger Category Selector */}
                                 <button 
                                     className="flex-1 p-1.5 bg-muji-bg rounded border border-muji-border text-xs text-muji-text flex items-center justify-between"
                                     onClick={() => {
                                         setSelectingCategoryIdx(idx);
-                                        // Set initial group
                                         if (cat.group) {
                                             let foundGroupId = 'food';
                                             for(let type in categoryGroups) {
@@ -263,7 +256,6 @@ const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, fla
             </div>
             <button onClick={addSplit} className="w-full py-2 border border-dashed border-muji-accent text-muji-accent text-xs rounded hover:bg-white transition-colors flex items-center justify-center gap-1 mt-3"><i data-lucide="plus" className="w-3 h-3"></i> 新增明細 (分帳/多類別)</button>
 
-            {/* Category Selection Modal */}
             {selectingCategoryIdx !== null && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-pop" onClick={() => setSelectingCategoryIdx(null)}>
                     <div className="bg-muji-card w-full max-w-sm rounded-xl shadow-2xl overflow-hidden border border-muji-border flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
@@ -273,7 +265,7 @@ const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, fla
                         </div>
                         <div className="p-4 overflow-y-auto custom-scrollbar">
                             <CategorySelector 
-                                type="expense" // Split is usually for expense
+                                type="expense" 
                                 categoryGroups={categoryGroups}
                                 selectedGroup={selectedGroup}
                                 setSelectedGroup={setSelectedGroup}
@@ -306,10 +298,8 @@ window.SmartImportModal = ({ onClose, importText, setImportText, previewData, se
 
     const handleAttemptClose = (reason) => {
         if (reason === 'close_btn') {
-            // "叉叉不用問" (Directly close on X click)
             onClose();
         } else {
-             // "其他點外面或是 esc key 要問" (Show confirm for backdrop or Esc)
              if (previewData.length > 0 || importText.trim().length > 0) {
                  setShowExitConfirm(true);
              } else {
@@ -673,50 +663,8 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
         return userAccounts.filter(acc => recentAccountIds.includes(acc.id));
     };
 
-    // Calculate running balances for all transactions of this account
-    const balanceMap = useMemo(() => {
-        if (!selectedAccount) return {};
-        const acc = data.accounts.find(a => a.id === selectedAccount);
-        const initial = acc?.balance || 0;
-        
-        // Get ALL transactions for this account, sorted chronologically (Oldest -> Newest)
-        const allTxs = data.transactions.filter(t => 
-            t.accountId === selectedAccount || t.toAccountId === selectedAccount
-        ).sort((a, b) => {
-             const dateDiff = new Date(a.date) - new Date(b.date);
-             if (dateDiff !== 0) return dateDiff;
-             // Sort by ID Ascending (Oldest created first) for calculation
-             if (a.id < b.id) return -1;
-             if (a.id > b.id) return 1;
-             return 0;
-        });
-
-        const map = {};
-        let currentBal = initial;
-
-        allTxs.forEach(tx => {
-            const amount = parseFloat(tx.amount) || 0;
-            
-            if (tx.type === 'income' || (tx.type === 'repay' && tx.accountId === selectedAccount)) {
-                 currentBal += amount;
-            } else if (tx.type === 'expense' || (tx.type === 'advance' && tx.accountId === selectedAccount)) {
-                 currentBal -= amount;
-            } else if (tx.type === 'transfer') {
-                 if (tx.toAccountId === selectedAccount) {
-                     currentBal += amount;
-                 } else if (tx.accountId === selectedAccount) {
-                     currentBal -= amount;
-                 }
-            }
-            
-            map[tx.id] = currentBal;
-        });
-        
-        return map;
-    }, [data.transactions, selectedAccount, data.accounts]);
-
     const handleSmartImport = (targetAccountId, hintType) => {
-        // Robust mixed line parser
+        const rawLines = importText.split('\n').map(l => l.trim()).filter(l => l);
         const parsed = [];
         const currentYear = new Date().getFullYear();
         const parseNum = (str) => parseFloat(str.replace(/,/g, ''));
@@ -739,12 +687,17 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                   const targetAcc = userAccounts.find(a => a.name.includes('將來'));
                   if (targetAcc) return targetAcc.id;
              }
+             // User specific request
+             if (note.includes('007') && note.includes('16768032983')) {
+                  // No specific account, handled in category
+             }
+             if (note.includes('700') && note.includes('27210469163')) {
+                  const targetAcc = userAccounts.find(a => a.name.includes('郵局'));
+                  if (targetAcc) return targetAcc.id;
+             }
              return null;
         };
-
-        // Split by lines but keep original grouping if possible. 
-        // Here we just use a line-by-line scanner that accumulates a block until a new date is found.
-        const rawLines = importText.split('\n').map(l => l.trim()).filter(l => l);
+        
         let currentBlock = [];
 
         const processBlock = (block) => {
@@ -832,7 +785,7 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                 block.forEach((line, i) => {
                     let content = line.replace(/−/g, '-').replace(/\t/g, ' ');
                     if (i === 0 && dateMatch) content = content.replace(dateMatch[0], '');
-                    const noise = ['網銀轉帳', '信用卡款', '電子轉出', '跨行提款', '交易資訊', '備註', '說明', 'TWD', 'TW', '新臺幣金額', '交易說明', '消費日', '消費店家', '金額'];
+                    const noise = ['網銀轉帳', '信用卡款', '電子轉出', '跨行提款', '交易資訊', '備註', '說明', 'TWD', 'TW', '新臺幣金額', '交易說明', '消費日', '消費店家', '金額', '提款'];
                     noise.forEach(n => content = content.replace(n, ''));
                     content = content.replace(/-/g, '').trim();
                     const tokens = content.split(/\s+/);
@@ -852,14 +805,37 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                 
                 let toAccountId = '';
                 const detectedTransferId = detectTransferTarget(note);
-                if (detectedTransferId && type === 'expense') {
-                    type = 'transfer';
-                    toAccountId = detectedTransferId;
+                
+                // Specific rule: '提款' or '轉帳' might imply transfer if not expense
+                // But user specifically asked for '提款' -> Transfer to Cash
+                if (block.some(l => l.includes('提款'))) {
+                     type = 'transfer';
+                     // Find cash account
+                     const cashAcc = userAccounts.find(a => a.type === 'cash');
+                     if(cashAcc) toAccountId = cashAcc.id;
+                }
+                
+                // General detected transfer
+                if (detectedTransferId) {
+                    if (type === 'expense') {
+                        type = 'transfer';
+                        toAccountId = detectedTransferId;
+                    } else if (type === 'income') {
+                         // Incoming transfer logic
+                         type = 'transfer';
+                         // Since imported data is "Income", it means Target Account RECEIVED money from Detected Account.
+                         // So accountId = Detected, toAccountId = Target
+                         // But we construct object relative to import view
+                         // We will swap later
+                         toAccountId = targetAccountId; 
+                         // Flag for swapping in array push
+                    }
                 }
                 
                 if (!note) note = "一般消費";
-
-                parsed.push({
+                
+                // Final Object Construction
+                const txObj = {
                     id: '', 
                     date: dateStr,
                     amount: amount,
@@ -870,7 +846,24 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                     toAccountId: toAccountId, 
                     targetName: '', 
                     splits: []
-                });
+                };
+
+                // Swap logic for Income Transfer (Importing into 'Bank A', Note says 'From Post Office')
+                if (type === 'transfer' && detectedTransferId && toAccountId === targetAccountId) {
+                     txObj.accountId = detectedTransferId; // From Post Office
+                     txObj.toAccountId = targetAccountId; // To Bank A
+                }
+                
+                // Specific rule: Credit Card payment -> Transfer to Credit Card account
+                if (note.includes('國泰世華卡') || note.includes('信用卡款')) {
+                     const ccAcc = userAccounts.find(a => a.name.includes('國泰') && a.type === 'credit');
+                     if(ccAcc) {
+                         txObj.type = 'transfer';
+                         txObj.toAccountId = ccAcc.id;
+                     }
+                }
+
+                parsed.push(txObj);
 
             } catch(e) { console.error("Block parse error", e); }
         }
@@ -1052,13 +1045,12 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                                 <th className="p-4 text-center w-[15%]">日期</th>
                                 <th className="p-4 text-center w-[10%]">類型</th>
                                 <th className="p-4 text-center w-[20%]">類別/對象</th>
-                                <th className="p-4 text-center w-[15%]">金額</th>
-                                <th className="p-4 text-center w-[15%]">餘額</th>
-                                <th className="p-4 text-center w-[25%]">備註</th>
+                                <th className="p-4 text-center w-[20%]">金額</th>
+                                <th className="p-4 text-center w-[35%]">備註</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-muji-border">
-                            {filteredTxs.length === 0 ? <tr><td colSpan="7" className="text-center py-10 text-muji-muted">無紀錄</td></tr> : filteredTxs.map(tx => { 
+                            {filteredTxs.length === 0 ? <tr><td colSpan="6" className="text-center py-10 text-muji-muted">無紀錄</td></tr> : filteredTxs.map(tx => { 
                                 const cat = flatCategories[tx.categoryId] || { icon: 'help-circle', name: '未分類' }; 
                                 const txType = window.TX_TYPES[tx.type] || { label: '未知', color: 'text-gray-500' }; 
                                 let display = cat.name; 
@@ -1102,8 +1094,6 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                                      sign = '+';
                                 }
 
-                                const balance = balanceMap[tx.id];
-
                                 return (
                                     <tr key={tx.id} onClick={() => openEdit(tx)} className={`cursor-pointer ${isSplit ? 'bg-orange-50/50 hover:bg-orange-100/50' : 'hover:bg-muji-hover'}`}>
                                         <td className="p-4 text-center" onClick={(e) => e.stopPropagation()}>
@@ -1120,9 +1110,6 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                                         <td className={`p-4 text-right font-mono font-bold ${textColorClass}`}>
                                             {sign}${amountVal.toLocaleString()}
                                             <span className="text-xs text-muji-muted block">{splitInfo}</span>
-                                        </td>
-                                        <td className="p-4 text-right font-mono font-bold text-muji-muted">
-                                            {balance !== undefined ? `$${balance.toLocaleString()}` : '-'}
                                         </td>
                                         <td className="p-4 text-left text-muji-muted truncate max-w-[150px]">{tx.note}</td>
                                     </tr>
@@ -1220,7 +1207,6 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                                             </div>
                                             <div className="font-bold text-base text-muji-text truncate">{acc.name}</div>
                                         </div>
-                                        {/* Color logic: Positive Green, Negative Red */}
                                         <div className={`text-xl font-mono font-bold ${isPositive ? 'text-emerald-500' : 'text-rose-500'}`}>${bal.toLocaleString()}</div>
                                     </div>
                                 ); 
