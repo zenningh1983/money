@@ -33,24 +33,6 @@ const CategorySelector = ({ type, categoryGroups, selectedGroup, setSelectedGrou
 const ExtraFieldsInput = ({ type, accountId, toAccountId, targetName, userAccounts, selectedAccount, onChange, debtTargets, onAddTarget }) => {
     if (type === 'transfer') {
         const handleSwap = () => {
-            // Swap values: accountId <-> toAccountId
-            // We need to call onChange twice or pass a batch update if parent supports it.
-            // Here assuming simple individual updates. 
-            // Note: This relies on parent state update speed or batching. 
-            // Better: Parent should provide a swap function or handle multiple updates.
-            // For now, let's trigger onChange for both, but we need the new values.
-            // React state updates might be async, so this is tricky without a swap handler from parent.
-            // WORKAROUND: We will assume the parent 'TransactionModal' passes a specific swap handler or we can just try updating one then the other (might flicker).
-            // Actually, best way is to add a `onSwapAccounts` prop, but let's try to update `newTx` state directly if we could access it.
-            // Since we only have `onChange`, we can't atomically swap easily.
-            // Let's implement a swap logic using a timeout or just accept that one update might trigger a re-render.
-            
-            // To properly fix this, I will add a `onSwap` prop to this component in the next update if needed.
-            // For now, let's try to pass an object to onChange if the parent supports it (it doesn't: onChange(key, value)).
-            
-            // Let's hack it: We can't easily swap with current props. 
-            // I will modify TransactionModal to pass a `setNewTx` or similar, but to keep it simple, I'll pass a custom `onSwap` prop from parent.
-            // Wait, I am editing the file, so I can add `onSwap` to props here and in `TransactionModal`.
             if (onChange) {
                 onChange('swap_accounts', { from: accountId, to: toAccountId });
             }
@@ -95,9 +77,11 @@ const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, fla
     const totalAmount = parseFloat(amount) || 0;
     const safeSplits = Array.isArray(splits) ? splits : [];
     
+    // State for modal category selection
     const [selectingCategoryIdx, setSelectingCategoryIdx] = useState(null);
-    const [selectedGroup, setSelectedGroup] = useState('food'); 
+    const [selectedGroup, setSelectedGroup] = useState('food'); // Default group for selector
 
+    // Auto-init "Me" row only if splits are completely empty and amount is set
     useEffect(() => {
         if (safeSplits.length === 0 && totalAmount > 0) {
             setSplits([{ 
@@ -129,6 +113,7 @@ const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, fla
         let newSplit = { ...newSplits[idx], [field]: val };
 
         if(field === 'categoryId') {
+            // Just update category
         } else if (field === 'owner') {
             if (val === 'me') {
                 newSplit.name = '我';
@@ -164,6 +149,7 @@ const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, fla
 
         newSplits[idx] = newSplit;
 
+        // Auto-balance logic: Find first "Me" row and adjust it
         const mainMeIndex = newSplits.findIndex(s => s.owner === 'me');
         if (mainMeIndex !== -1 && idx !== mainMeIndex) {
             const otherSum = newSplits.reduce((sum, s, i) => {
@@ -182,6 +168,7 @@ const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, fla
     
     const removeSplit = (idx) => {
         let newSplits = safeSplits.filter((_, i) => i !== idx);
+        // If we removed a row, try to give back to "Me"
         const mainMeIndex = newSplits.findIndex(s => s.owner === 'me');
         if (mainMeIndex !== -1) {
              const otherSum = newSplits.reduce((sum, s, i) => {
@@ -219,10 +206,12 @@ const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, fla
                                     <option value="__add_new__">+ 新增對象...</option>
                                 </select>
                                 
+                                {/* Trigger Category Selector */}
                                 <button 
                                     className="flex-1 p-1.5 bg-muji-bg rounded border border-muji-border text-xs text-muji-text flex items-center justify-between"
                                     onClick={() => {
                                         setSelectingCategoryIdx(idx);
+                                        // Set initial group
                                         if (cat.group) {
                                             let foundGroupId = 'food';
                                             for(let type in categoryGroups) {
@@ -274,6 +263,7 @@ const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, fla
             </div>
             <button onClick={addSplit} className="w-full py-2 border border-dashed border-muji-accent text-muji-accent text-xs rounded hover:bg-white transition-colors flex items-center justify-center gap-1 mt-3"><i data-lucide="plus" className="w-3 h-3"></i> 新增明細 (分帳/多類別)</button>
 
+            {/* Category Selection Modal */}
             {selectingCategoryIdx !== null && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-pop" onClick={() => setSelectingCategoryIdx(null)}>
                     <div className="bg-muji-card w-full max-w-sm rounded-xl shadow-2xl overflow-hidden border border-muji-border flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
@@ -283,7 +273,7 @@ const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, fla
                         </div>
                         <div className="p-4 overflow-y-auto custom-scrollbar">
                             <CategorySelector 
-                                type="expense" 
+                                type="expense" // Split is usually for expense
                                 categoryGroups={categoryGroups}
                                 selectedGroup={selectedGroup}
                                 setSelectedGroup={setSelectedGroup}
@@ -316,8 +306,10 @@ window.SmartImportModal = ({ onClose, importText, setImportText, previewData, se
 
     const handleAttemptClose = (reason) => {
         if (reason === 'close_btn') {
+            // "叉叉不用問" (Directly close on X click)
             onClose();
         } else {
+             // "其他點外面或是 esc key 要問" (Show confirm for backdrop or Esc)
              if (previewData.length > 0 || importText.trim().length > 0) {
                  setShowExitConfirm(true);
              } else {
@@ -456,7 +448,6 @@ window.TransactionModal = ({ onClose, isEditMode, newTx, setNewTx, isSplitMode, 
         }
     };
 
-    // Modified update logic for transfer
     const handleUpdateField = (key, value) => {
         if (key === 'swap_accounts') {
              setNewTx({ ...newTx, accountId: value.to, toAccountId: value.from });
@@ -593,7 +584,7 @@ window.TransactionModal = ({ onClose, isEditMode, newTx, setNewTx, isSplitMode, 
                             targetName={newTx.targetName} 
                             userAccounts={userAccounts} 
                             selectedAccount={selectedAccount} 
-                            onChange={handleUpdateField} // Use custom handler for swap support
+                            onChange={handleUpdateField} 
                             debtTargets={debtTargets} 
                             onAddTarget={() => {}} 
                         />
@@ -682,8 +673,50 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
         return userAccounts.filter(acc => recentAccountIds.includes(acc.id));
     };
 
+    // Calculate running balances for all transactions of this account
+    const balanceMap = useMemo(() => {
+        if (!selectedAccount) return {};
+        const acc = data.accounts.find(a => a.id === selectedAccount);
+        const initial = acc?.balance || 0;
+        
+        // Get ALL transactions for this account, sorted chronologically (Oldest -> Newest)
+        const allTxs = data.transactions.filter(t => 
+            t.accountId === selectedAccount || t.toAccountId === selectedAccount
+        ).sort((a, b) => {
+             const dateDiff = new Date(a.date) - new Date(b.date);
+             if (dateDiff !== 0) return dateDiff;
+             // Sort by ID Ascending (Oldest created first) for calculation
+             if (a.id < b.id) return -1;
+             if (a.id > b.id) return 1;
+             return 0;
+        });
+
+        const map = {};
+        let currentBal = initial;
+
+        allTxs.forEach(tx => {
+            const amount = parseFloat(tx.amount) || 0;
+            
+            if (tx.type === 'income' || (tx.type === 'repay' && tx.accountId === selectedAccount)) {
+                 currentBal += amount;
+            } else if (tx.type === 'expense' || (tx.type === 'advance' && tx.accountId === selectedAccount)) {
+                 currentBal -= amount;
+            } else if (tx.type === 'transfer') {
+                 if (tx.toAccountId === selectedAccount) {
+                     currentBal += amount;
+                 } else if (tx.accountId === selectedAccount) {
+                     currentBal -= amount;
+                 }
+            }
+            
+            map[tx.id] = currentBal;
+        });
+        
+        return map;
+    }, [data.transactions, selectedAccount, data.accounts]);
+
     const handleSmartImport = (targetAccountId, hintType) => {
-        const rawLines = importText.split('\n').map(l => l.trim()).filter(l => l);
+        // Robust mixed line parser
         const parsed = [];
         const currentYear = new Date().getFullYear();
         const parseNum = (str) => parseFloat(str.replace(/,/g, ''));
@@ -693,9 +726,7 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
         const dateRegexFull = /^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})/;
         const dateRegexShort = /^(\d{1,2})[\/\-\.](\d{1,2})/;
         
-        // Auto-detect transfer target from note
         const detectTransferTarget = (note) => {
-             // Example logic from user request
              if (note.includes('(013)') || note.includes('國泰')) {
                   const targetAcc = userAccounts.find(a => a.name.includes('國泰') || a.name.includes('銀行'));
                   if (targetAcc) return targetAcc.id;
@@ -710,7 +741,10 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
              }
              return null;
         };
-        
+
+        // Split by lines but keep original grouping if possible. 
+        // Here we just use a line-by-line scanner that accumulates a block until a new date is found.
+        const rawLines = importText.split('\n').map(l => l.trim()).filter(l => l);
         let currentBlock = [];
 
         const processBlock = (block) => {
@@ -747,17 +781,17 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                     for (let j = 0; j < tokens.length; j++) {
                         const token = tokens[j];
                         const nextToken = tokens[j+1];
-                        if (token.includes('/') || token.includes(':')) continue; // Skip dates/times
-                        
+                        if (token.includes('/') || token.includes(':')) continue; 
+
                         if (isNum(token)) {
-                             // [Amount] [Hyphen] -> Withdrawal (Expense)
+                            // [Amount] - (Expense)
                             if (nextToken === '-') {
                                 amount = parseNum(token);
                                 type = 'expense';
                                 foundAmount = true;
                                 break;
                             }
-                            // Just a number in a line (Table format often has amount on new line)
+                            // Single number line
                             if (tokens.length === 1 && !foundAmount) {
                                 amount = parseNum(token);
                                 type = 'expense';
@@ -771,8 +805,15 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                                 foundAmount = true;
                                 break;
                             }
+                             // Simple Table Row: Date Desc Amount
+                             if (!foundAmount && block.length === 1 && j === tokens.length - 1) {
+                                 amount = parseNum(token);
+                                 type = 'expense';
+                                 foundAmount = true;
+                                 break;
+                             }
                         } else if (token === '-') {
-                            // [Hyphen] [Amount] -> Deposit (Income)
+                            // - [Amount] (Income)
                             if (isNum(nextToken)) {
                                 amount = parseNum(nextToken);
                                 type = 'income';
@@ -783,39 +824,32 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                     }
                     if (foundAmount) break;
                 }
-
+                
                 if (!foundAmount || amount === 0) return;
 
                 // Construct Note
                 let noteParts = [];
                 block.forEach((line, i) => {
                     let content = line.replace(/−/g, '-').replace(/\t/g, ' ');
-                     // Remove extracted date
                     if (i === 0 && dateMatch) content = content.replace(dateMatch[0], '');
-                    
                     const noise = ['網銀轉帳', '信用卡款', '電子轉出', '跨行提款', '交易資訊', '備註', '說明', 'TWD', 'TW', '新臺幣金額', '交易說明', '消費日', '消費店家', '金額'];
                     noise.forEach(n => content = content.replace(n, ''));
                     content = content.replace(/-/g, '').trim();
-                    
-                    // Try to remove the amount string to avoid dupes in note
                     const tokens = content.split(/\s+/);
                     const cleanTokens = tokens.filter(t => {
                         if (isNum(t) && parseNum(t) === amount) return false;
                         return true;
                     });
                     content = cleanTokens.join(' ');
-
                     if (content.trim()) noteParts.push(content.trim());
                 });
                 
                 let note = noteParts.join(' ');
                 
-                // Force Income rules
                 if (note.includes('配息') || note.includes('轉入') || note.includes('存款息')) {
                     type = 'income';
                 }
                 
-                // Smart Transfer Logic
                 let toAccountId = '';
                 const detectedTransferId = detectTransferTarget(note);
                 if (detectedTransferId && type === 'expense') {
@@ -1018,12 +1052,13 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                                 <th className="p-4 text-center w-[15%]">日期</th>
                                 <th className="p-4 text-center w-[10%]">類型</th>
                                 <th className="p-4 text-center w-[20%]">類別/對象</th>
-                                <th className="p-4 text-center w-[20%]">金額</th>
-                                <th className="p-4 text-center w-[35%]">備註</th>
+                                <th className="p-4 text-center w-[15%]">金額</th>
+                                <th className="p-4 text-center w-[15%]">餘額</th>
+                                <th className="p-4 text-center w-[25%]">備註</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-muji-border">
-                            {filteredTxs.length === 0 ? <tr><td colSpan="6" className="text-center py-10 text-muji-muted">無紀錄</td></tr> : filteredTxs.map(tx => { 
+                            {filteredTxs.length === 0 ? <tr><td colSpan="7" className="text-center py-10 text-muji-muted">無紀錄</td></tr> : filteredTxs.map(tx => { 
                                 const cat = flatCategories[tx.categoryId] || { icon: 'help-circle', name: '未分類' }; 
                                 const txType = window.TX_TYPES[tx.type] || { label: '未知', color: 'text-gray-500' }; 
                                 let display = cat.name; 
@@ -1067,6 +1102,8 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                                      sign = '+';
                                 }
 
+                                const balance = balanceMap[tx.id];
+
                                 return (
                                     <tr key={tx.id} onClick={() => openEdit(tx)} className={`cursor-pointer ${isSplit ? 'bg-orange-50/50 hover:bg-orange-100/50' : 'hover:bg-muji-hover'}`}>
                                         <td className="p-4 text-center" onClick={(e) => e.stopPropagation()}>
@@ -1083,6 +1120,9 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                                         <td className={`p-4 text-right font-mono font-bold ${textColorClass}`}>
                                             {sign}${amountVal.toLocaleString()}
                                             <span className="text-xs text-muji-muted block">{splitInfo}</span>
+                                        </td>
+                                        <td className="p-4 text-right font-mono font-bold text-muji-muted">
+                                            {balance !== undefined ? `$${balance.toLocaleString()}` : '-'}
                                         </td>
                                         <td className="p-4 text-left text-muji-muted truncate max-w-[150px]">{tx.note}</td>
                                     </tr>
