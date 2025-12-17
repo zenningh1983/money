@@ -46,6 +46,7 @@ window.SettingsView = ({ data, githubToken, setGithubToken, repo, saveData, setI
         if (!newData.settings) newData.settings = JSON.parse(JSON.stringify(window.INITIAL_DATA.settings)); 
         if (!newData.settings.accountTypes) newData.settings.accountTypes = window.DEFAULT_ACCOUNT_TYPES; 
         if (!newData.debtTargets) newData.debtTargets = window.DEFAULT_DEBT_TARGETS;
+        if (!newData.accountOrder) newData.accountOrder = newData.accounts.map(a => a.id);
         return newData; 
     }
     

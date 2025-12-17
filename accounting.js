@@ -1,4 +1,4 @@
-const { useState, useEffect, useMemo, useCallback } = React;
+const { useState, useEffect, useMemo, useCallback, useRef } = React;
 
 const CategorySelector = ({ type, categoryGroups, selectedGroup, setSelectedGroup, onSelectCategory, currentCategory }) => {
     if (!['expense', 'income'].includes(type)) return null;
@@ -699,7 +699,13 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
             if (tx.type === 'income' || (tx.type === 'repay' && tx.accountId === selectedAccount)) {
                  currentBal += amount;
             } else if (tx.type === 'expense' || (tx.type === 'advance' && tx.accountId === selectedAccount)) {
-                 currentBal -= amount;
+                 // For expense with splits, we only subtract 'me' part
+                 let finalAmount = amount;
+                 if (tx.type === 'expense' && tx.splits && tx.splits.length > 0) {
+                     const otherSplitsSum = tx.splits.filter(s => s.owner !== 'me').reduce((acc, s) => acc + (parseFloat(s.amount) || 0), 0);
+                     finalAmount = amount - otherSplitsSum; // Only subtract my part
+                 }
+                 currentBal -= finalAmount;
             } else if (tx.type === 'transfer') {
                  if (tx.toAccountId === selectedAccount) {
                      currentBal += amount;
@@ -1025,24 +1031,83 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
         window.refreshIcons();
     };
 
+    // Account List View
+    // NEW: Use accountOrder for display sequence
+    const accountTypes = data.settings?.accountTypes || window.DEFAULT_ACCOUNT_TYPES;
+    const recentAccounts = getRecentAccounts();
+    const accounts = userAccounts; // Use existing userAccounts
+    
+    const orderedAccounts = useMemo(() => {
+        const order = data.accountOrder || accounts.map(a => a.id);
+        const map = new Map(accounts.map(a => [a.id, a]));
+        return order.map(id => map.get(id)).filter(Boolean);
+    }, [data.accounts, data.accountOrder, data.currentUser, accounts]);
+
+    const dragItem = useRef(null);
+    const dragOverItem = useRef(null);
+
+    const handleDragStart = (e, id) => {
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", id);
+        dragItem.current = id;
+        e.target.style.opacity = '0.5';
+    };
+
+    const handleDragEnd = (e) => {
+        e.target.style.opacity = '1';
+        dragItem.current = null;
+        dragOverItem.current = null;
+    };
+
+    const handleDragOver = (e, id) => {
+        e.preventDefault(); 
+        dragOverItem.current = id;
+    };
+
+    const handleDrop = (e, targetId) => {
+        e.preventDefault();
+        const sourceId = dragItem.current;
+        if (!sourceId || sourceId === targetId) return;
+
+        const currentOrder = data.accountOrder || accounts.map(a => a.id);
+        const sourceIndex = currentOrder.indexOf(sourceId);
+        const targetIndex = currentOrder.indexOf(targetId);
+
+        if (sourceIndex === -1 || targetIndex === -1) return;
+
+        const newOrder = [...currentOrder];
+        const [removed] = newOrder.splice(sourceIndex, 1);
+        newOrder.splice(targetIndex, 0, removed);
+
+        saveData({ ...data, accountOrder: newOrder }, false); // Save without toast to avoid spam
+    };
+
     if (selectedAccount) {
+        // ... (existing detail view logic unchanged) ...
         const filteredTxs = getFilteredTransactions();
         const currentAccount = data.accounts.find(a => a.id === selectedAccount);
+        const currentTotalBalance = window.calculateBalance(data, selectedAccount);
+        
         return (
             <div className="pb-24 md:pb-0 animate-fade flex flex-col h-full relative">
                 {/* Account Details Header & Controls */}
-                <div className="flex justify-between items-center mb-6 px-4 md:px-0 pt-4">
+                <div className="flex justify-between items-center mb-4 px-4 md:px-0 pt-4">
                     {/* Simplified Header - Removing heavy styling */}
                     <div className="flex items-center gap-4">
                         <button onClick={() => setSelectedAccount(null)} className="md:hidden p-2 -ml-2 rounded-full hover:bg-black/5"><i data-lucide="arrow-left" className="w-5 h-5 text-muji-text"></i></button>
-                        <h3 className="text-2xl font-bold text-muji-text">{currentAccount?.name}</h3>
+                        <div>
+                            <h3 className="text-xl font-bold text-muji-text leading-tight">{currentAccount?.name}</h3>
+                            <div className={`text-sm font-mono font-bold mt-1 ${currentTotalBalance >= 0 ? 'text-muji-green' : 'text-rose-500'}`}>
+                                ${currentTotalBalance.toLocaleString()}
+                            </div>
+                        </div>
                     </div>
                     
                     <div className="flex items-center gap-2">
                         {/* Month Picker */}
-                        <div className="flex items-center bg-white border border-muji-border rounded-lg px-2 py-1">
+                        <div className="flex items-center bg-white border border-muji-border rounded-lg px-1 py-1">
                             <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))} className="p-1 hover:bg-muji-bg rounded"><i data-lucide="chevron-left" className="w-4 h-4"></i></button>
-                            <span className="text-sm font-bold mx-2 cursor-pointer" onClick={() => setShowDatePicker(true)}>{currentDate.getMonth() + 1}月</span>
+                            <span className="text-sm font-bold mx-2 cursor-pointer whitespace-nowrap" onClick={() => setShowDatePicker(true)}>{currentDate.getFullYear()}/{currentDate.getMonth() + 1}</span>
                             <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))} className="p-1 hover:bg-muji-bg rounded"><i data-lucide="chevron-right" className="w-4 h-4"></i></button>
                         </div>
 
@@ -1062,11 +1127,11 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                     </div>
                 )}
                 
-                {/* Transaction List Container - Fixed Header Logic */}
+                {/* Transaction List Container */}
                 <div className="flex-1 overflow-y-auto bg-white mx-4 md:mx-0 mb-20 md:mb-0 rounded-xl border border-muji-border min-h-[50vh] max-h-[calc(100vh-250px)] relative flex flex-col">
                     {/* Separate Sticky Header */}
                     <div className="bg-muji-bg text-muji-muted font-medium border-b border-muji-border flex text-sm shadow-sm z-20 sticky top-0">
-                        <div className="p-4 w-10 text-center flex-shrink-0 flex items-center justify-center">
+                        <div className="p-2 w-10 text-center flex-shrink-0 flex items-center justify-center">
                             <input 
                                 type="checkbox" 
                                 className="w-4 h-4 accent-muji-accent cursor-pointer"
@@ -1074,15 +1139,15 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                                 onChange={() => toggleSelectAll(filteredTxs)}
                             />
                         </div>
-                        <div className="p-4 text-center w-[15%] flex-shrink-0 flex items-center justify-center">日期</div>
-                        <div className="p-4 text-center w-[10%] flex-shrink-0 flex items-center justify-center">類型</div>
-                        <div className="p-4 text-center w-[20%] flex-shrink-0 flex items-center justify-center">類別/對象</div>
-                        <div className="p-4 text-center w-[15%] flex-shrink-0 flex items-center justify-center">金額</div>
-                        <div className="p-4 text-center w-[15%] flex-shrink-0 flex items-center justify-center">餘額</div>
-                        <div className="p-4 text-center flex-1 flex items-center justify-center">備註</div>
+                        <div className="p-2 text-center w-[12%] flex-shrink-0 flex items-center justify-center">日期</div>
+                        <div className="p-2 text-center w-[10%] flex-shrink-0 flex items-center justify-center">類型</div>
+                        <div className="p-2 text-center w-[20%] flex-shrink-0 flex items-center justify-center">類別/對象</div>
+                        <div className="p-2 text-center w-[15%] flex-shrink-0 flex items-center justify-center">金額</div>
+                        <div className="p-2 text-center w-[15%] flex-shrink-0 flex items-center justify-center">餘額</div>
+                        <div className="p-2 text-center flex-1 flex items-center justify-center">備註</div>
                     </div>
 
-                    {/* Scrollable Body - Remove overflow here as parent handles it */}
+                    {/* Scrollable Body */}
                     <div>
                         <table className="w-full text-left text-sm whitespace-nowrap">
                             <tbody className="divide-y divide-muji-border">
@@ -1120,7 +1185,7 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
 
                                     return (
                                         <tr key={tx.id} onClick={() => openEdit(tx)} className={`cursor-pointer flex w-full ${isSplit ? 'bg-orange-50/50 hover:bg-orange-100/50' : 'hover:bg-muji-hover'}`}>
-                                            <td className="p-4 w-10 text-center flex-shrink-0 flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+                                            <td className="p-2 w-10 text-center flex-shrink-0 flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
                                                 <input 
                                                     type="checkbox" 
                                                     className="w-4 h-4 accent-muji-accent cursor-pointer"
@@ -1128,17 +1193,17 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                                                     onChange={() => toggleSelectTx(tx.id)}
                                                 />
                                             </td>
-                                            <td className="p-4 text-center font-mono w-[15%] flex-shrink-0 flex items-center justify-center">{tx.date}</td>
-                                            <td className={`p-4 text-center font-bold ${txType.color} w-[10%] flex-shrink-0 flex items-center justify-center`}>{txType.label}</td>
-                                            <td className="p-4 text-center w-[20%] flex-shrink-0 flex items-center justify-center gap-2">{(tx.type==='expense'||tx.type==='income')&&<i data-lucide={cat.icon || 'circle'} className="w-4 h-4"></i>}<span className="truncate">{display}</span></td>
-                                            <td className={`p-4 text-right font-mono font-bold ${textColorClass} w-[15%] flex-shrink-0 flex flex-col justify-center`}>
+                                            <td className="p-2 text-center font-mono w-[12%] flex-shrink-0 flex items-center justify-center text-xs">{tx.date}</td>
+                                            <td className={`p-2 text-center font-bold ${txType.color} w-[10%] flex-shrink-0 flex items-center justify-center text-xs`}>{txType.label}</td>
+                                            <td className="p-2 text-center w-[20%] flex-shrink-0 flex items-center justify-center gap-1 text-xs">{(tx.type==='expense'||tx.type==='income')&&<i data-lucide={cat.icon || 'circle'} className="w-3 h-3"></i>}<span className="truncate">{display}</span></td>
+                                            <td className={`p-2 text-right font-mono font-bold ${textColorClass} w-[15%] flex-shrink-0 flex flex-col justify-center text-xs`}>
                                                 <span>{sign}${amountVal.toLocaleString()}</span>
                                                 <span className="text-xs text-muji-muted block">{splitInfo}</span>
                                             </td>
-                                            <td className={`p-4 text-right font-mono font-bold w-[15%] flex-shrink-0 flex items-center justify-end ${balance < 0 ? 'text-rose-500' : 'text-muji-muted'}`}>
+                                            <td className={`p-2 text-right font-mono font-bold w-[15%] flex-shrink-0 flex items-center justify-end text-xs ${balance < 0 ? 'text-rose-500' : 'text-muji-muted'}`}>
                                                 {balance !== undefined ? `$${balance.toLocaleString()}` : '-'}
                                             </td>
-                                            <td className="p-4 text-left text-muji-muted truncate flex-1 flex items-center">{tx.note}</td>
+                                            <td className="p-2 text-left text-muji-muted truncate flex-1 flex items-center text-xs">{tx.note}</td>
                                         </tr>
                                     ) 
                                 })}
@@ -1147,7 +1212,7 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                     </div>
                 </div>
                 
-                {/* Year-Month Picker Modal */}
+                {/* Modals ... */}
                 {showDatePicker && (
                     <window.Modal title="選擇日期" onClose={() => setShowDatePicker(false)}>
                         <div className="p-4">
@@ -1171,7 +1236,6 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                     </window.Modal>
                 )}
 
-                {/* Batch Delete Confirm Modal */}
                 {showDeleteBatchConfirm && (
                     <window.Modal title="刪除確認" onClose={() => setShowDeleteBatchConfirm(false)}>
                         <div className="p-4 text-center space-y-4">
@@ -1190,23 +1254,21 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
             </div>
         );
     }
-    
-    // Account List View
-    const accounts = getCurrentUserAccounts();
-    const accountTypes = data.settings?.accountTypes || window.DEFAULT_ACCOUNT_TYPES;
-    const recentAccounts = getRecentAccounts();
 
     return (
         <div className="p-6 md:p-10 animate-fade relative min-h-full">
              {/* Sticky Header for Account List */}
              <div className="sticky top-0 z-10 bg-muji-bg flex justify-between items-center py-4 mb-6 -mt-6 -mx-6 px-6 md:-mt-10 md:-mx-10 md:px-10 border-b border-muji-border/50 backdrop-blur-sm bg-muji-bg/95">
                 <h3 className="text-2xl font-bold text-muji-text">我的帳戶</h3>
-                <button 
-                    onClick={() => setInputModal({ show: true, title: '新增帳戶', value: '', value2: '', type: 'add_account' })} 
-                    className="bg-muji-card border border-muji-border hover:border-muji-accent text-muji-text hover:text-muji-accent px-4 py-2 rounded-lg transition flex items-center gap-2 font-bold shadow-sm"
-                >
-                    <i data-lucide="plus" className="w-4 h-4"></i> 新增帳戶
-                </button>
+                <div className="flex gap-2">
+                    {/* Removed Sort Button, Added just Add Button */}
+                    <button 
+                        onClick={() => setInputModal({ show: true, title: '新增帳戶', value: '', type: 'add_account', extra: 'cash', value2: '' })} 
+                        className="bg-muji-card border border-muji-border hover:border-muji-accent text-muji-text hover:text-muji-accent p-2 md:px-4 md:py-2 rounded-lg transition flex items-center gap-2 font-bold shadow-sm text-sm"
+                    >
+                        <i data-lucide="plus" className="w-4 h-4"></i> <span className="hidden sm:inline">新增</span>
+                    </button>
+                </div>
              </div>
              
              {/* Recent Accounts */}
@@ -1245,7 +1307,8 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
              )}
 
             {Object.entries(accountTypes).map(([typeKey, typeConfig]) => {
-                const typeAccounts = accounts.filter(a => a.type === typeKey);
+                // Use orderedAccounts to find typeAccounts
+                const typeAccounts = orderedAccounts.filter(a => a.type === typeKey);
                 if (typeAccounts.length === 0) return null;
                 const isExpanded = expandedTypes.includes(typeKey);
                 
@@ -1267,12 +1330,22 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                                     const bal = window.calculateBalance(data, acc.id); 
                                     const isPositive = bal >= 0;
                                     return (
-                                        <div key={acc.id} onClick={() => setSelectedAccount(acc.id)} className="bg-white p-4 rounded-xl border border-muji-border hover:border-muji-accent hover:shadow-md transition-all cursor-pointer relative group h-32 flex flex-col justify-between">
+                                        <div 
+                                            key={acc.id} 
+                                            onClick={() => setSelectedAccount(acc.id)} 
+                                            draggable
+                                            onDragStart={(e) => handleDragStart(e, acc.id)}
+                                            onDragEnd={handleDragEnd}
+                                            onDragOver={(e) => handleDragOver(e, acc.id)}
+                                            onDrop={(e) => handleDrop(e, acc.id)}
+                                            className="bg-white p-4 rounded-xl border border-muji-border hover:border-muji-accent hover:shadow-md transition-all cursor-pointer relative group h-32 flex flex-col justify-between cursor-move"
+                                        >
                                             <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 flex gap-2">
-                                                <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '餘額校正', value: '', value2: '', type: 'calibrate_account', data: acc.id, extra: bal });}} className="p-1 hover:bg-muji-bg rounded text-muji-muted hover:text-muji-accent">
+                                                {/* NEW: Calibrate Button */}
+                                                <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '餘額校正', value: bal.toString(), type: 'calibrate_account', data: acc.id, extra: bal });}} className="p-1 hover:bg-muji-bg rounded text-muji-muted hover:text-muji-accent">
                                                     <i data-lucide="sliders-horizontal" className="w-3 h-3"></i>
                                                 </button>
-                                                <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '修改帳戶', value: acc.name, value2: acc.balance || 0, type: 'edit_account', data: acc.id, extra: acc.type });}} className="p-1 hover:bg-muji-bg rounded text-muji-muted hover:text-muji-accent">
+                                                <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '修改帳戶', value: acc.name, type: 'rename_account', data: acc.id, extra: acc.type });}} className="p-1 hover:bg-muji-bg rounded text-muji-muted hover:text-muji-accent">
                                                     <i data-lucide="pencil" className="w-3 h-3"></i>
                                                 </button>
                                                 <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '刪除', value: '確認', type: 'delete_account', data: acc.id });}} className="p-1 hover:bg-muji-bg rounded text-muji-muted hover:text-muji-red">
