@@ -155,8 +155,12 @@ window.App = () => {
     const [editMode, setEditMode] = useState(false);
     const [transactionData, setTransactionData] = useState(null);
 
-    const [inputModal, setInputModal] = useState({ show: false, title: '', value: '', type: '', data: null, extra: null, value2: '' }); // Added value2 for calibrate/init balance
+    const [inputModal, setInputModal] = useState({ show: false, title: '', value: '', type: '', data: null, extra: null, value2: '' }); 
     
+    // Drag Refs
+    const dragItem = useRef();
+    const dragOverItem = useRef();
+
     const dailyQuote = useMemo(() => { const d = new Date().getDate(); return window.QUOTES[(d - 1) % window.QUOTES.length] || window.QUOTES[0]; }, []);
     const showToast = useCallback((msg, type = 'info') => setToast({ message: msg, type }), []);
     useEffect(() => { if (window.lucide) { window.lucide.createIcons(); setTimeout(() => window.lucide.createIcons(), 50); } });
@@ -175,7 +179,6 @@ window.App = () => {
             const parsedData = JSON.parse(content);
             if (!parsedData.settings) parsedData.settings = { categoryGroups: window.DEFAULT_CATEGORY_GROUPS, accountTypes: window.DEFAULT_ACCOUNT_TYPES };
             if (!parsedData.debtTargets) parsedData.debtTargets = window.DEFAULT_DEBT_TARGETS;
-            // NEW: Ensure accountOrder exists
             if (!parsedData.accountOrder) parsedData.accountOrder = parsedData.accounts.map(a => a.id);
             setData(parsedData); setSha(json.sha); setSyncStatus('success');
         } catch (e) { if(!silent) setSyncStatus('error'); }
@@ -201,182 +204,58 @@ window.App = () => {
     useEffect(() => { if (githubToken) fetchData(); }, []);
     useEffect(() => { if (githubToken && view !== 'settings') fetchData(true); }, [view]);
 
-    const openEditTransaction = (tx) => {
-        setEditMode(true);
-        setTransactionData(tx);
-        if(tx.accountId) setSelectedAccount(tx.accountId); 
-        setIsTransactionModalOpen(true);
-    };
+    const openEditTransaction = (tx) => { setEditMode(true); setTransactionData(tx); if(tx.accountId) setSelectedAccount(tx.accountId); setIsTransactionModalOpen(true); };
+    const handleSort = () => { let _accountOrder = [...(inputModal.data || [])]; const draggedItemContent = _accountOrder.splice(dragItem.current, 1)[0]; _accountOrder.splice(dragOverItem.current, 0, draggedItemContent); dragItem.current = null; dragOverItem.current = null; setInputModal({ ...inputModal, data: _accountOrder }); };
 
     const handleInputConfirm = () => {
         const val = inputModal.value ? inputModal.value.trim() : '';
-        
-        if (!val && !inputModal.type.includes('delete') && inputModal.type !== 'reset_settings' && inputModal.type !== 'calibrate_account' && inputModal.type !== 'save_account_order') {
-             showToast('請輸入名稱', 'error');
-             return;
-        }
-
-        let newData = { ...data };
-        let successMessage = '更新成功';
-        
+        if (!val && !inputModal.type.includes('delete') && inputModal.type !== 'reset_settings' && inputModal.type !== 'calibrate_account' && inputModal.type !== 'save_account_order') { showToast('請輸入名稱', 'error'); return; }
+        let newData = { ...data }; let successMessage = '更新成功';
         switch(inputModal.type) {
-            case 'rename_ledger': 
-                newData.users = newData.users.map(u => u.id === inputModal.data ? { ...u, name: val } : u);
-                successMessage = `帳本名稱已修改為：${val}`;
-                break;
-                
-            case 'delete_ledger': 
-                if (newData.users.length <= 1) { 
-                    showToast('至少需保留一個帳本', 'error'); 
-                    return; 
-                }
-                newData.users = newData.users.filter(u => u.id !== inputModal.data);
-                if (newData.currentUser === inputModal.data) {
-                    newData.currentUser = newData.users[0].id;
-                }
-                successMessage = '帳本已刪除';
-                break;
-                
-            case 'add_account': 
-                const newAccId = `acc_${Date.now()}`;
-                const initBal = parseFloat(inputModal.value2) || 0;
-                newData.accounts.push({ 
-                    id: newAccId, 
-                    name: val, 
-                    type: inputModal.extra || 'cash', 
-                    balance: initBal, 
-                    userId: newData.currentUser 
-                });
-                newData.accountOrder = [...(newData.accountOrder || newData.accounts.map(a => a.id)), newAccId];
-                successMessage = '已新增帳戶';
-                break;
-                
+            case 'rename_ledger': newData.users = newData.users.map(u => u.id === inputModal.data ? { ...u, name: val } : u); successMessage = `帳本名稱已修改為：${val}`; break;
+            case 'delete_ledger': if (newData.users.length <= 1) { showToast('至少需保留一個帳本', 'error'); return; } newData.users = newData.users.filter(u => u.id !== inputModal.data); if (newData.currentUser === inputModal.data) { newData.currentUser = newData.users[0].id; } successMessage = '帳本已刪除'; break;
+            case 'add_account': const newAccId = `acc_${Date.now()}`; const initBal = parseFloat(inputModal.value2) || 0; newData.accounts.push({ id: newAccId, name: val, type: inputModal.extra || 'cash', balance: initBal, userId: newData.currentUser }); newData.accountOrder = [...(newData.accountOrder || newData.accounts.map(a => a.id)), newAccId]; successMessage = '已新增帳戶'; break;
+            
+            // Fixed: Also update balance if provided
             case 'rename_account': 
-                newData.accounts = newData.accounts.map(a => a.id === inputModal.data ? { ...a, name: val, type: inputModal.extra || a.type } : a);
-                successMessage = '帳戶名稱已更新';
+                const newInitBal2 = parseFloat(inputModal.value2); 
+                newData.accounts = newData.accounts.map(a => a.id === inputModal.data ? { ...a, name: val, type: inputModal.extra || a.type, balance: isNaN(newInitBal2) ? a.balance : newInitBal2 } : a); 
+                successMessage = '帳戶已更新'; 
                 break;
-                
-            case 'delete_account': 
-                newData.accounts = newData.accounts.filter(a => a.id !== inputModal.data);
-                newData.transactions = newData.transactions.filter(t => t.accountId !== inputModal.data && t.toAccountId !== inputModal.data);
-                newData.accountOrder = (newData.accountOrder || []).filter(id => id !== inputModal.data);
-                if (selectedAccount === inputModal.data) setSelectedAccount(null);
-                successMessage = '帳戶已刪除';
-                break;
-                
-            case 'calibrate_account': // NEW: 帳戶初始餘額校正 (Optimized)
-                const newBalance = parseFloat(inputModal.value) || 0;
-                const currentTotalBalance = inputModal.extra || 0; // The calculated balance
-                
-                // Clone array and object to avoid direct mutation issues
-                const accIndex = newData.accounts.findIndex(a => a.id === inputModal.data);
-                if (accIndex !== -1) {
-                    newData.accounts = [...newData.accounts]; // Clone array
-                    const targetAcc = { ...newData.accounts[accIndex] }; // Clone object
-                    
-                    const currentInitialBalance = targetAcc.balance || 0;
-                    const sumOfTxs = currentTotalBalance - currentInitialBalance;
-                    
-                    targetAcc.balance = newBalance - sumOfTxs;
-                    newData.accounts[accIndex] = targetAcc; // Replace with updated object
-                }
-                successMessage = `帳戶餘額已校正為：${newBalance.toLocaleString()}`;
-                break;
-
-            case 'delete_sub': 
-                const { groupId, subName, type } = inputModal.data;
-                const group = newData.settings.categoryGroups[type].find(g => g.id === groupId);
-                if (group) {
-                    group.subs = group.subs.filter(s => s !== subName);
-                    successMessage = '子分類已刪除';
-                }
-                break;
-
-            case 'reset_settings': 
-                newData.settings = JSON.parse(JSON.stringify(window.INITIAL_DATA.settings));
-                newData.debtTargets = JSON.parse(JSON.stringify(window.DEFAULT_DEBT_TARGETS));
-                newData.users = JSON.parse(JSON.stringify(window.INITIAL_DATA.users)); 
-                newData.currentUser = window.INITIAL_DATA.currentUser; 
-                newData.accounts = newData.accounts.filter(a => a.userId !== 'default');
-                newData.transactions = [];
-                successMessage = '所有設定與帳本已重置';
-                break;
-
-            case 'delete_account_type': 
-                delete newData.settings.accountTypes[inputModal.data];
-                successMessage = '帳戶類型已刪除';
-                break;
-
-            case 'delete_debt_target': 
-                const targetId = inputModal.data;
-                const target = newData.debtTargets.find(t => t.id === targetId);
-                if (target) {
-                    const name = target.name;
-                    newData.debtTargets = newData.debtTargets.filter(t => t.id !== targetId);
-                    newData.transactions = newData.transactions.map(tx => {
-                         if (tx.splits && Array.isArray(tx.splits)) {
-                             const newSplits = tx.splits.filter(s => s.name !== name);
-                             if (newSplits.length !== tx.splits.length) {
-                                 return { ...tx, splits: newSplits };
-                             }
-                         }
-                         return tx;
-                    }).filter(tx => !((tx.type === 'advance' || tx.type === 'repay') && tx.targetName === name));
-                    successMessage = `已刪除 ${name} 及其相關紀錄`;
-                }
-                break;
-                
-            default:
-                break;
+            
+            case 'delete_account': newData.accounts = newData.accounts.filter(a => a.id !== inputModal.data); newData.transactions = newData.transactions.filter(t => t.accountId !== inputModal.data && t.toAccountId !== inputModal.data); newData.accountOrder = (newData.accountOrder || []).filter(id => id !== inputModal.data); if (selectedAccount === inputModal.data) setSelectedAccount(null); successMessage = '帳戶已刪除'; break;
+            case 'calibrate_account': const newBalance = parseFloat(inputModal.value) || 0; const accIndex = newData.accounts.findIndex(a => a.id === inputModal.data); if (accIndex !== -1) { newData.accounts = [...newData.accounts]; const targetAcc = { ...newData.accounts[accIndex] }; if (inputModal.extra !== null) { const currentTotalBalance = inputModal.extra; const currentInitialBalance = targetAcc.balance || 0; const sumOfTxs = currentTotalBalance - currentInitialBalance; targetAcc.balance = newBalance - sumOfTxs; } else { targetAcc.balance = newBalance; } newData.accounts[accIndex] = targetAcc; } successMessage = `帳戶餘額已校正`; break;
+            case 'save_account_order': newData.accountOrder = inputModal.data; successMessage = '排序已更新'; break;
+            case 'delete_sub': const { groupId, subName, type } = inputModal.data; const group = newData.settings.categoryGroups[type].find(g => g.id === groupId); if (group) { group.subs = group.subs.filter(s => s !== subName); successMessage = '子分類已刪除'; } break;
+            case 'reset_settings': newData.settings = JSON.parse(JSON.stringify(window.INITIAL_DATA.settings)); newData.debtTargets = JSON.parse(JSON.stringify(window.DEFAULT_DEBT_TARGETS)); newData.users = JSON.parse(JSON.stringify(window.INITIAL_DATA.users)); newData.currentUser = window.INITIAL_DATA.currentUser; newData.accounts = newData.accounts.filter(a => a.userId !== 'default'); newData.transactions = []; successMessage = '所有設定與帳本已重置'; break;
+            case 'delete_account_type': delete newData.settings.accountTypes[inputModal.data]; successMessage = '帳戶類型已刪除'; break;
+            case 'delete_debt_target': const targetId = inputModal.data; const target = newData.debtTargets.find(t => t.id === targetId); if (target) { const name = target.name; newData.debtTargets = newData.debtTargets.filter(t => t.id !== targetId); newData.transactions = newData.transactions.map(tx => { if (tx.splits && Array.isArray(tx.splits)) { const newSplits = tx.splits.filter(s => s.name !== name); if (newSplits.length !== tx.splits.length) { return { ...tx, splits: newSplits }; } } return tx; }).filter(tx => !((tx.type === 'advance' || tx.type === 'repay') && tx.targetName === name)); successMessage = `已刪除 ${name} 及其相關紀錄`; } break;
+            default: break;
         }
-        
-        saveData(newData);
-        showToast(successMessage);
-        setInputModal({ ...inputModal, show: false });
+        saveData(newData); showToast(successMessage); setInputModal({ ...inputModal, show: false });
     };
 
-    const closeTransactionModal = () => { 
-        setEditMode(false); 
-        setTransactionData(null); 
-        setIsTransactionModalOpen(false); 
-    };
-
-    const handleGlobalSave = (tx, debtTargets) => {
-        let updatedTransactions = [...data.transactions];
-         updatedTransactions = updatedTransactions.map(t => t.id === tx.id ? tx : t);
-         saveData({ ...data, transactions: updatedTransactions, debtTargets });
-         closeTransactionModal();
-    };
-
-    const handleGlobalDelete = (tx) => {
-        const updated = data.transactions.filter(t => t.id !== tx.id);
-        saveData({ ...data, transactions: updated });
+    const closeTransactionModal = () => { setEditMode(false); setTransactionData(null); setIsTransactionModalOpen(false); };
+    const handleGlobalSave = (txsToSave, newDebtTargets) => {
+        let updatedTransactions = [...data.transactions]; let updatedDebtTargets = data.debtTargets || []; if(newDebtTargets) updatedDebtTargets = newDebtTargets;
+        const txsArray = Array.isArray(txsToSave) ? txsToSave : [txsToSave];
+        if (editMode && transactionData) { updatedTransactions = updatedTransactions.filter(t => t.id !== transactionData.id); }
+        updatedTransactions = [...updatedTransactions, ...txsArray];
+        saveData({ ...data, transactions: updatedTransactions, debtTargets: updatedDebtTargets });
         closeTransactionModal();
     };
-    
-    // Fix: Define callbacks at the top level to avoid React Error #310
-    // Use an internal state for split mode total/splits that updates the transactionData
+    const handleGlobalDelete = (tx) => { const updated = data.transactions.filter(t => t.id !== tx.id); saveData({ ...data, transactions: updated }); closeTransactionModal(); };
     const handleSetSplitTotal = useCallback(val => setTransactionData(d => ({...d, amount: parseFloat(val) || 0})), []);
     const handleSetSplits = useCallback(newSplits => setTransactionData(d => ({...d, splits: newSplits})), []);
 
     return (
-        <window.AppLayout 
-            view={view} 
-            setView={setView} 
-            syncStatus={syncStatus} 
-            selectedAccount={selectedAccount} 
-            setSelectedAccount={setSelectedAccount} 
-            data={data}
-        >
+        <window.AppLayout view={view} setView={setView} syncStatus={syncStatus} selectedAccount={selectedAccount} setSelectedAccount={setSelectedAccount} data={data}>
             {view === 'settings' && <window.SettingsView data={data} githubToken={githubToken} setGithubToken={setGithubToken} repo={repo} saveData={saveData} setInputModal={setInputModal} showToast={showToast} fetchData={fetchData} />}
             {view === 'dashboard' && <window.DashboardView data={data} setData={setData} saveData={saveData} setView={setView} setSelectedAccount={setSelectedAccount} setInputModal={setInputModal} showToast={showToast} dailyQuote={dailyQuote} />}
             {view === 'accounting' && <window.AccountingView data={data} saveData={saveData} selectedAccount={selectedAccount} setSelectedAccount={setSelectedAccount} setInputModal={setInputModal} showToast={showToast} />}
             {view === 'wealth' && <window.WealthView data={data} saveData={saveData} showToast={showToast} />}
             {view === 'debt' && <window.DebtView data={data} saveData={saveData} showToast={showToast} openEditTransaction={openEditTransaction} />}
-            
             {toast && <window.Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-            
-            {/* Input Modal */}
             {inputModal.show && <window.Modal title={inputModal.title} onClose={() => setInputModal({ ...inputModal, show: false })}><div className="space-y-4">
                 {(inputModal.type === 'add_account' || inputModal.type === 'rename_account') && 
                     <div className="flex bg-muji-bg rounded-lg p-1 mb-2 overflow-x-auto no-scrollbar">
@@ -390,9 +269,9 @@ window.App = () => {
                         <p className="text-muji-muted text-sm mb-4">此操作無法復原。</p>
                         <button autoFocus onClick={handleInputConfirm} className="w-full py-3 rounded-lg font-bold shadow-sm text-white bg-muji-red">確認刪除/重置</button>
                     </div> 
-                    : inputModal.type === 'calibrate_account' ? ( // NEW: Calibrate Account UI
+                    : inputModal.type === 'calibrate_account' ? ( // Calibrate Account UI
                         <>
-                             <div className="text-sm text-muji-muted">當前計算餘額: <span className="font-mono font-bold text-muji-text">${inputModal.extra?.toLocaleString() || 0}</span></div>
+                             {inputModal.extra !== null && <div className="text-sm text-muji-muted">當前計算餘額: <span className="font-mono font-bold text-muji-text">${inputModal.extra?.toLocaleString() || 0}</span></div>}
                              <input 
                                  autoFocus 
                                  type="number" 
@@ -400,22 +279,53 @@ window.App = () => {
                                  value={inputModal.value} 
                                  onChange={(e) => setInputModal({ ...inputModal, value: e.target.value })} 
                                  onKeyDown={(e) => e.key === 'Enter' && handleInputConfirm()} 
-                                 placeholder="輸入校正後的目標餘額" 
+                                 placeholder={inputModal.extra !== null ? "輸入校正後的目標餘額" : "輸入初始金額"}
                              />
                              <button onClick={handleInputConfirm} className="w-full py-3 rounded-lg font-bold shadow-sm text-white bg-muji-accent">確認校正</button>
+                        </>
+                    ) : inputModal.type === 'account_order' ? ( // Account Order UI
+                        <>
+                            <p className="text-sm text-muji-muted mb-4">拖曳項目以調整順序。</p>
+                            <div className="space-y-2 max-h-60 overflow-y-auto">
+                                {(inputModal.data || []).map((id, index) => {
+                                     const acc = data.accounts.find(a => a.id === id);
+                                     if (!acc) return null;
+                                     return (
+                                        <div 
+                                            key={id} 
+                                            draggable
+                                            onDragStart={(e) => { dragItem.current = index; e.target.classList.add('opacity-50'); }}
+                                            onDragEnter={(e) => { dragOverItem.current = index; }}
+                                            onDragEnd={(e) => { e.target.classList.remove('opacity-50'); handleSort(); }}
+                                            onDragOver={(e) => e.preventDefault()}
+                                            className="flex justify-between items-center p-3 bg-muji-bg rounded-lg border border-muji-border cursor-move hover:bg-muji-hover transition-colors"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <i data-lucide="grip-vertical" className="w-4 h-4 text-muji-muted"></i>
+                                                <span className="font-bold text-muji-text">{acc.name}</span>
+                                            </div>
+                                        </div>
+                                     );
+                                })}
+                            </div>
+                            <button onClick={() => setInputModal({...inputModal, type: 'save_account_order'}) || handleInputConfirm()} className="w-full py-3 rounded-lg font-bold shadow-sm text-white bg-muji-accent mt-2">儲存排序</button>
                         </>
                     ) : (
                         <>
                             <input autoFocus className="w-full p-3 bg-muji-bg rounded-lg border-none focus:ring-1 focus:ring-muji-accent" value={inputModal.value} onChange={(e) => setInputModal({ ...inputModal, value: e.target.value })} onKeyDown={(e) => e.key === 'Enter' && handleInputConfirm()} placeholder="請輸入名稱" />
-                            {inputModal.type === 'add_account' && (
-                                <input 
-                                    type="number" 
-                                    className="w-full p-3 bg-muji-bg rounded-lg border-none focus:ring-1 focus:ring-muji-accent mt-2" 
-                                    value={inputModal.value2} 
-                                    onChange={(e) => setInputModal({ ...inputModal, value2: e.target.value })} 
-                                    placeholder="初始金額 (選填，預設 0)" 
-                                    onKeyDown={(e) => e.key === 'Enter' && handleInputConfirm()}
-                                />
+                            {/* NEW: Input for Initial Balance in Add/Edit Account */}
+                            {(inputModal.type === 'add_account' || inputModal.type === 'rename_account') && (
+                                <div className="mt-2">
+                                    <label className="text-xs text-muji-muted mb-1 block">初始金額</label>
+                                    <input 
+                                        type="number" 
+                                        className="w-full p-3 bg-muji-bg rounded-lg border-none focus:ring-1 focus:ring-muji-accent" 
+                                        value={inputModal.value2} 
+                                        onChange={(e) => setInputModal({ ...inputModal, value2: e.target.value })} 
+                                        placeholder="0" 
+                                        onKeyDown={(e) => e.key === 'Enter' && handleInputConfirm()}
+                                    />
+                                </div>
                             )}
                             <button onClick={handleInputConfirm} className="w-full py-3 rounded-lg font-bold shadow-sm text-white bg-muji-accent mt-2">確認</button>
                         </>
@@ -442,6 +352,7 @@ window.App = () => {
                     splits={transactionData?.splits || []}
                     setSplitTotal={handleSetSplitTotal}
                     setSplits={handleSetSplits}
+                    showToast={showToast} // Ensure toast is passed
                 />
             )}
         </window.AppLayout>

@@ -5,7 +5,7 @@ window.DEFAULT_REPO = "zenningh1983/money";
 window.FILE_PATH = "money_data.json";
 window.DEFAULT_TOKEN_SUFFIX = "hfFz2uYiriKFcVZlrD3YU79KRTdBvf0yd7PA"; 
 
-// Updated Account Types with new order and additions
+// Updated Account Types
 window.DEFAULT_ACCOUNT_TYPES = {
     cash: { label: '現金', icon: 'banknote' }, 
     bank: { label: '銀行', icon: 'landmark' },
@@ -15,10 +15,12 @@ window.DEFAULT_ACCOUNT_TYPES = {
     ticket: { label: '電子票券', icon: 'ticket' }
 };
 
+// NEW: Added 'advance' type
 window.TX_TYPES = {
-    expense: { label: '支出', color: 'text-rose-500', icon: 'minus' }, // Red for expense
-    income: { label: '收入', color: 'text-emerald-500', icon: 'plus' }, // Green for income
+    expense: { label: '支出', color: 'text-rose-500', icon: 'minus' },
+    income: { label: '收入', color: 'text-emerald-500', icon: 'plus' },
     transfer: { label: '轉帳', color: 'text-muji-blue', icon: 'arrow-right-left' },
+    advance: { label: '代墊', color: 'text-orange-500', icon: 'hand-coins' }, 
     repay: { label: '還款', color: 'text-teal-600', icon: 'undo-2' }
 };
 
@@ -153,44 +155,15 @@ window.autoTag = (note) => {
     if(!note) return 'other_其他';
     const lowerNote = note.toLowerCase();
     
-    // Priority 0: Passive Income (High Priority)
-    if (lowerNote.includes('收益分配') || lowerNote.includes('基金配息') || lowerNote.includes('配息') || lowerNote.includes('股息')) {
-        return 'passive_股息';
-    }
-    if (lowerNote.includes('存款息') || lowerNote.includes('利息')) { 
-        return 'passive_利息';
-    }
-    
-    // Priority 1: Specific Account Rules (High Priority)
-    if (lowerNote.includes('008') && (lowerNote.includes('118100075578'))) {
-        return 'parenting_補習班';
-    }
-    if (lowerNote.includes('007') && (lowerNote.includes('0000016768032983'))) {
-        return 'parenting_安親班';
-    }
-    
-    // Priority 2: Investment Expenses
-    if (lowerNote.includes('交割股款')) {
-        return 'invest_ETF'; 
-    }
-    
-    // Priority 3: Home/Life/Food
-    if (lowerNote.includes('管理費')) {
-        return 'home_管理費';
-    }
-    if (lowerNote.includes('電支交易') || lowerNote.includes('一卡通票證')) {
-        return 'food_三餐';
-    }
-
-    // Group 1: Food
-    if (lowerNote.includes('qburger') || lowerNote.includes('統一') || lowerNote.includes('餐飲') || lowerNote.includes('食堂')) {
-        return 'food_三餐';
-    }
-    
-    // Group 2: Subscriptions
-    if (lowerNote.includes('youtube') || lowerNote.includes('premium') || lowerNote.includes('gpt') || lowerNote.includes('disney') || lowerNote.includes('netflix') || lowerNote.includes('spotify')) {
-        return 'play_APP訂閱';
-    }
+    if (lowerNote.includes('收益分配') || lowerNote.includes('基金配息') || lowerNote.includes('配息') || lowerNote.includes('股息')) return 'passive_股息';
+    if (lowerNote.includes('存款息') || lowerNote.includes('利息')) return 'passive_利息';
+    if (lowerNote.includes('008') && (lowerNote.includes('118100075578'))) return 'parenting_補習班';
+    if (lowerNote.includes('007') && (lowerNote.includes('0000016768032983'))) return 'parenting_安親班';
+    if (lowerNote.includes('交割股款')) return 'invest_ETF'; 
+    if (lowerNote.includes('管理費')) return 'home_管理費';
+    if (lowerNote.includes('電支交易') || lowerNote.includes('一卡通票證')) return 'food_三餐';
+    if (lowerNote.includes('qburger') || lowerNote.includes('統一') || lowerNote.includes('餐飲') || lowerNote.includes('食堂')) return 'food_三餐';
+    if (lowerNote.includes('youtube') || lowerNote.includes('premium') || lowerNote.includes('gpt') || lowerNote.includes('disney') || lowerNote.includes('netflix') || lowerNote.includes('spotify')) return 'play_APP訂閱';
 
     for (let key in window.KEYWORD_MAPPING) if (lowerNote.includes(key.toLowerCase())) return window.KEYWORD_MAPPING[key];
     return 'other_其他'; 
@@ -204,7 +177,6 @@ window.getDebtSummary = (data, userId) => {
     });
     userTxs.forEach(tx => {
         const amount = tx.amount || 0;
-        
         if (tx.type === 'repay' && tx.targetName) debts[tx.targetName] = (debts[tx.targetName] || 0) - amount;
         
         if (tx.type === 'expense' && tx.splits && Array.isArray(tx.splits)) {
