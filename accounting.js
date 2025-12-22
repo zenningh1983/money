@@ -535,6 +535,8 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
     const [currentDate, setCurrentDate] = useState(new Date()); const [showDatePicker, setShowDatePicker] = useState(false);
     const [isSplitMode, setIsSplitMode] = useState(false); const [splitTotal, setSplitTotal] = useState(''); const [splits, setSplits] = useState([]);
     const [newTx, setNewTx] = useState({ amount: '', note: '', type: 'expense', categoryId: 'food_伙食', date: new Date().toISOString().split('T')[0], toAccountId: '', targetName: '', splits: [] });
+    // NEW: Filter Type State
+    const [filterType, setFilterType] = useState('all'); 
 
     // Multi-selection state
     const [selectedTxIds, setSelectedTxIds] = useState([]);
@@ -566,18 +568,61 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
 
     const getFilteredTransactions = useCallback(() => { 
         const y = currentDate.getFullYear(); const m = currentDate.getMonth(); 
-        return data.transactions.filter(t => { 
+        let txs = data.transactions.filter(t => { 
             const d = new Date(t.date); 
             const isRelated = t.accountId === selectedAccount || t.toAccountId === selectedAccount; 
             return d.getFullYear() === y && d.getMonth() === m && isRelated; 
-        }).sort((a, b) => { const dateDiff = new Date(b.date) - new Date(a.date); if (dateDiff !== 0) return dateDiff; if (b.id < a.id) return -1; if (b.id > a.id) return 1; return 0; }); 
-    }, [data.transactions, currentDate, selectedAccount]);
+        });
+        
+        // NEW: Filter by Type
+        if (filterType !== 'all') {
+            txs = txs.filter(t => t.type === filterType);
+        }
+
+        return txs.sort((a, b) => { const dateDiff = new Date(b.date) - new Date(a.date); if (dateDiff !== 0) return dateDiff; if (b.id < a.id) return -1; if (b.id > a.id) return 1; return 0; }); 
+    }, [data.transactions, currentDate, selectedAccount, filterType]);
 
     // Memoize filtered transactions to avoid "rawFilteredTxs is not defined" issues in render
     const filteredTxs = useMemo(() => {
         if (!selectedAccount) return [];
         return getFilteredTransactions();
     }, [selectedAccount, getFilteredTransactions]);
+
+    // NEW: Calculate Monthly Stats for current filtered list (ignoring type filter for stats usually, but user might want stats of current view. Let's calculate total Income/Expense for the month regardless of type filter to be consistent with "Month Stats")
+    const currentMonthStats = useMemo(() => {
+        if (!selectedAccount) return { income: 0, expense: 0 };
+        const y = currentDate.getFullYear(); const m = currentDate.getMonth();
+        // Get ALL transactions for this month/account, ignoring the type filter for the stats display
+        const monthTxs = data.transactions.filter(t => {
+            const d = new Date(t.date);
+            const isRelated = t.accountId === selectedAccount || t.toAccountId === selectedAccount;
+            return d.getFullYear() === y && d.getMonth() === m && isRelated;
+        });
+
+        let income = 0;
+        let expense = 0;
+
+        monthTxs.forEach(t => {
+            // Income Logic
+            if (t.type === 'income' || (t.type === 'repay' && t.accountId === selectedAccount)) {
+                income += (t.amount || 0);
+            } else if (t.type === 'transfer' && t.toAccountId === selectedAccount) {
+                // Transfer IN is like income for this account
+                income += (t.amount || 0);
+            }
+
+            // Expense Logic
+            if (t.type === 'expense' || (t.type === 'advance' && t.accountId === selectedAccount)) {
+                expense += (t.amount || 0);
+            } else if (t.type === 'transfer' && t.accountId === selectedAccount) {
+                // Transfer OUT is like expense for this account
+                expense += (t.amount || 0);
+            }
+        });
+
+        return { income, expense };
+    }, [data.transactions, currentDate, selectedAccount]);
+
 
     // Grouping Logic
     const groupedTxs = []; // Removed useMemo wrapper to ensure fresh closures
@@ -666,7 +711,7 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
     }, [data.transactions, currentDate, selectedAccount]);
 
     // Effects
-    useEffect(() => { if (window.lucide) { setTimeout(() => window.lucide.createIcons(), 50); setTimeout(() => window.lucide.createIcons(), 500); } }, [showAdd, isEditMode, showImport, previewData, showDatePicker, expandedTypes, selectedAccount, data.transactions]);
+    useEffect(() => { if (window.lucide) { setTimeout(() => window.lucide.createIcons(), 50); setTimeout(() => window.lucide.createIcons(), 500); } }, [showAdd, isEditMode, showImport, previewData, showDatePicker, expandedTypes, selectedAccount, data.transactions, filterType]);
     const handleSetSplitTotal = useCallback(val => setTransactionData(d => ({...d, amount: parseFloat(val) || 0})), []);
     const handleSetSplits = useCallback(newSplits => setTransactionData(d => ({...d, splits: newSplits})), []);
 
@@ -688,6 +733,38 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                     <div className="flex justify-center w-full md:w-1/3"><div className="flex items-center bg-white border border-muji-border rounded-lg px-1 py-1"><button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))} className="p-1 hover:bg-muji-bg rounded"><i data-lucide="chevron-left" className="w-4 h-4"></i></button><span className="text-sm font-bold mx-2 cursor-pointer whitespace-nowrap" onClick={() => setShowDatePicker(true)}>{currentDate.getFullYear()}/{currentDate.getMonth() + 1}</span><button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))} className="p-1 hover:bg-muji-bg rounded"><i data-lucide="chevron-right" className="w-4 h-4"></i></button><button onClick={() => setCurrentDate(new Date())} className="ml-2 px-3 py-1 bg-muji-bg border border-muji-border rounded text-xs font-bold hover:bg-muji-hover text-muji-text">今天</button></div></div>
                     <div className="flex justify-end gap-2 w-full md:w-1/3"><button onClick={() => { resetForm(); setShowAdd(true); }} className="bg-muji-accent text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm flex items-center gap-1"><i data-lucide="plus" className="w-4 h-4"></i> 記帳</button><button onClick={() => { setImportText(''); setPreviewData([]); setShowImport(true); }} className="bg-white border border-muji-border text-muji-text px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm hover:bg-muji-bg flex items-center gap-1"><i data-lucide="sparkles" className="w-4 h-4"></i> AI</button></div>
                </div>
+
+                {/* NEW: Monthly Stats & Filter Row */}
+                <div className="px-4 md:px-0 mb-4 space-y-3">
+                    <div className="flex gap-4 text-sm bg-muji-bg/50 p-2 rounded-lg border border-muji-border/50">
+                        <div className="flex-1 flex flex-col items-center border-r border-muji-border/50">
+                            <span className="text-xs text-muji-muted font-bold">本月收入</span>
+                            <span className="text-emerald-600 font-mono font-bold">+${currentMonthStats.income.toLocaleString()}</span>
+                        </div>
+                        <div className="flex-1 flex flex-col items-center">
+                            <span className="text-xs text-muji-muted font-bold">本月支出</span>
+                            <span className="text-rose-500 font-mono font-bold">-${currentMonthStats.expense.toLocaleString()}</span>
+                        </div>
+                    </div>
+                    <div className="flex overflow-x-auto no-scrollbar gap-2 pb-1">
+                        {[
+                            { id: 'all', label: '全部' },
+                            { id: 'expense', label: '支出' },
+                            { id: 'income', label: '收入' },
+                            { id: 'transfer', label: '轉帳' },
+                            { id: 'repay', label: '還款' },
+                            { id: 'advance', label: '代墊' }
+                        ].map(type => (
+                            <button
+                                key={type.id}
+                                onClick={() => setFilterType(type.id)}
+                                className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-colors border ${filterType === type.id ? 'bg-muji-text text-white border-muji-text' : 'bg-white text-muji-muted border-muji-border hover:bg-muji-bg'}`}
+                            >
+                                {type.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
 
                {selectedTxIds.length > 0 && (<div className="mb-4 flex justify-between items-center bg-muji-red/10 p-2 rounded-lg border border-muji-red/30 mx-4 md:mx-0"><span className="text-xs text-muji-red font-bold ml-2">已選取 {selectedTxIds.length} 筆</span><button onClick={() => setShowDeleteBatchConfirm(true)} className="text-xs bg-muji-red text-white px-3 py-1.5 rounded font-bold hover:opacity-80">刪除</button></div>)}
 
@@ -731,15 +808,16 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                                                 const textColorClass = subTx.type === 'expense' ? 'text-rose-500' : (subTx.type === 'income' ? 'text-emerald-500' : txType.color);
                                                 let sign = subTx.type === 'expense' || subTx.type === 'advance' ? '-' : '+';
                                                 const balance = balanceMap[subTx.id];
+                                                const isSettled = subTx.isSettled; // NEW
                                                 return (
-                                                    <div key={subTx.id} onClick={() => openEdit(subTx)} className="grid grid-cols-[5rem_6rem_4rem_7rem_6rem_6rem_1fr] items-center border-b border-muji-border/50 hover:bg-muji-hover transition-colors bg-white cursor-pointer text-sm">
+                                                    <div key={subTx.id} onClick={() => openEdit(subTx)} className={`grid grid-cols-[5rem_6rem_4rem_7rem_6rem_6rem_1fr] items-center border-b border-muji-border/50 hover:bg-muji-hover transition-colors bg-white cursor-pointer text-sm ${isSettled ? 'opacity-50' : ''}`}>
                                                         <div className="p-4 flex justify-center gap-2 pl-6 border-l-4 border-muji-accent/20"><button onClick={(e) => { e.stopPropagation(); handleDuplicateTx(subTx); }} className="p-1 text-muji-muted hover:text-muji-accent"><i data-lucide="copy" className="w-3.5 h-3.5"></i></button><button onClick={(e) => { e.stopPropagation(); handleDelete(subTx); }} className="p-1 text-muji-muted hover:text-muji-red" title="刪除並回補"><i data-lucide="trash-2" className="w-3.5 h-3.5"></i></button></div>
                                                         <div className="p-4 text-center opacity-0">-</div> 
-                                                        <div className={`p-4 text-center font-bold ${txType.color} text-xs px-1 whitespace-nowrap`}>{txType.label}</div>
-                                                        <div className="p-4 text-center text-xs gap-2 flex justify-center items-center">{(subTx.type==='expense'||subTx.type==='income')&&<i data-lucide={cat.icon || 'circle'} className="w-3.5 h-3.5 opacity-70"></i>}<span className="truncate">{display}</span></div>
-                                                        <div className={`p-4 text-right font-mono font-bold ${textColorClass} text-xs`}>{sign}${subTx.amount.toLocaleString()}</div>
+                                                        <div className={`p-4 text-center font-bold ${txType.color} text-xs px-1 whitespace-nowrap ${isSettled ? 'line-through decoration-muji-text/50' : ''}`}>{txType.label}</div>
+                                                        <div className={`p-4 text-center text-xs gap-2 flex justify-center items-center ${isSettled ? 'line-through decoration-muji-text/50' : ''}`}>{(subTx.type==='expense'||subTx.type==='income')&&<i data-lucide={cat.icon || 'circle'} className="w-3.5 h-3.5 opacity-70"></i>}<span className="truncate">{display}</span></div>
+                                                        <div className={`p-4 text-right font-mono font-bold ${textColorClass} text-xs ${isSettled ? 'line-through decoration-muji-text/50' : ''}`}>{sign}${subTx.amount.toLocaleString()}</div>
                                                         <div className={`p-4 text-right font-mono text-xs text-muji-muted`}>${balance?.toLocaleString()}</div>
-                                                        <div className="p-4 pl-4 text-left text-muji-muted text-xs truncate">{subTx.note}</div>
+                                                        <div className={`p-4 pl-4 text-left text-muji-muted text-xs truncate ${isSettled ? 'line-through' : ''}`}>{subTx.note}{isSettled ? ' (已結清)' : ''}</div>
                                                     </div>
                                                 );
                                             })}
@@ -756,19 +834,20 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                                     let sign = '';
                                     if (tx.type === 'expense') sign = '-'; else if (tx.type === 'income') sign = '+'; else if (tx.type === 'transfer') sign = selectedAccount === tx.accountId ? '-' : '+'; else if (tx.type === 'repay') sign = '+'; else if (tx.type === 'advance') sign = '-';
                                     const balance = balanceMap[tx.id];
+                                    const isSettled = tx.isSettled; // NEW
 
                                     return (
-                                        <div key={tx.id} onClick={() => openEdit(tx)} className="grid grid-cols-[5rem_6rem_4rem_7rem_6rem_6rem_1fr] items-center border-b border-muji-border/50 hover:bg-muji-hover transition-colors cursor-pointer text-sm">
+                                        <div key={tx.id} onClick={() => openEdit(tx)} className={`grid grid-cols-[5rem_6rem_4rem_7rem_6rem_6rem_1fr] items-center border-b border-muji-border/50 hover:bg-muji-hover transition-colors cursor-pointer text-sm ${isSettled ? 'opacity-50' : ''}`}>
                                             <div className="p-4 flex justify-center gap-2" onClick={(e) => e.stopPropagation()}>
                                                 <input type="checkbox" className="w-4 h-4 accent-muji-accent cursor-pointer" checked={selectedTxIds.includes(tx.id)} onChange={() => toggleSelectTx(tx.id)} />
                                                 <button onClick={(e) => { e.stopPropagation(); handleDuplicateTx(tx); }} className="p-1 text-muji-muted hover:text-muji-accent transition-colors" title="複製並新增一筆"><i data-lucide="copy" className="w-3.5 h-3.5"></i></button>
                                             </div>
                                             <div className="p-4 text-center font-mono text-xs">{tx.date}</div>
-                                            <div className={`p-4 text-center font-bold ${txType.color} text-xs px-1 whitespace-nowrap`}>{txType.label}</div>
-                                            <div className="p-4 text-center text-xs gap-2 flex justify-center items-center">{(tx.type==='expense'||tx.type==='income')&&<i data-lucide={cat.icon || 'circle'} className="w-4 h-4"></i>}<span className="truncate">{display}</span></div>
-                                            <div className={`p-4 text-right font-mono font-bold ${textColorClass} text-xs`}><span>{sign}${amountVal.toLocaleString()}</span></div>
+                                            <div className={`p-4 text-center font-bold ${txType.color} text-xs px-1 whitespace-nowrap ${isSettled ? 'line-through decoration-muji-text/50' : ''}`}>{txType.label}</div>
+                                            <div className={`p-4 text-center text-xs gap-2 flex justify-center items-center ${isSettled ? 'line-through decoration-muji-text/50' : ''}`}>{(tx.type==='expense'||tx.type==='income')&&<i data-lucide={cat.icon || 'circle'} className="w-4 h-4"></i>}<span className="truncate">{display}</span></div>
+                                            <div className={`p-4 text-right font-mono font-bold ${textColorClass} text-xs ${isSettled ? 'line-through decoration-muji-text/50' : ''}`}><span>{sign}${amountVal.toLocaleString()}</span></div>
                                             <div className={`p-4 text-right font-mono text-xs text-muji-muted`}>{balance !== undefined ? `$${balance.toLocaleString()}` : '-'}</div>
-                                            <div className="p-4 pl-4 text-left text-muji-muted text-xs truncate">{tx.note}</div>
+                                            <div className={`p-4 pl-4 text-left text-muji-muted text-xs truncate ${isSettled ? 'line-through' : ''}`}>{tx.note}{isSettled ? ' (已結清)' : ''}</div>
                                         </div>
                                     ) 
                                 }

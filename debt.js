@@ -21,7 +21,9 @@ window.DebtView = ({ data, saveData, showToast, openEditTransaction }) => {
             const isOwner = account && account.userId === data.currentUser;
             const isDirectDebt = (t.type === 'advance' || t.type === 'repay') && t.targetName === targetName;
             const isSplitDebt = t.type === 'expense' && t.splits && t.splits.some(s => s.name === targetName);
-            return isOwner && (isDirectDebt || isSplitDebt);
+            // NEW: Filter out settled debts to "remove" them from view
+            const isSettled = t.isSettled === true;
+            return isOwner && (isDirectDebt || isSplitDebt) && !isSettled;
         }).sort((a, b) => new Date(b.date) - new Date(a.date));
     };
 
@@ -88,13 +90,24 @@ window.DebtView = ({ data, saveData, showToast, openEditTransaction }) => {
             categoryId: '' 
         });
 
-        saveData({ ...data, transactions: [...data.transactions, ...newTxs] }); 
+        // NEW: Update original transactions to mark them as settled
+        const updatedOriginalTxs = data.transactions.map(t => {
+            if (selectedDebtTxIds.includes(t.id)) {
+                return { ...t, isSettled: true };
+            }
+            return t;
+        });
+
+        // Merge new repayment tx into updated transaction list
+        const finalTransactions = [...updatedOriginalTxs, ...newTxs];
+
+        saveData({ ...data, transactions: finalTransactions }); 
         setViewingTarget(null); 
         setSelectedDebtTxIds([]);
         setShowSettlementConfirm(false);
         setSettlementDiff(0);
         setRepayAmount('');
-        showToast('還款已記錄');
+        showToast('還款已記錄，已結清項目已移除');
     };
 
     const toggleSelectTx = (id) => {
@@ -165,7 +178,7 @@ window.DebtView = ({ data, saveData, showToast, openEditTransaction }) => {
                     </div>
                     <div>
                         {/* Body using Divs and Grid */}
-                        {txs.length === 0 ? <div className="p-10 text-center text-muji-muted">無交易紀錄</div> : txs.map(tx => { 
+                        {txs.length === 0 ? <div className="p-10 text-center text-muji-muted">目前無未結清款項</div> : txs.map(tx => { 
                             let amount = 0; 
                             let catName = ''; 
                             let isDebt = false;
