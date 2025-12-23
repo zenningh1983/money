@@ -26,21 +26,21 @@ window.TX_TYPES = {
 
 window.DEFAULT_CATEGORY_GROUPS = {
     expense: [
-        { id: 'food', label: '伙食', icon: 'utensils', subs: ['三餐', '交際應酬', '酒類', '咖啡飲料', '水果', '零食', '超市'] },
-        { id: 'transport', label: '交通', icon: 'bus', subs: ['公車捷運', 'Gogoro', '高鐵台鐵', '租車', '計程車', '加油', '停車', '洗車', '維修保養'] },
+        { id: 'food', label: '伙食', icon: 'utensils', subs: ['三餐', '交際應酬', '酒類', '咖啡飲料', '水果', '零食', '超市', '團購食材'] },
+        { id: 'transport', label: '交通', icon: 'bus', subs: ['公車捷運', 'Gogoro', '高鐵台鐵', '租車', '計程車', '加油', '停車', '洗車', '維修保養', 'ETC'] },
         { id: 'home', label: '居家', icon: 'home', subs: ['房貸', '管理費', '水電瓦斯', '網路', '手機費', '傢俱家電', '日用雜貨', '3C 周邊', '修繕'] },
         { id: 'life', label: '生活', icon: 'shopping-bag', subs: ['治裝', '美容美妝', '美髮', '美甲', '美睫'] },        
         { id: 'play', label: '娛樂', icon: 'gamepad-2', subs: ['電影', '唱歌', '棒球', '泡湯按摩', '植栽', '旅行', 'APP訂閱', '遊戲課金', '打牌博弈'] },
         { id: 'medical', label: '醫療', icon: 'stethoscope', subs: ['掛號費', '藥用品', '保健食品', '健檢', '疫苗', '住院手術'] },
         { id: 'insurance', label: '保險稅負', icon: 'shield', subs: ['一般保險', '車險', '旅遊險', '各式稅金'] },
-        { id: 'parenting', label: '育兒', icon: 'baby', subs: ['學雜費', '補習班', '安親班', '才藝', '冬夏令營', '零用錢', '小孩物品', '小孩治裝', '學用品'] },
+        { id: 'parenting', label: '育兒', icon: 'baby', subs: ['學雜費', '補習班', '安親班', '才藝', '冬夏令營', '零用錢', '小孩物品', '小孩治裝', '學用品', '手機費', '保險', '掛號費'] },
         { id: 'invest', label: '投資理財', icon: 'piggy-bank', subs: ['個股', 'ETF', '基金', '定存', '外幣'] },
         { id: 'other', label: '其他', icon: 'circle-ellipsis', subs: ['手續費', '滯納金', '運費', '人情紅包', '禮物', '捐款', '請客', '罰單', '遺失', '其他'] }
     ],
     income: [
         { id: 'active', label: '主動', icon: 'briefcase', subs: ['薪資', '加班費', '獎金'] },
         { id: 'passive', label: '被動', icon: 'trending-up', subs: ['股息', '利息', '贖回'] },
-        { id: 'other_in', label: '其他', icon: 'wallet', subs: ['紅包', '退款', '補助款', '中獎', '紅利回饋','其他'] }
+        { id: 'other_in', label: '其他', icon: 'wallet', subs: ['紅包', '退款', '補助款', '中獎', '紅利回饋','其他', '還款', '葡眾'] }
     ]
 };
 
@@ -138,13 +138,21 @@ window.calculateMonthlyStats = (data, date = new Date()) => {
         return d.getFullYear() === year && d.getMonth() === month && userAccountIds.includes(t.accountId);
     });
     
+    // 嚴格定義：收入只算 type === 'income'
     const income = txs.reduce((sum, t) => t.type === 'income' ? sum + (t.amount || 0) : sum, 0); 
     
-    // 支出計算：只計算屬於「我」的部分 (總額 - 分給別人的部分)
+    // 嚴格定義：支出只算 type === 'expense'，並扣除分給別人的部分
     const expense = txs.reduce((sum, t) => {
         if (t.type === 'expense') {
-            const splitTotal = (t.splits || []).reduce((acc, s) => acc + (parseFloat(s.amount) || 0), 0);
-            return sum + ((t.amount || 0) - splitTotal);
+            let myAmount = t.amount || 0;
+            // 如果有分帳，扣除非「我」的部分
+            if (t.splits && t.splits.length > 0) {
+                const othersAmount = t.splits.reduce((acc, s) => {
+                    return s.owner !== 'me' ? acc + (parseFloat(s.amount) || 0) : acc;
+                }, 0);
+                myAmount = myAmount - othersAmount;
+            }
+            return sum + myAmount;
         }
         return sum;
     }, 0);

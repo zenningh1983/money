@@ -20,13 +20,20 @@ window.AppLayout = ({ children, view, setView, syncStatus, selectedAccount, setS
         <div className="min-h-screen bg-muji-bg text-muji-text font-sans flex justify-center md:items-center md:py-10 transition-all duration-300">
             <div className={`w-full md:max-w-6xl md:h-[85vh] bg-muji-bg md:bg-white md:rounded-2xl md:shadow-xl md:flex md:border border-muji-border overflow-hidden relative`}>
                 <div className={`hidden md:flex ${isCollapsed ? 'w-20' : 'w-48'} bg-muji-sidebar border-r border-muji-border flex-col p-4 space-y-4 transition-all duration-300 ease-in-out relative`}>
-                    <button onClick={() => setIsCollapsed(!isCollapsed)} className="absolute -right-3 top-8 bg-white border border-muji-border rounded-full p-1 shadow-sm text-muji-muted hover:text-muji-accent z-10 hidden md:block"><i data-lucide={isCollapsed ? "chevrons-right" : "chevrons-left"} className="w-4 h-4"></i></button>
+                    {/* 修改這裡：收合時顯示向右 (>) 代表點擊展開，展開時顯示向左 (<) 代表點擊收合 */}
+                    <button onClick={() => setIsCollapsed(!isCollapsed)} className="absolute -right-3 top-8 bg-white border border-muji-border rounded-full p-1 shadow-sm text-muji-muted hover:text-muji-accent z-10 hidden md:block"><i data-lucide={isCollapsed ? "chevron-right" : "chevron-left"} className="w-4 h-4"></i></button>
                     <div className={`flex items-center gap-2 mb-2 ${isCollapsed ? 'justify-center' : ''}`}>
                         <div className="w-8 h-8 bg-muji-accent rounded-full flex items-center justify-center text-white flex-shrink-0"><i data-lucide="coins" className="w-5 h-5"></i></div>
                         {!isCollapsed && (<div><h1 className="text-lg font-bold text-muji-text leading-tight font-mono tracking-wider">{currentUser?.name}</h1></div>)}
                     </div>
                     <div className="space-y-1">
-                        {[ { id: 'dashboard', label: '總覽', icon: 'layout-grid' }, { id: 'accounting', label: '記帳', icon: 'notebook-pen' }, { id: 'debt', label: '債務', icon: 'hand-coins' }, { id: 'wealth', label: '理財', icon: 'trending-up' } ].map(item => (
+                        {[ 
+                            { id: 'dashboard', label: '總覽', icon: 'layout-grid' }, 
+                            { id: 'accounting', label: '記帳', icon: 'notebook-pen' }, 
+                            { id: 'analysis', label: '收支分析', icon: 'pie-chart' }, // NEW ITEM
+                            { id: 'debt', label: '債務', icon: 'hand-coins' }, 
+                            { id: 'wealth', label: '理財', icon: 'trending-up' } 
+                        ].map(item => (
                             <button key={item.id} onClick={() => { setView(item.id); if(item.id === 'dashboard' || item.id === 'accounting') setSelectedAccount(null); }} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm ${view === item.id ? 'bg-white shadow-sm text-muji-accent font-bold shadow-[0_0_15px_rgba(14,165,233,0.3)]' : 'text-muji-muted hover:bg-muji-hover'} ${isCollapsed ? 'justify-center px-0' : ''}`} title={isCollapsed ? item.label : ''}>
                                 <i data-lucide={item.icon} className="w-5 h-5 flex-shrink-0"></i> {!isCollapsed && <span>{item.label}</span>}
                             </button>
@@ -43,10 +50,11 @@ window.AppLayout = ({ children, view, setView, syncStatus, selectedAccount, setS
 
                     <div className="flex-1 overflow-y-auto custom-scrollbar md:p-8 pt-16 md:pt-8">{children}</div>
                     
-                    {/* Bottom Navigation for Mobile - Only Dashboard and Accounting */}
+                    {/* Bottom Navigation for Mobile */}
                     <div className="md:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-muji-border p-2 pb-6 flex justify-around items-center z-30">
                         <button onClick={() => { setView('dashboard'); setSelectedAccount(null); }} className={`flex flex-col items-center p-2 rounded-lg w-16 transition ${view === 'dashboard' ? 'text-muji-accent' : 'text-muji-muted'}`}><i data-lucide="layout-grid" className="w-6 h-6"></i><span className="text-[10px] mt-1 font-medium">總覽</span></button>
                         <button onClick={() => { setView('accounting'); setSelectedAccount(null); }} className={`flex flex-col items-center p-2 rounded-lg w-16 transition ${view === 'accounting' ? 'text-muji-accent' : 'text-muji-muted'}`}><i data-lucide="notebook-pen" className="w-6 h-6"></i><span className="text-[10px] mt-1 font-medium">記帳</span></button>
+                        <button onClick={() => { setView('analysis'); }} className={`flex flex-col items-center p-2 rounded-lg w-16 transition ${view === 'analysis' ? 'text-muji-accent' : 'text-muji-muted'}`}><i data-lucide="pie-chart" className="w-6 h-6"></i><span className="text-[10px] mt-1 font-medium">分析</span></button>
                     </div>
 
                 </div>
@@ -60,6 +68,8 @@ window.DashboardView = ({ data, setData, saveData, setView, setSelectedAccount, 
     const getCurrentUserStocks = () => data.stocks.filter(s => s.userId === data.currentUser || (!s.userId && data.currentUser === 'default'));
     const totalAssets = getCurrentUserAccounts().reduce((sum, acc) => sum + window.calculateBalance(data, acc.id), 0) + getCurrentUserStocks().reduce((sum, s) => sum + (s.quantity * s.currentPrice), 0);
     const monthlyStats = window.calculateMonthlyStats(data);
+    const monthlyNet = monthlyStats.income - monthlyStats.expense;
+
     const [showAssets, setShowAssets] = useState(false);
     const [isLedgerOpen, setIsLedgerOpen] = useState(false); 
 
@@ -105,7 +115,7 @@ window.DashboardView = ({ data, setData, saveData, setView, setSelectedAccount, 
                 )}
             </div>
 
-            {/* Total Assets Card - Resized to match Debt Management card height (h-32) */}
+            {/* Total Assets Card */}
             <div className="bg-white rounded-2xl p-6 text-center shadow-[0_0_30px_rgba(14,165,233,0.1)] border border-muji-border relative h-32 flex flex-col justify-center items-center backdrop-blur-sm z-10">
                 <div className="text-muji-muted text-sm font-medium mb-2 flex items-center justify-center gap-2 font-mono tracking-widest uppercase">
                     總資產 
@@ -116,23 +126,27 @@ window.DashboardView = ({ data, setData, saveData, setView, setSelectedAccount, 
                 <div className="text-5xl font-bold text-muji-text tracking-tighter tabular-nums font-mono drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">{showAssets ? `$${totalAssets.toLocaleString()}` : '****'}</div>
             </div>
 
-            {monthlyStats.expense > monthlyStats.income && (
-                <div className="w-full md:w-2/3 mx-auto bg-muji-red/10 border border-muji-red/20 rounded-xl p-3 flex items-center justify-center gap-2 text-muji-red text-sm animate-pop font-medium">
-                    <i data-lucide="alert-circle" className="w-4 h-4"></i> 
-                    <span>本月已超支 ${(monthlyStats.expense - monthlyStats.income).toLocaleString()}，請注意消費！</span>
+            {/* 本月結餘提示 - 顏色更淡 */}
+            <div className={`w-full md:w-2/3 mx-auto rounded-xl p-3 flex flex-col items-center justify-center gap-1 text-sm animate-pop font-medium border ${monthlyNet >= 0 ? 'bg-emerald-50/50 border-emerald-100 text-emerald-800' : 'bg-rose-50/50 border-rose-100 text-rose-800'}`}>
+                <div className="flex items-center gap-2">
+                    <i data-lucide={monthlyNet >= 0 ? "piggy-bank" : "alert-circle"} className="w-4 h-4"></i> 
+                    <span className="font-bold">本月{monthlyNet >= 0 ? '結餘' : '超支'}</span>
                 </div>
-            )}
+                <span className="font-mono text-xl font-bold tracking-tight">
+                    {monthlyNet >= 0 ? '+' : ''}{monthlyNet.toLocaleString()}
+                </span>
+            </div>
 
             <div className="grid grid-cols-2 gap-4 w-full md:w-2/3 mx-auto z-10">
-                {/* Income Box - Soft Green Style */}
-                <div className="bg-emerald-50/30 p-4 rounded-xl border border-emerald-100/50 shadow-sm flex flex-col items-center">
-                    <span className="text-xs text-emerald-600/70 mb-1 font-mono font-bold">收入</span>
-                    <span className="text-lg font-bold text-emerald-700 font-mono">+${monthlyStats.income.toLocaleString()}</span>
+                {/* Income Box - 更淡的綠色 */}
+                <div className="bg-emerald-50/60 p-4 rounded-xl border border-emerald-100 shadow-sm flex flex-col items-center hover:bg-emerald-100/50 transition-colors">
+                    <span className="text-xs text-emerald-800 mb-1 font-mono font-bold uppercase tracking-wider">本月收入</span>
+                    <span className="text-lg font-bold text-emerald-900 font-mono">+${monthlyStats.income.toLocaleString()}</span>
                 </div>
-                {/* Expense Box - Soft Red Style */}
-                <div className="bg-rose-50/30 p-4 rounded-xl border border-rose-100/50 shadow-sm flex flex-col items-center">
-                    <span className="text-xs text-rose-600/70 mb-1 font-mono font-bold">支出</span>
-                    <span className="text-lg font-bold text-rose-700 font-mono">-${monthlyStats.expense.toLocaleString()}</span>
+                {/* Expense Box - 更淡的紅色 */}
+                <div className="bg-rose-50/60 p-4 rounded-xl border border-rose-100 shadow-sm flex flex-col items-center hover:bg-rose-100/50 transition-colors">
+                    <span className="text-xs text-rose-800 mb-1 font-mono font-bold uppercase tracking-wider">本月支出</span>
+                    <span className="text-lg font-bold text-rose-900 font-mono">-${monthlyStats.expense.toLocaleString()}</span>
                 </div>
             </div>
         </div>

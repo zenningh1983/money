@@ -8,7 +8,8 @@ const CollapsibleSection = ({ title, isOpen, onToggle, children }) => (
             className="w-full p-4 flex justify-between items-center bg-muji-bg hover:bg-muji-hover transition-colors"
         >
             <h3 className="font-bold text-lg text-muji-text">{title}</h3>
-            <i data-lucide={isOpen ? "chevron-up" : "chevron-down"} className="w-5 h-5 text-muji-muted"></i>
+            {/* 修改這裡：收合時用 chevron-right (>)，展開時用 chevron-down (v) */}
+            <i data-lucide={isOpen ? "chevron-down" : "chevron-right"} className="w-5 h-5 text-muji-muted"></i>
         </button>
         {isOpen && <div className="p-6 border-t border-muji-border animate-fade">{children}</div>}
     </div>
@@ -31,8 +32,13 @@ window.SettingsView = ({ data, githubToken, setGithubToken, repo, saveData, setI
 
     const toggleSection = (section) => {
         setExpandedSection(expandedSection === section ? '' : section);
-        window.refreshIcons();
+        // window.refreshIcons(); // Removed from here
     }
+
+    // Added useEffect for icon refresh
+    useEffect(() => {
+        window.refreshIcons();
+    }, [expandedSection, editCategoryType]); // Added editCategoryType as switching tabs also changes icons
     
     const handleSaveToken = () => { 
         const val = tempToken.trim(); 
