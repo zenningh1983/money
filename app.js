@@ -1,6 +1,6 @@
 const { useState, useEffect, useMemo, useCallback, useRef } = React;
 
-window.AppLayout = ({ children, view, setView, syncStatus, selectedAccount, setSelectedAccount, data, onOpenQuickAdd }) => {
+window.AppLayout = ({ children, view, setView, syncStatus, selectedAccount, setSelectedAccount, onResetWealth, onResetDebt, data, onOpenQuickAdd }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const currentUser = data.users.find(u => u.id === data.currentUser);
     
@@ -15,6 +15,23 @@ window.AppLayout = ({ children, view, setView, syncStatus, selectedAccount, setS
              </div>
         </div>
     );
+
+    // 修改：處理導覽點擊，重置狀態以回到首頁
+    const handleNavClick = (itemId) => {
+        setView(itemId);
+        // 如果點擊的是 dashboard 或 accounting，清除選取的帳戶，回到列表頁
+        if (itemId === 'dashboard' || itemId === 'accounting') {
+            setSelectedAccount(null);
+        }
+        // 如果點擊的是 wealth，重置選取的股票 (回到列表)
+        if (itemId === 'wealth' && onResetWealth) {
+            onResetWealth();
+        }
+        // 如果點擊的是 debt，重置選取的對象 (回到列表)
+        if (itemId === 'debt' && onResetDebt) {
+            onResetDebt();
+        }
+    };
 
     return (
         <div className="min-h-screen bg-muji-bg text-muji-text font-sans flex justify-center md:items-center md:py-10 transition-all duration-300">
@@ -33,7 +50,12 @@ window.AppLayout = ({ children, view, setView, syncStatus, selectedAccount, setS
                             { id: 'debt', label: '債務', icon: 'hand-coins' }, 
                             { id: 'wealth', label: '理財', icon: 'trending-up' } 
                         ].map(item => (
-                            <button key={item.id} onClick={() => { setView(item.id); if(item.id === 'dashboard' || item.id === 'accounting') setSelectedAccount(null); }} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm ${view === item.id ? 'bg-white shadow-sm text-muji-accent font-bold shadow-[0_0_15px_rgba(14,165,233,0.3)]' : 'text-muji-muted hover:bg-muji-hover'} ${isCollapsed ? 'justify-center px-0' : ''}`} title={isCollapsed ? item.label : ''}>
+                            <button 
+                                key={item.id} 
+                                onClick={() => handleNavClick(item.id)} // 使用新的處理函式
+                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm ${view === item.id ? 'bg-white shadow-sm text-muji-accent font-bold shadow-[0_0_15px_rgba(14,165,233,0.3)]' : 'text-muji-muted hover:bg-muji-hover'} ${isCollapsed ? 'justify-center px-0' : ''}`} 
+                                title={isCollapsed ? item.label : ''}
+                            >
                                 <i data-lucide={item.icon} className="w-5 h-5 flex-shrink-0"></i> {!isCollapsed && <span>{item.label}</span>}
                             </button>
                         ))}
@@ -51,6 +73,8 @@ window.AppLayout = ({ children, view, setView, syncStatus, selectedAccount, setS
                         <button onClick={() => { setView('dashboard'); setSelectedAccount(null); }} className={`flex flex-col items-center p-2 rounded-lg w-16 transition ${view === 'dashboard' ? 'text-muji-accent' : 'text-muji-muted'}`}><i data-lucide="layout-grid" className="w-6 h-6"></i><span className="text-[10px] mt-1 font-medium">總覽</span></button>
                         <button onClick={() => { setView('accounting'); setSelectedAccount(null); }} className={`flex flex-col items-center p-2 rounded-lg w-16 transition ${view === 'accounting' ? 'text-muji-accent' : 'text-muji-muted'}`}><i data-lucide="notebook-pen" className="w-6 h-6"></i><span className="text-[10px] mt-1 font-medium">記帳</span></button>
                         <button onClick={() => { setView('analysis'); }} className={`flex flex-col items-center p-2 rounded-lg w-16 transition ${view === 'analysis' ? 'text-muji-accent' : 'text-muji-muted'}`}><i data-lucide="pie-chart" className="w-6 h-6"></i><span className="text-[10px] mt-1 font-medium">分析</span></button>
+                        <button onClick={() => { handleNavClick('debt'); }} className={`flex flex-col items-center p-2 rounded-lg w-16 transition ${view === 'debt' ? 'text-muji-accent' : 'text-muji-muted'}`}><i data-lucide="hand-coins" className="w-6 h-6"></i><span className="text-[10px] mt-1 font-medium">債務</span></button>
+                        <button onClick={() => { handleNavClick('wealth'); }} className={`flex flex-col items-center p-2 rounded-lg w-16 transition ${view === 'wealth' ? 'text-muji-accent' : 'text-muji-muted'}`}><i data-lucide="trending-up" className="w-6 h-6"></i><span className="text-[10px] mt-1 font-medium">理財</span></button>
                     </div>
 
                 </div>
@@ -159,6 +183,10 @@ window.App = () => {
     const [sha, setSha] = useState(null);
     const [toast, setToast] = useState(null);
     const [selectedAccount, setSelectedAccount] = useState(null);
+    
+    // Lifted State for Wealth and Debt to allow resetting from Nav
+    const [activeStock, setActiveStock] = useState(null);
+    const [viewingDebtTarget, setViewingDebtTarget] = useState(null);
     
     // NEW: State to control initial tab in Accounting View
     const [accountingInitialTab, setAccountingInitialTab] = useState('all_grid'); 
@@ -289,15 +317,28 @@ window.App = () => {
     };
 
     return (
-        <window.AppLayout view={view} setView={setView} syncStatus={syncStatus} selectedAccount={selectedAccount} setSelectedAccount={setSelectedAccount} data={data}>
+        <window.AppLayout 
+            view={view} 
+            setView={setView} 
+            syncStatus={syncStatus} 
+            selectedAccount={selectedAccount} 
+            setSelectedAccount={setSelectedAccount} 
+            onResetWealth={() => setActiveStock(null)} // Reset Wealth state
+            onResetDebt={() => setViewingDebtTarget(null)} // Reset Debt state
+            data={data}
+        >
             {view === 'settings' && <window.SettingsView data={data} githubToken={githubToken} setGithubToken={setGithubToken} repo={repo} saveData={saveData} setInputModal={setInputModal} showToast={showToast} fetchData={fetchData} />}
             {view === 'dashboard' && <window.DashboardView data={data} setData={setData} saveData={saveData} setView={setView} setSelectedAccount={setSelectedAccount} setInputModal={setInputModal} showToast={showToast} dailyQuote={dailyQuote} onNavigateToExpense={handleNavigateToExpense} />}
             
             {/* Pass initialTab prop to AccountingView */}
             {view === 'accounting' && <window.AccountingView data={data} saveData={saveData} selectedAccount={selectedAccount} setSelectedAccount={setSelectedAccount} setInputModal={setInputModal} showToast={showToast} initialTab={accountingInitialTab} />}
             
-            {view === 'wealth' && <window.WealthView data={data} saveData={saveData} showToast={showToast} />}
-            {view === 'debt' && <window.DebtView data={data} saveData={saveData} showToast={showToast} openEditTransaction={openEditTransaction} />}
+            {/* Pass state and setter to WealthView */}
+            {view === 'wealth' && <window.WealthView data={data} saveData={saveData} showToast={showToast} activeStock={activeStock} setActiveStock={setActiveStock} />}
+            
+            {/* Pass state and setter to DebtView */}
+            {view === 'debt' && <window.DebtView data={data} saveData={saveData} showToast={showToast} openEditTransaction={openEditTransaction} viewingTarget={viewingDebtTarget} setViewingTarget={setViewingDebtTarget} />}
+            
             {toast && <window.Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
             {inputModal.show && <window.Modal title={inputModal.title} onClose={() => setInputModal({ ...inputModal, show: false })}><div className="space-y-4">
                 {(inputModal.type === 'add_account' || inputModal.type === 'rename_account') && 
