@@ -1,5 +1,30 @@
 const { useState, useEffect, useMemo, useCallback, useRef } = React;
 
+// --- 核心修正: 安全的圖示元件 ---
+// 使用 display: contents 讓內部的 SVG 能直接參與父層的 Flex/Grid 排版，不需額外容器干擾
+const LucideIcon = React.memo(({ name, className = "", onClick }) => {
+    const ref = useRef(null);
+    
+    useEffect(() => {
+        if (ref.current && window.lucide) {
+            const i = document.createElement('i');
+            i.setAttribute('data-lucide', name);
+            if (className) i.className = className;
+            
+            // 清空容器並加入新的 i 標籤
+            ref.current.innerHTML = '';
+            ref.current.appendChild(i);
+            
+            // 僅針對此節點進行圖示渲染，避免全域掃描衝突
+            window.lucide.createIcons({
+                root: ref.current
+            });
+        }
+    }, [name, className]);
+
+    return <span ref={ref} style={{ display: 'contents' }} onClick={onClick}></span>;
+});
+
 const CategorySelector = ({ type, categoryGroups, selectedGroup, setSelectedGroup, onSelectCategory, currentCategory }) => {
     const effectiveType = type === 'advance' ? 'expense' : (type === 'repay' ? 'income' : type);
     if (!['expense', 'income'].includes(effectiveType)) return null;
@@ -10,7 +35,7 @@ const CategorySelector = ({ type, categoryGroups, selectedGroup, setSelectedGrou
                 {groups.map(g => (
                     <button key={g.id} onClick={() => setSelectedGroup(g.id)} className={`flex flex-col items-center gap-1 min-w-[3rem] transition-all ${selectedGroup === g.id ? 'opacity-100 scale-110' : 'opacity-50 hover:opacity-80'}`}>
                         <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center ${selectedGroup === g.id ? 'border-muji-accent text-white bg-muji-accent shadow-sm' : 'border-muji-muted text-muji-muted'}`}>
-                            <i data-lucide={g.icon} className="w-5 h-5 stroke-[1.5]"></i>
+                            <LucideIcon name={g.icon} className="w-5 h-5 stroke-[1.5]" />
                         </div>
                         <span className="text-[10px] text-muji-text font-bold mt-1">{g.label}</span>
                     </button>
@@ -37,7 +62,7 @@ const ExtraFieldsInput = ({ type, accountId, toAccountId, targetName, userAccoun
         return (
             <div className="flex gap-2 mt-1 w-full items-end">
                 <div className="flex-1 flex flex-col gap-1"><label className="text-xs text-muji-muted">轉出 (From)</label><select className="p-2 bg-muji-card rounded border border-muji-border text-sm w-full text-muji-text" value={accountId} onChange={e => onChange('accountId', e.target.value)}><option value="">選擇帳戶</option>{userAccounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
-                <div className="flex items-center pb-2 text-muji-muted"><button onClick={handleSwap} className="p-1 hover:bg-muji-bg rounded-full transition-colors"><i data-lucide="arrow-right-left" className="w-4 h-4"></i></button></div>
+                <div className="flex items-center pb-2 text-muji-muted"><button onClick={handleSwap} className="p-1 hover:bg-muji-bg rounded-full transition-colors"><LucideIcon name="arrow-right-left" className="w-4 h-4" /></button></div>
                 <div className="flex-1 flex flex-col gap-1"><label className="text-xs text-muji-muted">轉入 (To)</label><select className="p-2 bg-muji-card rounded border border-muji-border text-sm w-full text-muji-text" value={toAccountId} onChange={e => onChange('toAccountId', e.target.value)}><option value="">選擇帳戶</option>{userAccounts.filter(a => a.id !== accountId).map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
             </div>
         );
@@ -51,7 +76,7 @@ const ExtraFieldsInput = ({ type, accountId, toAccountId, targetName, userAccoun
                         <option value="">選擇對象...</option>
                         {debtTargets.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
                      </select>
-                     <button onClick={() => { const name = prompt("新增對象:"); if(name) onAddTarget(name); }} className="p-2 bg-muji-bg border border-muji-border rounded text-xs"><i data-lucide="plus" className="w-4 h-4"></i></button>
+                     <button onClick={() => { const name = prompt("新增對象:"); if(name) onAddTarget(name); }} className="p-2 bg-muji-bg border border-muji-border rounded text-xs"><LucideIcon name="plus" className="w-4 h-4" /></button>
                 </div>
             </div>
         );
@@ -144,26 +169,26 @@ const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, fla
                                 </select>
                                 <button className="flex-1 p-1.5 bg-muji-bg rounded border border-muji-border text-xs text-muji-text flex items-center justify-between" onClick={() => { setSelectingCategoryIdx(idx); if (cat.group) { let foundGroupId = 'food'; for(let type in categoryGroups) { for(let g of categoryGroups[type]) { if(g.label === cat.group) { foundGroupId = g.id; break; } } } setSelectedGroup(foundGroupId); } else { setSelectedGroup(type === 'income' ? 'active' : 'food'); } }}>
                                     <span className="flex items-center gap-1">
-                                        {cat.icon && <span className="flex"><i data-lucide={cat.icon} className="w-3 h-3"></i></span>}
+                                        {cat.icon && <LucideIcon name={cat.icon} className="w-3 h-3" />}
                                         {cat.name || '選擇分類'}
                                     </span>
-                                    <span className="flex"><i data-lucide="chevron-down" className="w-3 h-3 text-muji-muted"></i></span>
+                                    <LucideIcon name="chevron-down" className="w-3 h-3 text-muji-muted" />
                                 </button>
                             </div>
                             <div className="flex gap-2 items-center">
                                 <div className="relative w-20"><input type="number" className="w-full p-1.5 pl-1 pr-4 bg-white rounded border border-muji-border text-xs text-center text-muji-text font-mono" placeholder="%" value={s.percent || ''} onChange={e => updateSplit(idx, 'percent', e.target.value)} /><span className="absolute right-1.5 top-1.5 text-xs text-muji-muted">%</span></div>
                                 <div className="relative flex-1"><span className="absolute left-2 top-1.5 text-xs text-muji-muted">$</span><input type="number" className="w-full p-1.5 pl-4 bg-white rounded border border-muji-border text-xs text-muji-text font-mono font-bold" placeholder="金額" value={s.amount} onChange={e => updateSplit(idx, 'amount', e.target.value)} /></div>
-                                <button onClick={() => removeSplit(idx)} className="p-1.5 text-muji-muted hover:text-muji-red hover:bg-muji-bg rounded transition-colors"><i data-lucide="trash-2" className="w-4 h-4"></i></button>
+                                <button onClick={() => removeSplit(idx)} className="p-1.5 text-muji-muted hover:text-muji-red hover:bg-muji-bg rounded transition-colors"><LucideIcon name="trash-2" className="w-4 h-4" /></button>
                             </div>
                         </div>
                     );
                 })}
             </div>
-            <button onClick={addSplit} className="w-full py-2 border border-dashed border-muji-accent text-muji-accent text-xs rounded hover:bg-white transition-colors flex items-center justify-center gap-1 mt-3"><i data-lucide="plus" className="w-3 h-3"></i> 新增明細</button>
+            <button onClick={addSplit} className="w-full py-2 border border-dashed border-muji-accent text-muji-accent text-xs rounded hover:bg-white transition-colors flex items-center justify-center gap-1 mt-3"><LucideIcon name="plus" className="w-3 h-3" /> 新增明細</button>
             {selectingCategoryIdx !== null && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-pop" onClick={() => setSelectingCategoryIdx(null)}>
                     <div className="bg-muji-card w-full max-w-sm rounded-xl shadow-2xl overflow-hidden border border-muji-border flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
-                        <div className="p-4 border-b border-muji-border flex justify-between items-center bg-muji-bg"><h3 className="font-bold text-lg text-muji-text">選擇分類</h3><button onClick={() => setSelectingCategoryIdx(null)} className="p-2 hover:bg-black/5 rounded-full"><i data-lucide="x" className="w-5 h-5 text-muji-muted"></i></button></div>
+                        <div className="p-4 border-b border-muji-border flex justify-between items-center bg-muji-bg"><h3 className="font-bold text-lg text-muji-text">選擇分類</h3><button onClick={() => setSelectingCategoryIdx(null)} className="p-2 hover:bg-black/5 rounded-full"><LucideIcon name="x" className="w-5 h-5 text-muji-muted" /></button></div>
                         <div className="p-4 overflow-y-auto custom-scrollbar"><CategorySelector type={type === 'income' ? 'income' : 'expense'} categoryGroups={categoryGroups} selectedGroup={selectedGroup} setSelectedGroup={setSelectedGroup} onSelectCategory={(catId) => { updateSplit(selectingCategoryIdx, 'categoryId', catId); setSelectingCategoryIdx(null); }} currentCategory={safeSplits[selectingCategoryIdx]?.categoryId} /></div>
                     </div>
                 </div>
@@ -178,7 +203,7 @@ window.SmartImportModal = ({ onClose, importText, setImportText, previewData, se
     const [selectedGroup, setSelectedGroup] = useState('food');
     const [targetAccountId, setTargetAccountId] = useState(selectedAccount || (userAccounts.length > 0 ? userAccounts[0].id : ''));
     const [showExitConfirm, setShowExitConfirm] = useState(false);
-    useEffect(() => { window.refreshIcons(); }, [showCategoryPicker, previewData]);
+    // Removed direct window.refreshIcons usage, relying on LucideIcon component
     const doSmartImport = () => { handleSmartImport(targetAccountId); };
     const handleAttemptClose = (reason) => { if (reason === 'close_btn') onClose(); else if (previewData.length > 0 || importText.trim().length > 0) setShowExitConfirm(true); else onClose(); };
     const confirmClose = () => { setShowExitConfirm(false); onClose(); };
@@ -194,7 +219,7 @@ window.SmartImportModal = ({ onClose, importText, setImportText, previewData, se
                  <div className="space-y-4">
                     {!showCategoryPicker ? (
                         <>
-                            <div className="max-h-[60vh] overflow-y-auto space-y-3 custom-scrollbar pr-1">{previewData.map((item, idx) => (<div key={item.id || idx} className="flex flex-col gap-2 p-3 bg-muji-card rounded-lg text-sm border border-muji-border shadow-sm"><div className="flex justify-between items-center gap-2"><input type="date" className="bg-transparent border-b border-muji-border focus:border-muji-accent outline-none font-mono text-muji-text w-28 text-xs" value={item.date} onChange={(e) => { const n = [...previewData]; n[idx].date = e.target.value; setPreviewData(n); }} /><select className="bg-transparent font-bold outline-none cursor-pointer text-xs flex-1" value={item.type} onChange={(e) => { const n = [...previewData]; n[idx].type = e.target.value; setPreviewData(n); }}>{Object.entries(window.TX_TYPES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select><input type="number" className="bg-transparent font-bold font-mono outline-none w-20 text-right border-b border-muji-border focus:border-muji-accent text-muji-text" value={item.amount} onChange={(e) => { const n = [...previewData]; n[idx].amount = parseFloat(e.target.value); setPreviewData(n); }} /><button onClick={() => setPreviewData(previewData.filter((_, i) => i !== idx))} className="text-muji-muted hover:text-muji-red"><i data-lucide="trash-2" className="w-4 h-4"></i></button></div><div className="flex items-center gap-2">{(item.type === 'expense' || item.type === 'income') && (<button onClick={() => { setEditingPreviewIndex(idx); setShowCategoryPicker(true); }} className="flex-1 text-left px-2 py-1.5 rounded bg-white border border-muji-border text-xs flex items-center gap-2 hover:border-muji-accent text-muji-text"><i data-lucide={flatCategories[item.categoryId]?.icon || 'tag'} className="w-3 h-3"></i>{flatCategories[item.categoryId]?.name || '選擇分類'}</button>)}<ExtraFieldsInput type={item.type} accountId={item.accountId} toAccountId={item.toAccountId} targetName={item.targetName} userAccounts={userAccounts} selectedAccount={item.accountId} onChange={(k, v) => { const n = [...previewData]; n[idx][k] = v; setPreviewData(n); }} debtTargets={data.debtTargets} onAddTarget={() => {}} /></div><input type="text" className="w-full bg-transparent border-b border-muji-border focus:border-muji-accent outline-none text-muji-text text-xs placeholder-muji-muted" placeholder="備註..." value={item.note} onChange={(e) => { const n = [...previewData]; n[idx].note = e.target.value; setPreviewData(n); }} /></div>))}</div>
+                            <div className="max-h-[60vh] overflow-y-auto space-y-3 custom-scrollbar pr-1">{previewData.map((item, idx) => (<div key={item.id || idx} className="flex flex-col gap-2 p-3 bg-muji-card rounded-lg text-sm border border-muji-border shadow-sm"><div className="flex justify-between items-center gap-2"><input type="date" className="bg-transparent border-b border-muji-border focus:border-muji-accent outline-none font-mono text-muji-text w-28 text-xs" value={item.date} onChange={(e) => { const n = [...previewData]; n[idx].date = e.target.value; setPreviewData(n); }} /><select className="bg-transparent font-bold outline-none cursor-pointer text-xs flex-1" value={item.type} onChange={(e) => { const n = [...previewData]; n[idx].type = e.target.value; setPreviewData(n); }}>{Object.entries(window.TX_TYPES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select><input type="number" className="bg-transparent font-bold font-mono outline-none w-20 text-right border-b border-muji-border focus:border-muji-accent text-muji-text" value={item.amount} onChange={(e) => { const n = [...previewData]; n[idx].amount = parseFloat(e.target.value); setPreviewData(n); }} /><button onClick={() => setPreviewData(previewData.filter((_, i) => i !== idx))} className="text-muji-muted hover:text-muji-red"><LucideIcon name="trash-2" className="w-4 h-4" /></button></div><div className="flex items-center gap-2">{(item.type === 'expense' || item.type === 'income') && (<button onClick={() => { setEditingPreviewIndex(idx); setShowCategoryPicker(true); }} className="flex-1 text-left px-2 py-1.5 rounded bg-white border border-muji-border text-xs flex items-center gap-2 hover:border-muji-accent text-muji-text"><LucideIcon name={flatCategories[item.categoryId]?.icon || 'tag'} className="w-3 h-3" />{flatCategories[item.categoryId]?.name || '選擇分類'}</button>)}<ExtraFieldsInput type={item.type} accountId={item.accountId} toAccountId={item.toAccountId} targetName={item.targetName} userAccounts={userAccounts} selectedAccount={item.accountId} onChange={(k, v) => { const n = [...previewData]; n[idx][k] = v; setPreviewData(n); }} debtTargets={data.debtTargets} onAddTarget={() => {}} /></div><input type="text" className="w-full bg-transparent border-b border-muji-border focus:border-muji-accent outline-none text-muji-text text-xs placeholder-muji-muted" placeholder="備註..." value={item.note} onChange={(e) => { const n = [...previewData]; n[idx].note = e.target.value; setPreviewData(n); }} /></div>))}</div>
                             <div className="flex gap-2 pt-2"><button onClick={() => setPreviewData([])} className="flex-1 py-3 bg-white text-muji-text rounded-lg font-bold border border-muji-border">放棄</button><button onClick={() => { saveData({...data, transactions: [...data.transactions, ...previewData], debtTargets: data.debtTargets }); setPreviewData([]); onClose(); }} className="flex-[2] py-3 bg-muji-accent text-white rounded-lg font-bold shadow-sm">確認匯入 ({previewData.length})</button></div>
                         </>
                     ) : (
@@ -214,7 +239,10 @@ window.TransactionModal = ({ onClose, isEditMode, newTx, setNewTx, isSplitMode, 
     const [showExitConfirm, setShowExitConfirm] = useState(false);
     const debtTargets = data.debtTargets || [];
     
-    useEffect(() => { window.refreshIcons(); }, [newTx.type, selectedGroup, isSplitMode]);
+    // refreshIcons effect removed
+    useEffect(() => { 
+        // No-op for global icons 
+    }, [newTx.type, selectedGroup, isSplitMode]);
 
     const handleAddTarget = (name) => {
         if (!name) return;
@@ -531,7 +559,7 @@ window.TransactionModal = ({ onClose, isEditMode, newTx, setNewTx, isSplitMode, 
     );
 };
 
-window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, setInputModal, showToast }) => {
+window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, setInputModal, showToast, initialTab }) => {
     // 1. State
     const [showImport, setShowImport] = useState(false); const [importText, setImportText] = useState(''); const [previewData, setPreviewData] = useState([]);
     const [showAdd, setShowAdd] = useState(false); const [isEditMode, setIsEditMode] = useState(false); const [editingTxId, setEditingTxId] = useState(null);
@@ -542,7 +570,13 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
     const [filterType, setFilterType] = useState('all'); 
     
     // NEW: Active Tab State for Account List
-    const [activeTab, setActiveTab] = useState('expense_list'); // 'expense_list' | 'all_grid'
+    // Default to 'all_grid' unless initialTab is provided
+    const [activeTab, setActiveTab] = useState('all_grid'); 
+
+    // Sync initialTab if provided
+    useEffect(() => {
+        if(initialTab) setActiveTab(initialTab);
+    }, [initialTab]);
 
     // Multi-selection state
     const [selectedTxIds, setSelectedTxIds] = useState([]);
@@ -640,11 +674,32 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
     }, [userAccounts, accountLastModified]);
 
     const getFilteredTransactions = useCallback(() => { 
-        const y = currentDate.getFullYear(); const m = currentDate.getMonth(); 
+        // Logic for filtering based on account closing day (Credit Card)
+        const account = data.accounts.find(a => a.id === selectedAccount);
+        const closingDay = (account?.type === 'credit' && account?.closingDay) ? parseInt(account.closingDay) : null;
+        
+        let start, end;
+        const y = currentDate.getFullYear();
+        const m = currentDate.getMonth(); // 0-indexed
+
+        if (closingDay) {
+            start = new Date(y, m - 1, closingDay + 1);
+            end = new Date(y, m, closingDay);
+            end.setHours(23, 59, 59, 999);
+            start.setHours(0, 0, 0, 0);
+        } else {
+            // Standard Calendar Month
+            start = new Date(y, m, 1);
+            end = new Date(y, m + 1, 0); // Last day of month
+            end.setHours(23, 59, 59, 999);
+            start.setHours(0, 0, 0, 0);
+        }
+
         let txs = data.transactions.filter(t => { 
             const d = new Date(t.date); 
             const isRelated = t.accountId === selectedAccount || t.toAccountId === selectedAccount; 
-            return d.getFullYear() === y && d.getMonth() === m && isRelated; 
+            // Check date range
+            return d >= start && d <= end && isRelated;
         });
         
         // NEW: Filter by Type
@@ -664,18 +719,12 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
     // NEW: Calculate Monthly Stats STRICTLY according to requirements
     const currentMonthStats = useMemo(() => {
         if (!selectedAccount) return { income: 0, expense: 0 };
-        const y = currentDate.getFullYear(); const m = currentDate.getMonth();
-        // Get ALL transactions for this month/account, ignoring the type filter for the stats display
-        const monthTxs = data.transactions.filter(t => {
-            const d = new Date(t.date);
-            const isRelated = t.accountId === selectedAccount || t.toAccountId === selectedAccount;
-            return d.getFullYear() === y && d.getMonth() === m && isRelated;
-        });
-
+        // Use filteredTxs directly to respect the date range logic (Calendar vs Billing Cycle)
+        
         let income = 0;
         let expense = 0;
 
-        monthTxs.forEach(t => {
+        filteredTxs.forEach(t => {
             // Rule 1: 收入只有收入被計入 (Exclude Repay, Transfer In)
             if (t.type === 'income') {
                 income += (t.amount || 0);
@@ -696,7 +745,7 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
         });
 
         return { income, expense };
-    }, [data.transactions, currentDate, selectedAccount]);
+    }, [filteredTxs]);
 
 
     // Grouping Logic
@@ -811,19 +860,19 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
             <div className="pb-24 md:pb-0 animate-fade flex flex-col h-full relative">
                <div className="flex flex-col md:flex-row justify-between items-center mb-4 px-4 md:px-0 pt-4 gap-3 relative">
                     <div className="flex items-center gap-4 w-full md:w-1/3">
-                        <button onClick={() => setSelectedAccount(null)} className="md:hidden p-2 -ml-2 rounded-full hover:bg-black/5"><i data-lucide="arrow-left" className="w-5 h-5 text-muji-text"></i></button>
+                        <button onClick={() => setSelectedAccount(null)} className="md:hidden p-2 -ml-2 rounded-full hover:bg-black/5"><LucideIcon name="arrow-left" className="w-5 h-5 text-muji-text" /></button>
                         <div>
                             <h3 className="text-xl font-bold text-muji-text leading-tight">{currentAccount?.name}</h3>
-                            <button onClick={() => setInputModal({ show: true, title: '餘額校正', value: currentTotalBalance.toString(), type: 'calibrate_account', data: currentAccount.id, extra: currentTotalBalance })} className={`text-sm font-mono font-bold mt-1 text-left hover:opacity-60 transition-opacity flex items-center gap-2 ${currentTotalBalance >= 0 ? 'text-muji-green' : 'text-rose-500'}`} title="點擊校正餘額">${currentTotalBalance.toLocaleString()} <i data-lucide="pencil" className="w-3 h-3 opacity-30"></i></button>
+                            <button onClick={() => setInputModal({ show: true, title: '餘額校正', value: currentTotalBalance.toString(), type: 'calibrate_account', data: currentAccount.id, extra: currentTotalBalance })} className={`text-sm font-mono font-bold mt-1 text-left hover:opacity-60 transition-opacity flex items-center gap-2 ${currentTotalBalance >= 0 ? 'text-muji-green' : 'text-rose-500'}`} title="點擊校正餘額">${currentTotalBalance.toLocaleString()} <LucideIcon name="pencil" className="w-3 h-3 opacity-30" /></button>
                         </div>
                     </div>
-                    <div className="flex justify-center w-full md:w-1/3"><div className="flex items-center bg-white border border-muji-border rounded-lg px-1 py-1"><button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))} className="p-1 hover:bg-muji-bg rounded"><i data-lucide="chevron-left" className="w-4 h-4"></i></button><span className="text-sm font-bold mx-2 cursor-pointer whitespace-nowrap" onClick={() => setShowDatePicker(true)}>{currentDate.getFullYear()}/{currentDate.getMonth() + 1}</span><button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))} className="p-1 hover:bg-muji-bg rounded"><i data-lucide="chevron-right" className="w-4 h-4"></i></button><button onClick={() => setCurrentDate(new Date())} className="ml-2 px-3 py-1 bg-muji-bg border border-muji-border rounded text-xs font-bold hover:bg-muji-hover text-muji-text">今天</button></div></div>
+                    <div className="flex justify-center w-full md:w-1/3"><div className="flex items-center bg-white border border-muji-border rounded-lg px-1 py-1"><button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))} className="p-1 hover:bg-muji-bg rounded"><span className="font-mono text-lg">&lt;</span></button><span className="text-sm font-bold mx-2 cursor-pointer whitespace-nowrap" onClick={() => setShowDatePicker(true)}>{currentDate.getFullYear()}/{currentDate.getMonth() + 1}</span><button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))} className="p-1 hover:bg-muji-bg rounded"><span className="font-mono text-lg">&gt;</span></button><button onClick={() => setCurrentDate(new Date())} className="ml-2 px-3 py-1 bg-muji-bg border border-muji-border rounded text-xs font-bold hover:bg-muji-hover text-muji-text">今天</button></div></div>
                     <div className="flex justify-end items-center gap-4 w-full md:w-1/3">
                         <div className="text-xs text-rose-500 font-bold bg-rose-50/50 px-2 py-1 rounded border border-rose-100">
                             本月支出: ${currentMonthStats.expense.toLocaleString()}
                         </div>
                         <div className="flex gap-2">
-                            <button onClick={() => { resetForm(); setShowAdd(true); }} className="bg-muji-accent text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm flex items-center gap-1"><i data-lucide="plus" className="w-4 h-4"></i> 記帳</button><button onClick={() => { setImportText(''); setPreviewData([]); setShowImport(true); }} className="bg-white border border-muji-border text-muji-text px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm hover:bg-muji-bg flex items-center gap-1"><i data-lucide="sparkles" className="w-4 h-4"></i> AI</button>
+                            <button onClick={() => { resetForm(); setShowAdd(true); }} className="bg-muji-accent text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm flex items-center gap-1"><LucideIcon name="plus" className="w-4 h-4" /> 記帳</button><button onClick={() => { setImportText(''); setPreviewData([]); setShowImport(true); }} className="bg-white border border-muji-border text-muji-text px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm hover:bg-muji-bg flex items-center gap-1"><LucideIcon name="sparkles" className="w-4 h-4" /> AI</button>
                         </div>
                     </div>
                </div>
@@ -860,7 +909,7 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                         <div className="p-4 text-center">分類</div>
                         <div className="p-4 text-right">金額</div>
                         <div className="p-4 text-right">餘額</div>
-                        <div className="p-4 pl-4 text-left">備註</div>
+                        <div className="p-4 pl-4 text-left text-muji-muted text-xs truncate">備註</div>
                     </div>
                     <div>
                         {groupedTxs.length === 0 ? (<div className="p-10 text-center text-muji-muted">無紀錄</div>) : (
@@ -873,10 +922,10 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                                     return (
                                         <React.Fragment key={tx.id}>
                                             <div onClick={() => toggleGroup(tx.linkId)} className="grid grid-cols-[5rem_6rem_4rem_7rem_6rem_6rem_1fr] items-center border-b border-muji-border/50 bg-gray-50/80 hover:bg-gray-100 font-bold cursor-pointer transition-colors text-sm">
-                                                {/* FIXED: Wrapped icon in span to prevent React from removing modified DOM node */}
+                                                {/* FIXED: Chevron Logic. Collapsed (!isExpanded) -> Right. Expanded (isExpanded) -> Down */}
                                                 <div className="p-4 flex justify-center">
                                                     <span key={isExpanded ? "exp" : "col"} className="flex items-center justify-center">
-                                                        <i data-lucide={isExpanded ? "chevron-down" : "chevron-right"} className="w-4 h-4 text-muji-muted"></i>
+                                                        <LucideIcon name={isExpanded ? "chevron-down" : "chevron-right"} className="w-4 h-4 text-muji-muted" />
                                                     </span>
                                                 </div>
                                                 <div className="p-4 text-center font-mono text-xs">{date}</div>
@@ -900,12 +949,12 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                                                 const isSettled = subTx.isSettled; // NEW
                                                 return (
                                                     <div key={subTx.id} onClick={() => openEdit(subTx)} className={`grid grid-cols-[5rem_6rem_4rem_7rem_6rem_6rem_1fr] items-center border-b border-muji-border/50 hover:bg-muji-hover transition-colors bg-white cursor-pointer text-sm ${isSettled ? 'opacity-50' : ''}`}>
-                                                        <div className="p-4 flex justify-center gap-2 pl-6 border-l-4 border-muji-accent/20"><button onClick={(e) => { e.stopPropagation(); handleDuplicateTx(subTx); }} className="p-1 text-muji-muted hover:text-muji-accent"><i data-lucide="copy" className="w-3.5 h-3.5"></i></button><button onClick={(e) => { e.stopPropagation(); handleDelete(subTx); }} className="p-1 text-muji-muted hover:text-muji-red" title="刪除並回補"><i data-lucide="trash-2" className="w-3.5 h-3.5"></i></button></div>
+                                                        <div className="p-4 flex justify-center gap-2 pl-6 border-l-4 border-muji-accent/20"><button onClick={(e) => { e.stopPropagation(); handleDuplicateTx(subTx); }} className="p-1 text-muji-muted hover:text-muji-accent"><LucideIcon name="copy" className="w-3.5 h-3.5" /></button><button onClick={(e) => { e.stopPropagation(); handleDelete(subTx); }} className="p-1 text-muji-muted hover:text-muji-red" title="刪除並回補"><LucideIcon name="trash-2" className="w-3.5 h-3.5" /></button></div>
                                                         <div className="p-4 text-center opacity-0">-</div> 
                                                         <div className={`p-4 text-center font-bold ${txType.color} text-xs px-1 whitespace-nowrap ${isSettled ? 'line-through decoration-muji-text/50' : ''}`}>{txType.label}</div>
                                                         <div className={`p-4 text-center text-xs gap-2 flex justify-center items-center ${isSettled ? 'line-through decoration-muji-text/50' : ''}`}>{(subTx.type==='expense'||subTx.type==='income')&&
                                                             <span className="flex">
-                                                                <i data-lucide={cat.icon || 'circle'} className="w-3.5 h-3.5 opacity-70"></i>
+                                                                <LucideIcon name={cat.icon || 'circle'} className="w-3.5 h-3.5 opacity-70" />
                                                             </span>
                                                         }<span className="truncate">{display}</span></div>
                                                         <div className={`p-4 text-right font-mono font-bold ${textColorClass} text-xs ${isSettled ? 'line-through decoration-muji-text/50' : ''}`}>{sign}${subTx.amount.toLocaleString()}</div>
@@ -933,13 +982,13 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                                         <div key={tx.id} onClick={() => openEdit(tx)} className={`grid grid-cols-[5rem_6rem_4rem_7rem_6rem_6rem_1fr] items-center border-b border-muji-border/50 hover:bg-muji-hover transition-colors cursor-pointer text-sm ${isSettled ? 'opacity-50' : ''}`}>
                                             <div className="p-4 flex justify-center gap-2" onClick={(e) => e.stopPropagation()}>
                                                 <input type="checkbox" className="w-4 h-4 accent-muji-accent cursor-pointer" checked={selectedTxIds.includes(tx.id)} onChange={() => toggleSelectTx(tx.id)} />
-                                                <button onClick={(e) => { e.stopPropagation(); handleDuplicateTx(tx); }} className="p-1 text-muji-muted hover:text-muji-accent transition-colors" title="複製並新增一筆"><i data-lucide="copy" className="w-3.5 h-3.5"></i></button>
+                                                <button onClick={(e) => { e.stopPropagation(); handleDuplicateTx(tx); }} className="p-1 text-muji-muted hover:text-muji-accent transition-colors" title="複製並新增一筆"><LucideIcon name="copy" className="w-3.5 h-3.5" /></button>
                                             </div>
                                             <div className="p-4 text-center font-mono text-xs">{tx.date}</div>
                                             <div className={`p-4 text-center font-bold ${txType.color} text-xs px-1 whitespace-nowrap ${isSettled ? 'line-through decoration-muji-text/50' : ''}`}>{txType.label}</div>
                                             <div className={`p-4 text-center text-xs gap-2 flex justify-center items-center ${isSettled ? 'line-through decoration-muji-text/50' : ''}`}>{(tx.type==='expense'||tx.type==='income')&&
                                                 <span className="flex">
-                                                    <i data-lucide={cat.icon || 'circle'} className="w-4 h-4"></i>
+                                                    <LucideIcon name={cat.icon || 'circle'} className="w-4 h-4" />
                                                 </span>
                                             }<span className="truncate">{display}</span></div>
                                             <div className={`p-4 text-right font-mono font-bold ${textColorClass} text-xs ${isSettled ? 'line-through decoration-muji-text/50' : ''}`}><span>{sign}${amountVal.toLocaleString()}</span></div>
@@ -954,7 +1003,7 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                </div>
                
                {/* Modals ... */}
-               {showDatePicker && (<window.Modal title="選擇日期" onClose={() => setShowDatePicker(false)}><div className="p-4"><div className="flex justify-between items-center mb-4 px-2"><button onClick={() => setCurrentDate(new Date(currentDate.getFullYear() - 1, currentDate.getMonth(), 1))} className="p-2 hover:bg-muji-bg rounded-full"><i data-lucide="chevron-left" className="w-5 h-5"></i></button><span className="text-xl font-bold font-mono">{currentDate.getFullYear()}</span><button onClick={() => setCurrentDate(new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), 1))} className="p-2 hover:bg-muji-bg rounded-full"><i data-lucide="chevron-right" className="w-5 h-5"></i></button></div><div className="grid grid-cols-4 gap-2">{Array.from({length: 12}, (_, i) => i).map(m => { const hasData = monthsWithData.has(m); const isSelected = currentDate.getMonth() === m; return (<button key={m} onClick={() => { setCurrentDate(new Date(currentDate.getFullYear(), m, 1)); setShowDatePicker(false); }} className={`py-3 rounded-lg text-sm font-bold transition-colors relative ${isSelected ? 'bg-muji-accent text-white shadow-md' : hasData ? 'bg-white text-muji-text border border-muji-accent/30 shadow-sm hover:border-muji-accent' : 'bg-muji-bg text-muji-muted/50 hover:bg-gray-200'}`}>{m+1}月{hasData && !isSelected && <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-muji-accent"></div>}</button>); })}</div></div></window.Modal>)}
+               {showDatePicker && (<window.Modal title="選擇日期" onClose={() => setShowDatePicker(false)}><div className="p-4"><div className="flex justify-between items-center mb-4 px-2"><button onClick={() => setCurrentDate(new Date(currentDate.getFullYear() - 1, currentDate.getMonth(), 1))} className="p-2 hover:bg-muji-bg rounded-full"><LucideIcon name="chevron-left" className="w-5 h-5" /></button><span className="text-xl font-bold font-mono">{currentDate.getFullYear()}</span><button onClick={() => setCurrentDate(new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), 1))} className="p-2 hover:bg-muji-bg rounded-full"><LucideIcon name="chevron-right" className="w-5 h-5" /></button></div><div className="grid grid-cols-4 gap-2">{Array.from({length: 12}, (_, i) => i).map(m => { const hasData = monthsWithData.has(m); const isSelected = currentDate.getMonth() === m; return (<button key={m} onClick={() => { setCurrentDate(new Date(currentDate.getFullYear(), m, 1)); setShowDatePicker(false); }} className={`py-3 rounded-lg text-sm font-bold transition-colors relative ${isSelected ? 'bg-muji-accent text-white shadow-md' : hasData ? 'bg-white text-muji-text border border-muji-accent/30 shadow-sm hover:border-muji-accent' : 'bg-muji-bg text-muji-muted/50 hover:bg-gray-200'}`}>{m+1}月{hasData && !isSelected && <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-muji-accent"></div>}</button>); })}</div></div></window.Modal>)}
                {showDeleteBatchConfirm && (<window.Modal title="刪除確認" onClose={() => setShowDeleteBatchConfirm(false)}><div className="p-4 text-center space-y-4"><p className="text-muji-text">確定要刪除選取的 <span className="font-bold">{selectedTxIds.length}</span> 筆資料嗎？</p><p className="text-xs text-muji-red">此操作無法復原！</p><div className="flex gap-3"><button onClick={() => setShowDeleteBatchConfirm(false)} className="flex-1 py-3 border border-muji-border rounded-lg">取消</button><button onClick={confirmBatchDelete} className="flex-1 py-3 bg-muji-red text-white font-bold rounded-lg shadow-sm">確認刪除</button></div></div></window.Modal>)}
                {showImport && <window.SmartImportModal onClose={() => setShowImport(false)} importText={importText} setImportText={setImportText} previewData={previewData} setPreviewData={setPreviewData} saveData={saveData} data={data} handleSmartImport={handleSmartImport} flatCategories={flatCategories} userAccounts={userAccounts} selectedAccount={selectedAccount} />}
                {showAdd && <window.TransactionModal onClose={() => setShowAdd(false)} isEditMode={isEditMode} newTx={newTx} setNewTx={setNewTx} isSplitMode={isSplitMode} setIsSplitMode={setIsSplitMode} splitTotal={splitTotal} setSplitTotal={setSplitTotal} splits={splits} setSplits={setSplits} categoryGroups={categoryGroups} flatCategories={flatCategories} userAccounts={userAccounts} selectedAccount={selectedAccount} saveTransaction={handleSaveTransaction} handleDeleteTransaction={handleDeleteTransaction} data={data} saveData={saveData} showToast={showToast} />}
@@ -973,14 +1022,14 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                     {/* NEW: Tab Switcher (Visible only in List View Mode) */}
                     <div className="flex bg-muji-bg rounded-lg p-1 border border-muji-border mr-2">
                         <button onClick={() => setActiveTab('expense_list')} className={`px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1 ${activeTab === 'expense_list' ? 'bg-white shadow-sm text-muji-accent' : 'text-muji-muted hover:text-muji-text'}`}>
-                            <i data-lucide="list" className="w-3 h-3"></i> 本月支出
+                            <LucideIcon name="list" className="w-3 h-3" /> 本月支出
                         </button>
                         <button onClick={() => setActiveTab('all_grid')} className={`px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1 ${activeTab === 'all_grid' ? 'bg-white shadow-sm text-muji-accent' : 'text-muji-muted hover:text-muji-text'}`}>
-                            <i data-lucide="grid" className="w-3 h-3"></i> 所有帳戶
+                            <LucideIcon name="grid" className="w-3 h-3" /> 所有帳戶
                         </button>
                     </div>
 
-                    <button onClick={() => setInputModal({ show: true, title: '新增帳戶', value: '', type: 'add_account', extra: 'cash', value2: '' })} className="bg-muji-card border border-muji-border hover:border-muji-accent text-muji-text hover:text-muji-accent p-2 md:px-4 md:py-2 rounded-lg transition flex items-center gap-2 font-bold shadow-sm text-sm"><i data-lucide="plus" className="w-4 h-4"></i> <span className="hidden sm:inline">新增</span></button>
+                    <button onClick={() => setInputModal({ show: true, title: '新增帳戶', value: '', type: 'add_account', extra: 'cash', value2: '' })} className="bg-muji-card border border-muji-border hover:border-muji-accent text-muji-text hover:text-muji-accent p-2 md:px-4 md:py-2 rounded-lg transition flex items-center gap-2 font-bold shadow-sm text-sm"><LucideIcon name="plus" className="w-4 h-4" /> <span className="hidden sm:inline">新增</span></button>
                 </div>
             </div>
             
@@ -1005,7 +1054,7 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500">
-                                                <i data-lucide={typeConfig.icon} className="w-5 h-5"></i>
+                                                <LucideIcon name={typeConfig.icon} className="w-5 h-5" />
                                             </div>
                                             <div className="font-bold text-base text-muji-text">{acc.name}</div>
                                         </div>
@@ -1027,10 +1076,10 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                 <div className="animate-fade">
                     {recentAccounts.length > 0 && (
                          <div className="mb-6">
-                            <button onClick={() => toggleSection('recent')} className="w-full text-left flex items-center gap-2 mb-3 pb-1 border-b border-muji-border"><i data-lucide={expandedTypes.includes('recent') ? "chevron-down" : "chevron-right"} className="w-4 h-4 text-muji-muted"></i><h4 className="text-muji-muted text-sm font-bold flex items-center gap-2"><i data-lucide="clock" className="w-4 h-4"></i> 最近記帳</h4></button>
+                            <button onClick={() => toggleSection('recent')} className="w-full text-left flex items-center gap-2 mb-3 pb-1 border-b border-muji-border"><LucideIcon name={expandedTypes.includes('recent') ? "chevron-down" : "chevron-right"} className="w-4 h-4 text-muji-muted" /><h4 className="text-muji-muted text-sm font-bold flex items-center gap-2"><LucideIcon name="clock" className="w-4 h-4" /> 最近記帳</h4></button>
                             {expandedTypes.includes('recent') && (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 animate-fade">
-                                    {recentAccounts.map(acc => { const bal = window.calculateBalance(data, acc.id); const isPositive = bal >= 0; const typeConfig = accountTypes[acc.type] || { icon: 'circle-help' }; const expense = accountMonthlyExpenses[acc.id] || 0; return (<div key={'recent_' + acc.id} onClick={() => setSelectedAccount(acc.id)} className="bg-white p-4 rounded-xl border border-muji-border hover:border-muji-accent hover:shadow-md transition-all cursor-pointer relative group h-32 flex flex-col justify-between"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full border-2 border-muji-text/20 flex items-center justify-center text-muji-text text-xl"><i data-lucide={typeConfig.icon} className="w-5 h-5"></i></div><div className="font-bold text-base text-muji-text truncate">{acc.name}</div></div><div className="text-right"><div className={`text-xl font-mono font-bold ${isPositive ? 'text-muji-green' : 'text-rose-500'}`}>${bal.toLocaleString()}</div>{expense > 0 && (<div className="text-xs text-rose-500 font-bold mt-1">本月支出: ${expense.toLocaleString()}</div>)}</div></div>); })}
+                                    {recentAccounts.map(acc => { const bal = window.calculateBalance(data, acc.id); const isPositive = bal >= 0; const typeConfig = accountTypes[acc.type] || { icon: 'circle-help' }; const expense = accountMonthlyExpenses[acc.id] || 0; return (<div key={'recent_' + acc.id} onClick={() => setSelectedAccount(acc.id)} className="bg-white p-4 rounded-xl border border-muji-border hover:border-muji-accent hover:shadow-md transition-all cursor-pointer relative group h-32 flex flex-col justify-between"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full border-2 border-muji-text/20 flex items-center justify-center text-muji-text text-xl"><LucideIcon name={typeConfig.icon} className="w-5 h-5" /></div><div className="font-bold text-base text-muji-text truncate">{acc.name}</div></div><div className="text-right"><div className={`text-xl font-mono font-bold ${isPositive ? 'text-muji-green' : 'text-rose-500'}`}>${bal.toLocaleString()}</div>{expense > 0 && (<div className="text-xs text-rose-500 font-bold mt-1">本月支出: ${expense.toLocaleString()}</div>)}</div></div>); })}
                                 </div>
                             )}
                          </div>
@@ -1050,7 +1099,7 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
 
                         return (
                             <div key={typeKey} className="mb-6">
-                                <button onClick={() => toggleSection(typeKey)} className="w-full text-left flex items-center gap-2 mb-3 pb-1 border-b border-muji-border"><i data-lucide={isExpanded ? "chevron-down" : "chevron-right"} className="w-4 h-4 text-muji-muted"></i><h4 className="text-muji-muted text-sm font-bold flex items-center gap-2"><i data-lucide={typeConfig.icon} className="w-4 h-4"></i> {typeConfig.label}</h4></button>
+                                <button onClick={() => toggleSection(typeKey)} className="w-full text-left flex items-center gap-2 mb-3 pb-1 border-b border-muji-border"><LucideIcon name={isExpanded ? "chevron-down" : "chevron-right"} className="w-4 h-4 text-muji-muted" /><h4 className="text-muji-muted text-sm font-bold flex items-center gap-2"><LucideIcon name={typeConfig.icon} className="w-4 h-4" /> {typeConfig.label}</h4></button>
                                 {isExpanded && (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 animate-fade">
                                         {sortedTypeAccounts.map(acc => { 
@@ -1065,11 +1114,11 @@ window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, 
                                                     className="bg-white p-4 rounded-xl border border-muji-border hover:border-muji-accent hover:shadow-md transition-all cursor-pointer relative group h-32 flex flex-col justify-between"
                                                 >
                                                     <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 flex gap-2">
-                                                        <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '餘額校正', value: bal.toString(), type: 'calibrate_account', data: acc.id, extra: bal });}} className="p-1 hover:bg-muji-bg rounded text-muji-muted hover:text-muji-accent"><i data-lucide="sliders-horizontal" className="w-3 h-3"></i></button>
-                                                        <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '修改帳戶', value: acc.name, value2: acc.balance || 0, type: 'rename_account', data: acc.id, extra: acc.type });}} className="p-1 hover:bg-muji-bg rounded text-muji-muted hover:text-muji-accent"><i data-lucide="pencil" className="w-3 h-3"></i></button>
-                                                        <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '刪除', value: '確認', type: 'delete_account', data: acc.id });}} className="p-1 hover:bg-muji-bg rounded text-muji-muted hover:text-muji-red"><i data-lucide="trash-2" className="w-3 h-3"></i></button>
+                                                        <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '餘額校正', value: bal.toString(), type: 'calibrate_account', data: acc.id, extra: bal });}} className="p-1 hover:bg-muji-bg rounded text-muji-muted hover:text-muji-accent"><LucideIcon name="sliders-horizontal" className="w-3 h-3" /></button>
+                                                        <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '修改帳戶', value: acc.name, value2: acc.balance || 0, type: 'rename_account', data: acc.id, extra: acc.type });}} className="p-1 hover:bg-muji-bg rounded text-muji-muted hover:text-muji-accent"><LucideIcon name="pencil" className="w-3 h-3" /></button>
+                                                        <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '刪除', value: '確認', type: 'delete_account', data: acc.id });}} className="p-1 hover:bg-muji-bg rounded text-muji-muted hover:text-muji-red"><LucideIcon name="trash-2" className="w-3 h-3" /></button>
                                                     </div>
-                                                    <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full border-2 border-muji-text/20 flex items-center justify-center text-muji-text text-xl"><i data-lucide={typeConfig.icon} className="w-5 h-5"></i></div><div className="font-bold text-base text-muji-text truncate">{acc.name}</div></div>
+                                                    <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full border-2 border-muji-text/20 flex items-center justify-center text-muji-text text-xl"><LucideIcon name={typeConfig.icon} className="w-5 h-5" /></div><div className="font-bold text-base text-muji-text truncate">{acc.name}</div></div>
                                                     <div className="text-right">
                                                         <div className={`text-xl font-mono font-bold ${isPositive ? 'text-muji-green' : 'text-rose-500'}`}>${bal.toLocaleString()}</div>
                                                         {expense > 0 && (

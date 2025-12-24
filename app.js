@@ -20,7 +20,6 @@ window.AppLayout = ({ children, view, setView, syncStatus, selectedAccount, setS
         <div className="min-h-screen bg-muji-bg text-muji-text font-sans flex justify-center md:items-center md:py-10 transition-all duration-300">
             <div className={`w-full md:max-w-6xl md:h-[85vh] bg-muji-bg md:bg-white md:rounded-2xl md:shadow-xl md:flex md:border border-muji-border overflow-hidden relative`}>
                 <div className={`hidden md:flex ${isCollapsed ? 'w-20' : 'w-48'} bg-muji-sidebar border-r border-muji-border flex-col p-4 space-y-4 transition-all duration-300 ease-in-out relative`}>
-                    {/* 修改這裡：收合時顯示向右 (>) 代表點擊展開，展開時顯示向左 (<) 代表點擊收合 */}
                     <button onClick={() => setIsCollapsed(!isCollapsed)} className="absolute -right-3 top-8 bg-white border border-muji-border rounded-full p-1 shadow-sm text-muji-muted hover:text-muji-accent z-10 hidden md:block"><i data-lucide={isCollapsed ? "chevron-right" : "chevron-left"} className="w-4 h-4"></i></button>
                     <div className={`flex items-center gap-2 mb-2 ${isCollapsed ? 'justify-center' : ''}`}>
                         <div className="w-8 h-8 bg-muji-accent rounded-full flex items-center justify-center text-white flex-shrink-0"><i data-lucide="coins" className="w-5 h-5"></i></div>
@@ -30,7 +29,7 @@ window.AppLayout = ({ children, view, setView, syncStatus, selectedAccount, setS
                         {[ 
                             { id: 'dashboard', label: '總覽', icon: 'layout-grid' }, 
                             { id: 'accounting', label: '記帳', icon: 'notebook-pen' }, 
-                            { id: 'analysis', label: '收支分析', icon: 'pie-chart' }, // NEW ITEM
+                            { id: 'analysis', label: '收支分析', icon: 'pie-chart' },
                             { id: 'debt', label: '債務', icon: 'hand-coins' }, 
                             { id: 'wealth', label: '理財', icon: 'trending-up' } 
                         ].map(item => (
@@ -42,15 +41,12 @@ window.AppLayout = ({ children, view, setView, syncStatus, selectedAccount, setS
                     <div className="mt-auto pt-4 border-t border-muji-border"><button onClick={() => setView('settings')} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm ${view === 'settings' ? 'bg-white shadow-sm text-muji-accent font-bold' : 'text-muji-muted hover:bg-muji-hover'} ${isCollapsed ? 'justify-center px-0' : ''}`} title={isCollapsed ? '設定' : ''}><i data-lucide="settings" className="w-5 h-5 flex-shrink-0"></i> {!isCollapsed && <span>設定</span>}</button></div>
                 </div>
                 <div className="flex-1 flex flex-col h-full bg-muji-bg relative overflow-hidden">
-                    
-                    {/* Date & Sync Status (Floating top-right for both Mobile & Desktop) */}
                     <div className="absolute top-6 right-6 z-20 flex items-center gap-4">
                          <HeaderStatus />
                     </div>
 
                     <div className="flex-1 overflow-y-auto custom-scrollbar md:p-8 pt-16 md:pt-8">{children}</div>
                     
-                    {/* Bottom Navigation for Mobile */}
                     <div className="md:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-muji-border p-2 pb-6 flex justify-around items-center z-30">
                         <button onClick={() => { setView('dashboard'); setSelectedAccount(null); }} className={`flex flex-col items-center p-2 rounded-lg w-16 transition ${view === 'dashboard' ? 'text-muji-accent' : 'text-muji-muted'}`}><i data-lucide="layout-grid" className="w-6 h-6"></i><span className="text-[10px] mt-1 font-medium">總覽</span></button>
                         <button onClick={() => { setView('accounting'); setSelectedAccount(null); }} className={`flex flex-col items-center p-2 rounded-lg w-16 transition ${view === 'accounting' ? 'text-muji-accent' : 'text-muji-muted'}`}><i data-lucide="notebook-pen" className="w-6 h-6"></i><span className="text-[10px] mt-1 font-medium">記帳</span></button>
@@ -63,7 +59,7 @@ window.AppLayout = ({ children, view, setView, syncStatus, selectedAccount, setS
     );
 };
 
-window.DashboardView = ({ data, setData, saveData, setView, setSelectedAccount, setInputModal, showToast, dailyQuote }) => {
+window.DashboardView = ({ data, setData, saveData, setView, setSelectedAccount, setInputModal, showToast, dailyQuote, onNavigateToExpense }) => {
     const getCurrentUserAccounts = () => data.accounts.filter(a => a.userId === data.currentUser || (!a.userId && data.currentUser === 'default'));
     const getCurrentUserStocks = () => data.stocks.filter(s => s.userId === data.currentUser || (!s.userId && data.currentUser === 'default'));
     const totalAssets = getCurrentUserAccounts().reduce((sum, acc) => sum + window.calculateBalance(data, acc.id), 0) + getCurrentUserStocks().reduce((sum, s) => sum + (s.quantity * s.currentPrice), 0);
@@ -115,7 +111,6 @@ window.DashboardView = ({ data, setData, saveData, setView, setSelectedAccount, 
                 )}
             </div>
 
-            {/* Total Assets Card */}
             <div className="bg-white rounded-2xl p-6 text-center shadow-[0_0_30px_rgba(14,165,233,0.1)] border border-muji-border relative h-32 flex flex-col justify-center items-center backdrop-blur-sm z-10">
                 <div className="text-muji-muted text-sm font-medium mb-2 flex items-center justify-center gap-2 font-mono tracking-widest uppercase">
                     總資產 
@@ -126,7 +121,6 @@ window.DashboardView = ({ data, setData, saveData, setView, setSelectedAccount, 
                 <div className="text-5xl font-bold text-muji-text tracking-tighter tabular-nums font-mono drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">{showAssets ? `$${totalAssets.toLocaleString()}` : '****'}</div>
             </div>
 
-            {/* 本月結餘提示 - 顏色更淡 */}
             <div className={`w-full md:w-2/3 mx-auto rounded-xl p-3 flex flex-col items-center justify-center gap-1 text-sm animate-pop font-medium border ${monthlyNet >= 0 ? 'bg-emerald-50/50 border-emerald-100 text-emerald-800' : 'bg-rose-50/50 border-rose-100 text-rose-800'}`}>
                 <div className="flex items-center gap-2">
                     <i data-lucide={monthlyNet >= 0 ? "piggy-bank" : "alert-circle"} className="w-4 h-4"></i> 
@@ -138,13 +132,16 @@ window.DashboardView = ({ data, setData, saveData, setView, setSelectedAccount, 
             </div>
 
             <div className="grid grid-cols-2 gap-4 w-full md:w-2/3 mx-auto z-10">
-                {/* Income Box - 更淡的綠色 */}
                 <div className="bg-emerald-50/60 p-4 rounded-xl border border-emerald-100 shadow-sm flex flex-col items-center hover:bg-emerald-100/50 transition-colors">
                     <span className="text-xs text-emerald-800 mb-1 font-mono font-bold uppercase tracking-wider">本月收入</span>
                     <span className="text-lg font-bold text-emerald-900 font-mono">+${monthlyStats.income.toLocaleString()}</span>
                 </div>
-                {/* Expense Box - 更淡的紅色 */}
-                <div className="bg-rose-50/60 p-4 rounded-xl border border-rose-100 shadow-sm flex flex-col items-center hover:bg-rose-100/50 transition-colors">
+                
+                {/* 讓總支出可以點擊，跳轉到記帳頁 */}
+                <div 
+                    onClick={onNavigateToExpense}
+                    className="bg-rose-50/60 p-4 rounded-xl border border-rose-100 shadow-sm flex flex-col items-center hover:bg-rose-100/50 transition-colors cursor-pointer"
+                >
                     <span className="text-xs text-rose-800 mb-1 font-mono font-bold uppercase tracking-wider">本月支出</span>
                     <span className="text-lg font-bold text-rose-900 font-mono">-${monthlyStats.expense.toLocaleString()}</span>
                 </div>
@@ -153,7 +150,6 @@ window.DashboardView = ({ data, setData, saveData, setView, setSelectedAccount, 
     );
 };
 
-// Main App component definition must follow all view component definitions.
 window.App = () => {
     const [view, setView] = useState('dashboard'); 
     const [data, setData] = useState(window.INITIAL_DATA);
@@ -164,14 +160,16 @@ window.App = () => {
     const [toast, setToast] = useState(null);
     const [selectedAccount, setSelectedAccount] = useState(null);
     
-    // --- Shared Modal State (Transaction Modal) ---
+    // NEW: State to control initial tab in Accounting View
+    const [accountingInitialTab, setAccountingInitialTab] = useState('all_grid'); 
+
     const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [transactionData, setTransactionData] = useState(null);
 
-    const [inputModal, setInputModal] = useState({ show: false, title: '', value: '', type: '', data: null, extra: null, value2: '' }); 
+    // inputModal.value3 用來儲存信用卡結帳日
+    const [inputModal, setInputModal] = useState({ show: false, title: '', value: '', type: '', data: null, extra: null, value2: '', value3: '' }); 
     
-    // Drag Refs
     const dragItem = useRef();
     const dragOverItem = useRef();
 
@@ -228,12 +226,33 @@ window.App = () => {
         switch(inputModal.type) {
             case 'rename_ledger': newData.users = newData.users.map(u => u.id === inputModal.data ? { ...u, name: val } : u); successMessage = `帳本名稱已修改為：${val}`; break;
             case 'delete_ledger': if (newData.users.length <= 1) { showToast('至少需保留一個帳本', 'error'); return; } newData.users = newData.users.filter(u => u.id !== inputModal.data); if (newData.currentUser === inputModal.data) { newData.currentUser = newData.users[0].id; } successMessage = '帳本已刪除'; break;
-            case 'add_account': const newAccId = `acc_${Date.now()}`; const initBal = parseFloat(inputModal.value2) || 0; newData.accounts.push({ id: newAccId, name: val, type: inputModal.extra || 'cash', balance: initBal, userId: newData.currentUser }); newData.accountOrder = [...(newData.accountOrder || newData.accounts.map(a => a.id)), newAccId]; successMessage = '已新增帳戶'; break;
             
-            // Fixed: Also update balance if provided
+            // Fixed: Save closingDay for credit cards
+            case 'add_account': 
+                const newAccId = `acc_${Date.now()}`; 
+                const initBal = parseFloat(inputModal.value2) || 0; 
+                newData.accounts.push({ 
+                    id: newAccId, 
+                    name: val, 
+                    type: inputModal.extra || 'cash', 
+                    balance: initBal, 
+                    userId: newData.currentUser,
+                    closingDay: (inputModal.extra === 'credit' ? inputModal.value3 : undefined) // Save closing day
+                }); 
+                newData.accountOrder = [...(newData.accountOrder || newData.accounts.map(a => a.id)), newAccId]; 
+                successMessage = '已新增帳戶'; 
+                break;
+            
+            // Fixed: Save closingDay for credit cards
             case 'rename_account': 
                 const newInitBal2 = parseFloat(inputModal.value2); 
-                newData.accounts = newData.accounts.map(a => a.id === inputModal.data ? { ...a, name: val, type: inputModal.extra || a.type, balance: isNaN(newInitBal2) ? a.balance : newInitBal2 } : a); 
+                newData.accounts = newData.accounts.map(a => a.id === inputModal.data ? { 
+                    ...a, 
+                    name: val, 
+                    type: inputModal.extra || a.type, 
+                    balance: isNaN(newInitBal2) ? a.balance : newInitBal2,
+                    closingDay: (inputModal.extra === 'credit' ? inputModal.value3 : a.closingDay) // Update closing day
+                } : a); 
                 successMessage = '帳戶已更新'; 
                 break;
             
@@ -262,11 +281,21 @@ window.App = () => {
     const handleSetSplitTotal = useCallback(val => setTransactionData(d => ({...d, amount: parseFloat(val) || 0})), []);
     const handleSetSplits = useCallback(newSplits => setTransactionData(d => ({...d, splits: newSplits})), []);
 
+    // NEW: Handle Navigation from Dashboard
+    const handleNavigateToExpense = () => {
+        setView('accounting');
+        setAccountingInitialTab('expense_list'); // Switch to Expense List tab
+        setSelectedAccount(null); // Clear selected account to show list
+    };
+
     return (
         <window.AppLayout view={view} setView={setView} syncStatus={syncStatus} selectedAccount={selectedAccount} setSelectedAccount={setSelectedAccount} data={data}>
             {view === 'settings' && <window.SettingsView data={data} githubToken={githubToken} setGithubToken={setGithubToken} repo={repo} saveData={saveData} setInputModal={setInputModal} showToast={showToast} fetchData={fetchData} />}
-            {view === 'dashboard' && <window.DashboardView data={data} setData={setData} saveData={saveData} setView={setView} setSelectedAccount={setSelectedAccount} setInputModal={setInputModal} showToast={showToast} dailyQuote={dailyQuote} />}
-            {view === 'accounting' && <window.AccountingView data={data} saveData={saveData} selectedAccount={selectedAccount} setSelectedAccount={setSelectedAccount} setInputModal={setInputModal} showToast={showToast} />}
+            {view === 'dashboard' && <window.DashboardView data={data} setData={setData} saveData={saveData} setView={setView} setSelectedAccount={setSelectedAccount} setInputModal={setInputModal} showToast={showToast} dailyQuote={dailyQuote} onNavigateToExpense={handleNavigateToExpense} />}
+            
+            {/* Pass initialTab prop to AccountingView */}
+            {view === 'accounting' && <window.AccountingView data={data} saveData={saveData} selectedAccount={selectedAccount} setSelectedAccount={setSelectedAccount} setInputModal={setInputModal} showToast={showToast} initialTab={accountingInitialTab} />}
+            
             {view === 'wealth' && <window.WealthView data={data} saveData={saveData} showToast={showToast} />}
             {view === 'debt' && <window.DebtView data={data} saveData={saveData} showToast={showToast} openEditTransaction={openEditTransaction} />}
             {toast && <window.Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
@@ -283,7 +312,7 @@ window.App = () => {
                         <p className="text-muji-muted text-sm mb-4">此操作無法復原。</p>
                         <button autoFocus onClick={handleInputConfirm} className="w-full py-3 rounded-lg font-bold shadow-sm text-white bg-muji-red">確認刪除/重置</button>
                     </div> 
-                    : inputModal.type === 'calibrate_account' ? ( // Calibrate Account UI
+                    : inputModal.type === 'calibrate_account' ? ( 
                         <>
                              {inputModal.extra !== null && <div className="text-sm text-muji-muted">當前計算餘額: <span className="font-mono font-bold text-muji-text">${inputModal.extra?.toLocaleString() || 0}</span></div>}
                              <input 
@@ -297,7 +326,7 @@ window.App = () => {
                              />
                              <button onClick={handleInputConfirm} className="w-full py-3 rounded-lg font-bold shadow-sm text-white bg-muji-accent">確認校正</button>
                         </>
-                    ) : inputModal.type === 'account_order' ? ( // Account Order UI
+                    ) : inputModal.type === 'account_order' ? ( 
                         <>
                             <p className="text-sm text-muji-muted mb-4">拖曳項目以調整順序。</p>
                             <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -327,7 +356,7 @@ window.App = () => {
                     ) : (
                         <>
                             <input autoFocus className="w-full p-3 bg-muji-bg rounded-lg border-none focus:ring-1 focus:ring-muji-accent" value={inputModal.value} onChange={(e) => setInputModal({ ...inputModal, value: e.target.value })} onKeyDown={(e) => e.key === 'Enter' && handleInputConfirm()} placeholder="請輸入名稱" />
-                            {/* NEW: Input for Initial Balance in Add/Edit Account */}
+                            {/* NEW: Input for Initial Balance */}
                             {(inputModal.type === 'add_account' || inputModal.type === 'rename_account') && (
                                 <div className="mt-2">
                                     <label className="text-xs text-muji-muted mb-1 block">初始金額</label>
@@ -341,6 +370,24 @@ window.App = () => {
                                     />
                                 </div>
                             )}
+
+                            {/* NEW: Input for Credit Card Closing Day */}
+                            {inputModal.extra === 'credit' && (inputModal.type === 'add_account' || inputModal.type === 'rename_account') && (
+                                <div className="mt-2">
+                                    <label className="text-xs text-muji-muted mb-1 block">結帳日 (1-31)</label>
+                                    <input 
+                                        type="number" 
+                                        min="1" max="31"
+                                        className="w-full p-3 bg-muji-bg rounded-lg border-none focus:ring-1 focus:ring-muji-accent" 
+                                        value={inputModal.value3} 
+                                        onChange={(e) => setInputModal({ ...inputModal, value3: e.target.value })} 
+                                        placeholder="例如：27" 
+                                        onKeyDown={(e) => e.key === 'Enter' && handleInputConfirm()}
+                                    />
+                                    <div className="text-[10px] text-muji-muted mt-1">設定後，明細將依照帳單週期顯示</div>
+                                </div>
+                            )}
+
                             <button onClick={handleInputConfirm} className="w-full py-3 rounded-lg font-bold shadow-sm text-white bg-muji-accent mt-2">確認</button>
                         </>
                     )}
