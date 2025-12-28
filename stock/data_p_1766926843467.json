@@ -32,20 +32,6 @@
       "qty": 1000,
       "fee": 52,
       "note": "AI Table Import"
-    },
-    {
-      "symbol": "4541",
-      "name": "晟田",
-      "type": "sell",
-      "date": "2023-04-27",
-      "qty": 1000,
-      "price": 42.2,
-      "fee": 36,
-      "tax": 127,
-      "totalAmount": 42037,
-      "realizedDividend": 5056,
-      "note": "賣出 2014/10/1 持倉",
-      "id": "9c7d2e7d-cb40-4175-aea9-8759a25fd290"
     }
   ],
   "prices": {
