@@ -1,0 +1,10 @@
+{
+  "portfolios": [
+    {
+      "id": "default",
+      "name": "主帳戶"
+    }
+  ],
+  "transactions": [],
+  "prices": {}
+}
