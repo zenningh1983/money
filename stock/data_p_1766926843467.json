@@ -32,6 +32,20 @@
       "qty": 1000,
       "fee": 47,
       "note": ""
+    },
+    {
+      "symbol": "4541",
+      "name": "晟田",
+      "type": "sell",
+      "date": "2025-12-28",
+      "qty": 1000,
+      "price": 49,
+      "fee": 69,
+      "tax": 147,
+      "totalAmount": 48784,
+      "realizedDividend": 0,
+      "note": "賣出 2014-10-01 持倉",
+      "id": "2727d6c8-6808-4b59-94e7-e3fca4fd03ad"
     }
   ],
   "prices": {
