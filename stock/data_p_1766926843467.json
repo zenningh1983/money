@@ -2,13 +2,13 @@
   "transactions": [
     {
       "id": "4e8b2352-5281-413a-b42b-5d5531fe10fe",
-      "date": "2014-09-25",
+      "date": "2014-10-01",
       "name": "晟田",
       "symbol": "4541",
       "type": "buy",
-      "price": 54.8,
+      "price": 51,
       "qty": 1000,
-      "fee": 47,
+      "fee": 44,
       "note": ""
     },
     {
