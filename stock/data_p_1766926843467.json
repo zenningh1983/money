@@ -10,6 +10,28 @@
       "qty": 1000,
       "fee": 47,
       "note": ""
+    },
+    {
+      "id": "e1522fe8-2beb-4f65-8ec8-43030eadbb7b",
+      "date": "2014/10/1",
+      "name": "晟田",
+      "symbol": "4541",
+      "type": "buy",
+      "price": 51,
+      "qty": 1000,
+      "fee": 44,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "1a615b4a-8386-43c9-9793-3156cdc849e6",
+      "date": "2014/9/2",
+      "name": "晟田",
+      "symbol": "4541",
+      "type": "buy",
+      "price": 60.5,
+      "qty": 1000,
+      "fee": 52,
+      "note": "AI Table Import"
     }
   ],
   "prices": {
