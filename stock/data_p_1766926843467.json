@@ -39,14 +39,14 @@
       "type": "sell",
       "date": "2025-12-28",
       "qty": 1000,
-      "price": 49,
-      "fee": 69,
-      "tax": 147,
-      "totalAmount": 48784,
+      "price": 5,
+      "fee": 7,
+      "tax": 15,
+      "totalAmount": 4978,
       "realizedDividend": 0,
-      "note": "賣出 2014-10-01 持倉",
-      "relatedBuyId": "4e8b2352-5281-413a-b42b-5d5531fe10fe",
-      "id": "cb35dd09-02f5-4958-a494-f3045777d5b1"
+      "note": "賣出 2014-09-02 持倉",
+      "relatedBuyId": "e1522fe8-2beb-4f65-8ec8-43030eadbb7b",
+      "id": "a096c288-e018-4d11-98c0-6f76f748d2cb"
     }
   ],
   "prices": {
