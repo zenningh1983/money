@@ -46,6 +46,20 @@
       "realizedDividend": 5056,
       "note": "賣出 2014/10/1 持倉",
       "id": "9c7d2e7d-cb40-4175-aea9-8759a25fd290"
+    },
+    {
+      "symbol": "4541",
+      "name": "晟田",
+      "type": "sell",
+      "date": "2023-04-28",
+      "qty": 1000,
+      "price": 47.2,
+      "fee": 40,
+      "tax": 142,
+      "totalAmount": 47018,
+      "realizedDividend": 5056,
+      "note": "賣出 2014-09-25 持倉",
+      "id": "0882c82a-5306-4757-8c6b-cb5130c2b5fd"
     }
   ],
   "prices": {
