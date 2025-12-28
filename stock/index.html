@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradeMind AI - 智能投資戰情室 (Muji Soft)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        /* 加入 Quicksand 讓數字與英文比較圓潤 */
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+        
+        body {
+            font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
+            background-color: #f4f4f5; /* Zinc 100 - 稍微深一點點的灰白，增加層次 */
+            color: #27272a; /* Zinc 800 */
+        }
+        .font-mono {
+            font-family: 'Quicksand', monospace; /* 使用圓潤字體取代原本的機械碼字體 */
+        }
+        
+        /* Custom Scrollbar - Muji Light Style */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f4f4f5; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d4d4d8; 
+            border-radius: 10px; 
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a1a1aa; 
+        }
+        
+        /* Soft Card: White, Rounded, Soft Shadow */
+        .muji-card {
+            background-color: #ffffff;
+            border: 1px solid #e4e4e7; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border-radius: 16px; /* 圓角設定 */
+        }
+        
+        /* Input Reset - Rounded */
+        input, textarea {
+            background-color: #ffffff !important;
+            border: 1px solid #d4d4d8 !important; 
+            color: #18181b !important; 
+            border-radius: 12px !important; /* 輸入框也圓角 */
+            transition: all 0.2s;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #a1a1aa !important; 
+            background-color: #fafafa !important;
+            box-shadow: 0 0 0 2px rgba(228, 228, 231, 0.5);
+        }
+        input::placeholder, textarea::placeholder {
+            color: #a1a1aa !important; 
+        }
+
+        /* Button Rounded */
+        button {
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useContext, createContext } = React;
+
+        // -----------------------------------------------------------------------------
+        // MODULE: ICONS
+        // -----------------------------------------------------------------------------
+        const Icon = ({ name, size = 20, className = "" }) => {
+            useEffect(() => {
+                if (window.lucide) window.lucide.createIcons();
+            }, [name]);
+            return <i data-lucide={name} className={className} style={{ width: size, height: size }}></i>;
+        };
+
+        // -----------------------------------------------------------------------------
+        // MODULE: UTILS
+        // -----------------------------------------------------------------------------
+        const Utils = {
+            formatCurrency: (val) => new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'TWD', minimumFractionDigits: 0 }).format(val),
+            formatPercent: (val) => `${(val * 100).toFixed(2)}%`,
+            formatDate: (dateStr) => new Date(dateStr).toISOString().split('T')[0],
+            
+            calculatePortfolioStats: (transactions, currentPrices = {}) => {
+                let inventory = {}; 
+                let globalStats = { totalAsset: 0, totalCost: 0, totalRealizedPL: 0, totalDividend: 0 };
+                const sortedTx = [...transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                sortedTx.forEach(tx => {
+                    const sym = tx.symbol;
+                    if (!inventory[sym]) inventory[sym] = { qty: 0, totalCost: 0, realizedPL: 0, dividendTotal: 0, avgCost: 0, history: [] };
+
+                    if (tx.type === 'buy') {
+                        inventory[sym].qty += tx.qty;
+                        inventory[sym].totalCost += (tx.price * tx.qty) + (tx.fee || 0);
+                        if (inventory[sym].qty > 0) inventory[sym].avgCost = inventory[sym].totalCost / inventory[sym].qty;
+                    } else if (tx.type === 'sell') {
+                        const costBasis = inventory[sym].avgCost * tx.qty;
+                        const revenue = (tx.price * tx.qty) - (tx.fee || 0);
+                        const pl = revenue - costBasis;
+                        inventory[sym].realizedPL += pl;
+                        inventory[sym].qty -= tx.qty;
+                        inventory[sym].totalCost -= costBasis;
+                        if (inventory[sym].qty <= 0) { inventory[sym].qty = 0; inventory[sym].totalCost = 0; inventory[sym].avgCost = 0; }
+                    } else if (tx.type === 'dividend') {
+                        inventory[sym].dividendTotal += tx.amount;
+                    }
+                    inventory[sym].history.push(tx);
+                });
+
+                let holdings = [];
+                Object.keys(inventory).forEach(sym => {
+                    const item = inventory[sym];
+                    const currentPrice = currentPrices[sym] || item.avgCost; 
+                    const marketValue = item.qty * currentPrice;
+                    const unrealizedPL = marketValue - item.totalCost;
+                    const unrealizedROI = item.totalCost > 0 ? unrealizedPL / item.totalCost : 0;
+
+                    if (item.qty > 0 || item.realizedPL !== 0 || item.dividendTotal !== 0) {
+                        holdings.push({
+                            symbol: sym, qty: item.qty, avgCost: item.avgCost, currentPrice, marketValue,
+                            unrealizedPL, unrealizedROI, realizedPL: item.realizedPL, dividendTotal: item.dividendTotal, history: item.history
+                        });
+                        globalStats.totalAsset += marketValue;
+                        globalStats.totalCost += item.totalCost;
+                        globalStats.totalRealizedPL += item.realizedPL;
+                        globalStats.totalDividend += item.dividendTotal;
+                    }
+                });
+                const totalUnrealizedPL = globalStats.totalAsset - globalStats.totalCost;
+                const totalUnrealizedROI = globalStats.totalCost > 0 ? totalUnrealizedPL / globalStats.totalCost : 0;
+                return { holdings, globalStats, totalUnrealizedPL, totalUnrealizedROI };
+            },
+
+            smartParse: (text) => {
+                const lines = text.split('\n');
+                const results = [];
+                const now = new Date().toISOString().split('T')[0];
+                lines.forEach(line => {
+                    line = line.trim();
+                    if (!line) return;
+                    const dividendMatch = line.match(/(\d{4}[-/]\d{1,2}[-/]\d{1,2})?.*?(?:股利|股息|Dividend).*?([A-Za-z0-9]+).*?(\d+[\d,]*)/i) ||
+                                          line.match(/([A-Za-z0-9]+).*?(?:股利|股息|Dividend).*?(\d+[\d,]*)/i);
+                    if (dividendMatch) {
+                        results.push({
+                            id: Date.now() + Math.random(),
+                            date: dividendMatch[1] || now,
+                            symbol: dividendMatch[1]?.match(/\d{4}/) ? dividendMatch[2] : (dividendMatch[1] || "UNKNOWN"),
+                            type: 'dividend',
+                            amount: parseFloat(dividendMatch[dividendMatch.length-1].replace(/,/g, '')),
+                            price: 0, qty: 0, fee: 0, note: 'AI Auto-Import'
+                        });
+                        return;
+                    }
+                    const typeMatch = line.match(/(買進|買|Buy|賣出|賣|Sell)/i);
+                    const symbolMatch = line.match(/([A-Za-z]{2,5}|\d{4,6})/); 
+                    const nums = line.match(/(\d{1,3}(,\d{3})*(\.\d+)?)/g);
+                    if (typeMatch && symbolMatch && nums && nums.length >= 2) {
+                        let type = ['買進', '買', 'Buy'].includes(typeMatch[0]) ? 'buy' : 'sell';
+                        const val1 = parseFloat(nums[nums.length-2].replace(/,/g, ''));
+                        const val2 = parseFloat(nums[nums.length-1].replace(/,/g, ''));
+                        let price = val1 > val2 ? val2 : val1;
+                        let qty = val1 > val2 ? val1 : val2;
+                        results.push({
+                            id: Date.now() + Math.random(),
+                            date: line.match(/\d{4}[-/]\d{1,2}[-/]\d{1,2}/)?.[0] || now,
+                            symbol: symbolMatch[0], type: type, price: price, qty: qty, fee: 0, note: 'AI Parsed'
+                        });
+                    }
+                });
+                return results;
+            }
+        };
+
+        // -----------------------------------------------------------------------------
+        // MODULE: DATA CONTEXT
+        // -----------------------------------------------------------------------------
+        const AppContext = createContext();
+        const AppProvider = ({ children }) => {
+            const [portfolios, setPortfolios] = useState(() => JSON.parse(localStorage.getItem('tm_portfolios')) || [{ id: 'default', name: '主帳戶' }]);
+            const [currentPortfolioId, setCurrentPortfolioId] = useState(() => localStorage.getItem('tm_current_pid') || 'default');
+            const [transactions, setTransactions] = useState(() => JSON.parse(localStorage.getItem('tm_transactions')) || []);
+            const [prices, setPrices] = useState(() => JSON.parse(localStorage.getItem('tm_prices')) || {});
+
+            useEffect(() => {
+                localStorage.setItem('tm_portfolios', JSON.stringify(portfolios));
+                localStorage.setItem('tm_transactions', JSON.stringify(transactions));
+                localStorage.setItem('tm_prices', JSON.stringify(prices));
+                localStorage.setItem('tm_current_pid', currentPortfolioId);
+            }, [portfolios, transactions, prices, currentPortfolioId]);
+
+            const activeTransactions = useMemo(() => transactions.filter(t => t.portfolioId === currentPortfolioId), [transactions, currentPortfolioId]);
+            const portfolioStats = useMemo(() => Utils.calculatePortfolioStats(activeTransactions, prices), [activeTransactions, prices]);
+
+            const addTransaction = (tx) => setTransactions(prev => [...prev, { ...tx, portfolioId: currentPortfolioId }]);
+            const removeTransaction = (id) => setTransactions(prev => prev.filter(t => t.id !== id));
+            const addPortfolio = (name) => {
+                const newId = 'p-' + Date.now();
+                setPortfolios(prev => [...prev, { id: newId, name }]);
+                setCurrentPortfolioId(newId);
+            };
+            const updatePrice = (sym, price) => setPrices(prev => ({ ...prev, [sym]: parseFloat(price) }));
+            
+            // Logic: Token Suffix Only
+            const syncToGithub = async (tokenSuffix, gistId = null) => { 
+                if (!tokenSuffix) throw new Error("需要 GitHub Token");
+                
+                // 自動組合 ghp_
+                const token = 'ghp_' + tokenSuffix;
+
+                const content = JSON.stringify({ portfolios, transactions, prices });
+                const body = { description: "TradeMind Backup " + new Date().toISOString(), public: false, files: { "trademind_data.json": { content } } };
+                let url = "https://api.github.com/gists"; let method = "POST";
+                if (gistId) { url += `/${gistId}`; method = "PATCH"; }
+                
+                const res = await fetch(url, { method, headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" }, body: JSON.stringify(body) });
+                if (!res.ok) throw new Error("同步失敗 (請檢查 Token 是否正確)");
+                const data = await res.json();
+                return data.id;
+            };
+
+            const loadFromGithub = async (tokenSuffix, gistId) => {
+                const token = 'ghp_' + tokenSuffix;
+                const res = await fetch(`https://api.github.com/gists/${gistId}`, { headers: { "Authorization": `token ${token}` } });
+                if (!res.ok) throw new Error("下載失敗");
+                const data = await res.json();
+                const content = JSON.parse(data.files["trademind_data.json"].content);
+                setPortfolios(content.portfolios); setTransactions(content.transactions); setPrices(content.prices || {});
+            };
+
+            return (
+                <AppContext.Provider value={{ portfolios, currentPortfolioId, setCurrentPortfolioId, addPortfolio, transactions, activeTransactions, addTransaction, removeTransaction, prices, updatePrice, portfolioStats, syncToGithub, loadFromGithub }}>
+                    {children}
+                </AppContext.Provider>
+            );
+        };
+
+        // -----------------------------------------------------------------------------
+        // MODULE: UI COMPONENTS
+        // -----------------------------------------------------------------------------
+
+        // Soft colors
+        const getPnLColor = (val) => {
+            if (val > 0) return "text-zinc-800 font-bold"; 
+            if (val < 0) return "text-zinc-400"; 
+            return "text-zinc-500"; 
+        };
+
+        const Sidebar = ({ setView, currentView }) => {
+            const { portfolios, currentPortfolioId, setCurrentPortfolioId, addPortfolio } = useContext(AppContext);
+            const [isAdding, setIsAdding] = useState(false);
+            const [newPName, setNewPName] = useState("");
+
+            return (
+                <div className="w-64 bg-white/50 border-r border-zinc-200 h-screen flex flex-col p-6 backdrop-blur-sm">
+                    <div className="flex items-center gap-3 mb-10 text-zinc-800 font-bold text-xl tracking-wide">
+                        <Icon name="box" size={26} className="text-zinc-700" /> TradeMind
+                    </div>
+                    
+                    <div className="mb-8">
+                        <label className="text-xs text-zinc-400 font-bold mb-4 block pl-1">投資帳本</label>
+                        <div className="space-y-2">
+                            {portfolios.map(p => (
+                                <button key={p.id} 
+                                    onClick={() => setCurrentPortfolioId(p.id)}
+                                    className={`w-full text-left px-4 py-2.5 text-sm transition-all duration-300 rounded-xl ${currentPortfolioId === p.id ? 'bg-white text-zinc-900 border border-zinc-200 shadow-sm font-bold' : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100'}`}>
+                                    <span className="truncate">{p.name}</span>
+                                </button>
+                            ))}
+                        </div>
+                        {isAdding ? (
+                            <div className="mt-4 flex gap-1 border-b border-zinc-300 pb-1">
+                                <input value={newPName} onChange={e => setNewPName(e.target.value)} className="w-full bg-transparent text-sm p-1 text-zinc-900 focus:outline-none placeholder-zinc-400" placeholder="名稱..." />
+                                <button onClick={() => { if(newPName) { addPortfolio(newPName); setIsAdding(false); setNewPName(""); }}} className="text-zinc-500 hover:text-zinc-900"><Icon name="check" size={14}/></button>
+                            </div>
+                        ) : (
+                            <button onClick={() => setIsAdding(true)} className="mt-4 text-xs flex items-center gap-2 text-zinc-400 hover:text-zinc-700 pl-3 transition-colors">
+                                <Icon name="plus" size={14} /> 新增帳本
+                            </button>
+                        )}
+                    </div>
+
+                    <nav className="flex-1 space-y-2">
+                        {[
+                            { id: 'dashboard', icon: 'layout-grid', label: '總覽' },
+                            { id: 'holdings', icon: 'list', label: '庫存明細' },
+                            { id: 'import', icon: 'arrow-down-to-line', label: '匯入資料' },
+                            { id: 'settings', icon: 'sliders-horizontal', label: '設定' },
+                        ].map(item => (
+                            <button key={item.id}
+                                onClick={() => setView(item.id)}
+                                className={`w-full flex items-center gap-4 px-4 py-3 text-sm transition-all rounded-xl ${currentView === item.id ? 'text-zinc-900 bg-zinc-200/50 font-bold' : 'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800'}`}>
+                                <Icon name={item.icon} size={20} strokeWidth={1.5} />
+                                <span className="tracking-wide">{item.label}</span>
+                            </button>
+                        ))}
+                    </nav>
+
+                    <div className="text-[10px] text-zinc-400 mt-auto pt-4 border-t border-zinc-200 font-mono text-center">
+                        MUJI SOFT v1.2
+                    </div>
+                </div>
+            );
+        };
+
+        const Dashboard = () => {
+            const { portfolioStats } = useContext(AppContext);
+            const { globalStats, totalUnrealizedPL, totalUnrealizedROI } = portfolioStats;
+
+            const MetricCard = ({ label, value, subValue, isCurrency = true, subLabel = "" }) => (
+                <div className="muji-card p-6 flex flex-col justify-between h-36 hover:border-zinc-300 transition-colors">
+                    <div className="flex justify-between items-start">
+                        <h3 className="text-zinc-500 text-sm font-bold">{label}</h3>
+                        {subValue && (
+                            <div className={`text-sm font-mono flex items-center gap-1 ${getPnLColor(subValue)}`}>
+                                {subValue > 0 ? '+' : ''}{Utils.formatPercent(subValue)}
+                            </div>
+                        )}
+                    </div>
+                    <div>
+                        <div className={`text-3xl font-medium font-mono text-zinc-900`}>
+                            {isCurrency ? Utils.formatCurrency(value) : value}
+                        </div>
+                        {subLabel && <div className="text-zinc-400 text-xs mt-1">{subLabel}</div>}
+                    </div>
+                </div>
+            );
+
+            return (
+                <div className="space-y-8">
+                    <header>
+                        <h2 className="text-3xl font-medium text-zinc-900 tracking-tight">資產總覽</h2>
+                        <p className="text-zinc-500 text-sm mt-1">資產配置與績效分析</p>
+                    </header>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <MetricCard label="總資產 (現值)" value={globalStats.totalAsset} subValue={totalUnrealizedROI} />
+                        <MetricCard label="總成本" value={globalStats.totalCost} />
+                        <MetricCard label="未實現損益" value={totalUnrealizedPL} 
+                             subLabel={totalUnrealizedPL >= 0 ? "獲利中" : "虧損中"} />
+                        <MetricCard label="已實現 + 股利" value={globalStats.totalRealizedPL + globalStats.totalDividend} />
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div className="muji-card p-8">
+                            <h3 className="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-6">資產分佈</h3>
+                            <div className="space-y-5">
+                                {portfolioStats.holdings.sort((a,b) => b.marketValue - a.marketValue).slice(0, 6).map(h => (
+                                    <div key={h.symbol} className="flex items-center gap-4 group">
+                                        <div className="w-20 text-sm text-zinc-500 font-mono font-bold group-hover:text-zinc-900 transition-colors">{h.symbol}</div>
+                                        <div className="flex-1 h-2 bg-zinc-100 overflow-hidden rounded-full">
+                                            <div className="h-full bg-zinc-600 rounded-full" style={{ width: `${(h.marketValue / globalStats.totalAsset) * 100}%` }}></div>
+                                        </div>
+                                        <div className="w-24 text-sm font-mono text-right text-zinc-600">{Utils.formatCurrency(h.marketValue)}</div>
+                                    </div>
+                                ))}
+                                {portfolioStats.holdings.length === 0 && <div className="text-zinc-400 text-sm text-center py-10">尚無資料</div>}
+                            </div>
+                        </div>
+                        <div className="muji-card p-8">
+                             <h3 className="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-6">近期動態</h3>
+                             <div className="space-y-1">
+                                {portfolioStats.holdings.flatMap(h => h.history).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8).map(tx => (
+                                    <div key={tx.id} className="flex justify-between items-center text-sm py-3 border-b border-zinc-100 last:border-0 hover:bg-zinc-50 transition-colors px-2 -mx-2 rounded-lg">
+                                        <div className="flex items-center gap-3">
+                                            <span className={`text-[10px] font-bold w-12 text-center py-1 rounded-full border ${tx.type === 'buy' ? 'bg-zinc-800 text-white border-zinc-800' : tx.type === 'sell' ? 'bg-white text-zinc-900 border-zinc-300' : 'bg-zinc-100 text-zinc-500 border-zinc-200'}`}>
+                                                {tx.type === 'buy' ? '買進' : tx.type === 'sell' ? '賣出' : '股利'}
+                                            </span>
+                                            <div>
+                                                <div className="font-mono text-zinc-800 font-bold">{tx.symbol}</div>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="font-mono text-zinc-400 text-xs">{tx.date}</div>
+                                            <div className="font-mono text-zinc-800 text-xs mt-0.5">
+                                                {tx.type === 'dividend' ? `+${tx.amount}` : `${tx.qty} @ ${tx.price}`}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const ImportView = () => {
+            const { addTransaction } = useContext(AppContext);
+            const [inputText, setInputText] = useState("");
+            const [parsedData, setParsedData] = useState([]);
+
+            const handleParse = () => { const results = Utils.smartParse(inputText); setParsedData(results); };
+            const confirmImport = () => { parsedData.forEach(tx => addTransaction(tx)); setParsedData([]); setInputText(""); };
+            const removeParsedItem = (id) => { setParsedData(prev => prev.filter(item => item.id !== id)); };
+
+            return (
+                <div className="space-y-6 max-w-4xl mx-auto">
+                    <header>
+                        <h2 className="text-3xl font-medium text-zinc-900 tracking-tight">匯入交易資料</h2>
+                        <p className="text-zinc-500 text-sm mt-1">請在下方貼上券商交易紀錄或筆記。</p>
+                    </header>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 h-[500px]">
+                        <div className="flex flex-col gap-4">
+                            <textarea 
+                                className="flex-1 p-6 font-mono text-sm text-zinc-800 leading-relaxed resize-none focus:shadow-inner"
+                                placeholder={`格式範例 (系統會自動辨識):\n\n2023/10/05 Buy TSLA 10 @ 240\n2330 台積電 股利 5000\n賣出 AAPL 5股 價格150\n\n(支援整段文字貼上)`}
+                                value={inputText}
+                                onChange={e => setInputText(e.target.value)}
+                            ></textarea>
+                            <button onClick={handleParse} className="bg-zinc-800 hover:bg-zinc-700 text-white py-3 px-6 text-sm font-bold tracking-widest transition-colors shadow-md rounded-xl">
+                                開始解析
+                            </button>
+                        </div>
+
+                        <div className="muji-card flex flex-col overflow-hidden">
+                            <div className="p-4 border-b border-zinc-200 flex justify-between items-center bg-zinc-50">
+                                <span className="text-zinc-500 text-xs font-bold uppercase">預覽結果 ({parsedData.length})</span>
+                                {parsedData.length > 0 && (
+                                    <button onClick={confirmImport} className="text-xs text-zinc-600 border border-zinc-300 px-3 py-1.5 hover:bg-white bg-white rounded-lg shadow-sm font-bold">確認匯入</button>
+                                )}
+                            </div>
+                            <div className="flex-1 overflow-y-auto p-2 space-y-1">
+                                {parsedData.length === 0 && <div className="h-full flex items-center justify-center text-zinc-400 text-sm">等待輸入...</div>}
+                                {parsedData.map(item => (
+                                    <div key={item.id} className="p-3 border-b border-zinc-100 flex justify-between items-center group hover:bg-zinc-50 rounded-lg">
+                                        <div className="flex items-center gap-3">
+                                            <span className={`text-[10px] w-8 text-center py-0.5 border rounded-md ${item.type==='buy'?'bg-zinc-800 text-white border-zinc-800': 'bg-white text-zinc-900 border-zinc-300'}`}>{item.type.substr(0,1).toUpperCase()}</span>
+                                            <div>
+                                                <div className="font-mono text-sm text-zinc-800 font-bold">{item.symbol}</div>
+                                                <div className="text-[10px] text-zinc-500 font-mono">{item.date}</div>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-xs text-zinc-600 font-mono">{item.type==='dividend'?`$${item.amount}`:`${item.qty} x ${item.price}`}</div>
+                                            <button onClick={() => removeParsedItem(item.id)} className="text-zinc-400 hover:text-red-600 mt-1"><Icon name="x" size={14}/></button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const HoldingsView = () => {
+            const { portfolioStats, updatePrice } = useContext(AppContext);
+            const { holdings } = portfolioStats;
+            const [filter, setFilter] = useState('');
+            const [selectedStock, setSelectedStock] = useState(null);
+
+            const autoUpdatePrices = () => {
+                holdings.forEach(h => { const newPrice = h.avgCost * (0.9 + Math.random() * 0.2); updatePrice(h.symbol, newPrice.toFixed(2)); });
+            };
+
+            if (selectedStock) {
+                return (
+                    <div className="space-y-6">
+                        <button onClick={() => setSelectedStock(null)} className="flex items-center gap-2 text-zinc-400 hover:text-zinc-900 mb-6 text-sm group transition-colors font-bold">
+                            <Icon name="arrow-left" size={18} className="group-hover:-translate-x-1 transition-transform"/> 返回列表
+                        </button>
+                        
+                        <div className="flex justify-between items-end border-b border-zinc-200 pb-6">
+                            <div>
+                                <h2 className="text-4xl font-medium text-zinc-900 font-mono">{selectedStock.symbol}</h2>
+                                <span className="text-xs text-zinc-500 mt-2 block font-bold">個股詳細資料</span>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-xs text-zinc-400 font-bold mb-1">目前股價</div>
+                                <div className="text-3xl font-mono text-zinc-800">{selectedStock.currentPrice}</div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {[
+                                { l: '庫存股數', v: selectedStock.qty },
+                                { l: '平均成本', v: Utils.formatCurrency(selectedStock.avgCost) },
+                                { l: '未實現損益', v: Utils.formatCurrency(selectedStock.unrealizedPL), c: getPnLColor(selectedStock.unrealizedPL) },
+                                { l: '已實現損益', v: Utils.formatCurrency(selectedStock.realizedPL), c: getPnLColor(selectedStock.realizedPL) },
+                            ].map((s, i) => (
+                                <div key={i} className="muji-card p-5">
+                                    <div className="text-zinc-400 text-xs font-bold mb-2">{s.l}</div>
+                                    <div className={`text-xl font-mono ${s.c || 'text-zinc-700'}`}>{s.v}</div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="muji-card mt-8 overflow-hidden">
+                             <div className="p-4 border-b border-zinc-200 text-zinc-400 text-xs font-bold uppercase tracking-widest bg-zinc-50">交易歷史紀錄</div>
+                             <table className="w-full text-sm text-left text-zinc-600">
+                                <thead className="text-[10px] text-zinc-400 uppercase bg-white border-b border-zinc-200">
+                                    <tr>
+                                        <th className="px-6 py-3 font-normal">日期</th>
+                                        <th className="px-6 py-3 font-normal">類型</th>
+                                        <th className="px-6 py-3 text-right font-normal">數量 / 金額</th>
+                                        <th className="px-6 py-3 text-right font-normal">單價</th>
+                                        <th className="px-6 py-3 text-right font-normal">小計</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {selectedStock.history.sort((a,b)=> new Date(b.date) - new Date(a.date)).map(tx => (
+                                        <tr key={tx.id} className="border-b border-zinc-100 hover:bg-zinc-50">
+                                            <td className="px-6 py-4 font-mono text-zinc-400">{tx.date}</td>
+                                            <td className="px-6 py-4"><span className="text-xs font-bold">{tx.type}</span></td>
+                                            <td className="px-6 py-4 text-right font-mono">{tx.type === 'dividend' ? '-' : tx.qty}</td>
+                                            <td className="px-6 py-4 text-right font-mono">{tx.type === 'dividend' ? '-' : tx.price}</td>
+                                            <td className="px-6 py-4 text-right font-mono text-zinc-800">
+                                                {tx.type === 'dividend' ? Utils.formatCurrency(tx.amount) : Utils.formatCurrency(tx.price * tx.qty)}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )
+            }
+
+            return (
+                <div className="space-y-8">
+                    <header className="flex justify-between items-center">
+                         <div>
+                            <h2 className="text-3xl font-medium text-zinc-900 tracking-tight">庫存明細</h2>
+                            <p className="text-zinc-500 text-sm mt-1">管理您的持股部位。</p>
+                        </div>
+                        <div className="flex gap-2">
+                             <input type="text" placeholder="搜尋代號..." 
+                                className="w-48 px-4 py-2 text-sm font-mono focus:w-64 transition-all shadow-sm"
+                                value={filter} onChange={e => setFilter(e.target.value)} />
+                            <button onClick={autoUpdatePrices} className="bg-white border border-zinc-300 hover:bg-zinc-100 text-zinc-600 px-4 py-2 shadow-sm rounded-xl">
+                                <Icon name="refresh-cw" size={16}/>
+                            </button>
+                        </div>
+                    </header>
+
+                    <div className="muji-card overflow-hidden">
+                        <table className="w-full text-sm text-left text-zinc-600">
+                            <thead className="text-[10px] text-zinc-400 uppercase bg-zinc-50 border-b border-zinc-200">
+                                <tr>
+                                    <th className="px-6 py-4 font-normal tracking-widest">代號</th>
+                                    <th className="px-6 py-4 text-right font-normal tracking-widest">股數</th>
+                                    <th className="px-6 py-4 text-right font-normal tracking-widest">均價</th>
+                                    <th className="px-6 py-4 text-right font-normal tracking-widest">現價</th>
+                                    <th className="px-6 py-4 text-right font-normal tracking-widest">市值</th>
+                                    <th className="px-6 py-4 text-right font-normal tracking-widest">未實現損益</th>
+                                    <th className="px-6 py-4 text-right font-normal tracking-widest"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {holdings.filter(h => h.symbol.toLowerCase().includes(filter.toLowerCase())).map(h => (
+                                    <tr key={h.symbol} className="border-b border-zinc-100 hover:bg-zinc-50 cursor-pointer group transition-colors" onClick={() => setSelectedStock(h)}>
+                                        <td className="px-6 py-4 font-bold text-zinc-900 font-mono text-base">{h.symbol}</td>
+                                        <td className="px-6 py-4 text-right font-mono text-zinc-500">{h.qty}</td>
+                                        <td className="px-6 py-4 text-right font-mono text-zinc-500">{Utils.formatCurrency(h.avgCost)}</td>
+                                        <td className="px-6 py-4 text-right font-mono text-zinc-800 group-hover:text-black font-medium" onClick={(e) => {
+                                            e.stopPropagation(); const p = prompt("手動更新價格:", h.currentPrice); if(p) updatePrice(h.symbol, p);
+                                        }}>{h.currentPrice}</td>
+                                        <td className="px-6 py-4 text-right font-mono text-zinc-800">{Utils.formatCurrency(h.marketValue)}</td>
+                                        <td className={`px-6 py-4 text-right font-mono ${getPnLColor(h.unrealizedPL)}`}>
+                                            {Utils.formatCurrency(h.unrealizedPL)} <span className="text-[10px] ml-1 opacity-50 font-normal">{Utils.formatPercent(h.unrealizedROI)}</span>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <Icon name="chevron-right" size={16} className="ml-auto text-zinc-300 group-hover:text-zinc-600"/>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {holdings.length === 0 && <tr><td colSpan="7" className="text-center py-12 text-zinc-400 text-sm">查無庫存資料</td></tr>}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        };
+
+        const SettingsView = () => {
+            const { syncToGithub, loadFromGithub } = useContext(AppContext);
+            // 改為只儲存 suffix
+            const [tokenSuffix, setTokenSuffix] = useState(localStorage.getItem('tm_gh_token_suffix') || '');
+            const [gistId, setGistId] = useState(localStorage.getItem('tm_gh_gist') || '');
+            const [status, setStatus] = useState('');
+
+            const handleSave = () => { 
+                localStorage.setItem('tm_gh_token_suffix', tokenSuffix); 
+                localStorage.setItem('tm_gh_gist', gistId); 
+                alert("設定已儲存");
+            }
+
+            const handleSync = async () => {
+                setStatus('同步中...'); 
+                try { 
+                    const newId = await syncToGithub(tokenSuffix, gistId || null); 
+                    setGistId(newId); 
+                    localStorage.setItem('tm_gh_gist', newId); 
+                    setStatus('備份成功! ID: ' + newId); 
+                } catch (e) { 
+                    setStatus('錯誤: ' + e.message); 
+                }
+            };
+
+            const handleLoad = async () => {
+                if(!gistId) return; 
+                setStatus('下載中...'); 
+                try { 
+                    await loadFromGithub(tokenSuffix, gistId); 
+                    setStatus('資料已還原，即將重整...'); 
+                    setTimeout(() => window.location.reload(), 1000);
+                } catch (e) { 
+                    setStatus('錯誤: ' + e.message); 
+                }
+            };
+
+            return (
+                <div className="max-w-xl mx-auto space-y-8">
+                     <header>
+                        <h2 className="text-3xl font-medium text-zinc-900 tracking-tight">系統設定</h2>
+                        <p className="text-zinc-500 text-sm mt-1">參數配置與雲端同步</p>
+                    </header>
+                    
+                    <div className="muji-card p-8 space-y-6">
+                        <div className="flex items-center gap-3 mb-6 text-zinc-800">
+                            <Icon name="github" />
+                            <h3 className="font-bold text-sm tracking-widest">GitHub Gist 同步</h3>
+                        </div>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-zinc-500 mb-2">
+                                    GitHub Token (系統已預設 ghp_ 前綴，請只填寫後面的字串)
+                                </label>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-zinc-400 font-mono bg-zinc-100 px-3 py-3 rounded-xl border border-zinc-200">ghp_</span>
+                                    <input type="password" value={tokenSuffix} onChange={e => setTokenSuffix(e.target.value)} className="flex-1 p-3 font-mono text-sm" placeholder="xxxxxxxxxxxx" />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-zinc-500 mb-2">Gist ID (還原用，選填)</label>
+                                <input type="text" value={gistId} onChange={e => setGistId(e.target.value)} className="w-full p-3 font-mono text-sm" placeholder="..." />
+                            </div>
+                        </div>
+
+                        <div className="flex gap-4 pt-4 border-t border-zinc-100">
+                            <button onClick={handleSave} className="flex-1 py-3 bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-bold shadow-md transition-colors rounded-xl">儲存設定</button>
+                            <button onClick={handleSync} className="flex-1 py-3 bg-white border border-zinc-300 hover:bg-zinc-50 text-zinc-800 text-sm font-bold transition-colors rounded-xl">上傳備份</button>
+                            <button onClick={handleLoad} className="flex-1 py-3 bg-white border border-zinc-300 hover:bg-zinc-50 text-zinc-800 text-sm font-bold transition-colors rounded-xl">下載還原</button>
+                        </div>
+                        {status && <div className="text-xs font-mono text-zinc-500 text-center bg-zinc-50 p-2 rounded-lg">{status}</div>}
+                    </div>
+
+                    <div className="muji-card p-8 border-red-100 bg-red-50/10">
+                        <h3 className="font-bold text-sm tracking-widest text-red-900/50 mb-4">危險區域</h3>
+                        <button onClick={() => { if(confirm("確定要刪除所有資料嗎？")) { localStorage.clear(); window.location.reload(); }}} 
+                            className="w-full py-3 border border-red-200 text-red-700 hover:bg-red-50 text-sm font-bold transition-colors rounded-xl">
+                            重置所有資料
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        const Layout = () => {
+            const [currentView, setCurrentView] = useState('dashboard');
+            return (
+                <div className="flex h-screen overflow-hidden bg-zinc-50">
+                    <Sidebar setView={setCurrentView} currentView={currentView} />
+                    <main className="flex-1 overflow-y-auto p-12 bg-[#fafafa]">
+                        {currentView === 'dashboard' && <Dashboard />}
+                        {currentView === 'holdings' && <HoldingsView />}
+                        {currentView === 'import' && <ImportView />}
+                        {currentView === 'settings' && <SettingsView />}
+                    </main>
+                </div>
+            );
+        };
+
+        const App = () => {
+            return (
+                <AppProvider>
+                    <Layout />
+                </AppProvider>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
