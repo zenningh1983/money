@@ -13,13 +13,13 @@
     },
     {
       "id": "e1522fe8-2beb-4f65-8ec8-43030eadbb7b",
-      "date": "2014/10/1",
+      "date": "2014-09-25",
       "name": "晟田",
       "symbol": "4541",
       "type": "buy",
-      "price": 51,
+      "price": 54.8,
       "qty": 1000,
-      "fee": 44,
+      "fee": 47,
       "note": ""
     },
     {
