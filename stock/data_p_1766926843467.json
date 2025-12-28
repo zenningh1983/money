@@ -61,7 +61,10 @@
       "realizedDividend": 5056,
       "note": "賣出 2014-09-02 持倉",
       "relatedBuyId": "e1522fe8-2beb-4f65-8ec8-43030eadbb7b",
-      "id": "ef3e92d0-1fec-455b-b131-62016f07aeed"
+      "id": "ef3e92d0-1fec-455b-b131-62016f07aeed",
+      "computedPL": -3407,
+      "computedROI": -0.061408410086335866,
+      "isGrouped": true
     },
     {
       "symbol": "4541",
