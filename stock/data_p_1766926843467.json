@@ -74,6 +74,20 @@
       "realizedDividend": 0,
       "note": "賣出 2014/10/1 持倉",
       "id": "73d0af62-ef47-449c-854d-db8f6fa8a546"
+    },
+    {
+      "symbol": "4541",
+      "name": "晟田",
+      "type": "sell",
+      "date": "2025-12-28",
+      "qty": 200,
+      "price": 34,
+      "fee": 9,
+      "tax": 20,
+      "totalAmount": 6771,
+      "realizedDividend": 0,
+      "note": "賣出 2014/10/1 持倉",
+      "id": "0a9c4a03-26f2-435f-9a91-3a264bb4f2fb"
     }
   ],
   "prices": {
