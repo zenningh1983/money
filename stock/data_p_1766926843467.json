@@ -1,4 +1,16 @@
 {
-  "transactions": [],
+  "transactions": [
+    {
+      "id": "752647ce-0e07-4dc5-b406-486710ad9958",
+      "date": "2023/10/6",
+      "name": "元大美債1-3（季）",
+      "symbol": "00719B",
+      "type": "buy",
+      "price": 31.87,
+      "qty": 400,
+      "fee": 11,
+      "note": "AI Table Import"
+    }
+  ],
   "prices": {}
 }
