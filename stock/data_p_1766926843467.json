@@ -2928,6 +2928,45 @@
       "computedPL": 1110.0000000000018,
       "computedROI": 0.06845935611200209,
       "isGrouped": true
+    },
+    {
+      "id": "fa2d05b6-b27f-427f-a93e-ca4142b6f533",
+      "date": "2009-11-26",
+      "name": "中石化",
+      "symbol": "1314",
+      "type": "buy",
+      "price": 12.45,
+      "qty": 2000,
+      "fee": 21,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "184ee874-bc2b-45c7-bac4-35af96a5dd79",
+      "date": "2009-11-26",
+      "name": "中石化",
+      "symbol": "1314",
+      "type": "buy",
+      "price": 12.45,
+      "qty": 3000,
+      "fee": 32,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "a16aa02a-6a33-470b-8e78-206cfa30e710",
+      "date": "2013-07-19",
+      "name": "中石化",
+      "symbol": "1314",
+      "type": "buy",
+      "price": 15.5,
+      "qty": 2000,
+      "fee": 27,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
