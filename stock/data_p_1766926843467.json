@@ -2356,17 +2356,6 @@
       "note": "AI Table (Import)"
     },
     {
-      "id": "4d023e7a-6424-4d47-8042-b53fa27dc4ef",
-      "date": "2008-12-9",
-      "name": "中鋼",
-      "symbol": "2002",
-      "type": "buy",
-      "price": 22.05,
-      "qty": 2000,
-      "fee": 62,
-      "note": "AI Table (Import)"
-    },
-    {
       "id": "17f3cdea-709f-48e9-a9c1-eaf82bd45a65",
       "date": "2011-11-21",
       "name": "中鋼",
