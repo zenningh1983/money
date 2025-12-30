@@ -2290,17 +2290,6 @@
       "id": "efbe2dae-c02a-4222-aad4-dc70cc350151"
     },
     {
-      "id": "13ff5626-6359-495e-9b6e-27b6c7647491",
-      "date": "2008-12-9",
-      "symbol": "2002",
-      "type": "buy",
-      "price": 62,
-      "qty": 44162,
-      "fee": 0,
-      "note": "AI Parsed (Import)",
-      "name": "中鋼"
-    },
-    {
       "id": "390b5066-9b67-4cc1-aa4f-e35f46bdbc72",
       "date": "2009/7/23",
       "name": "國泰金控",
