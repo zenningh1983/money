@@ -2301,18 +2301,6 @@
       "id": "efbe2dae-c02a-4222-aad4-dc70cc350151"
     },
     {
-      "id": "9931ecc7-8ba2-48a5-a3bf-756ad9acbc26",
-      "date": "2009-10-19",
-      "symbol": "2009",
-      "type": "sell",
-      "price": 279,
-      "qty": 63032,
-      "fee": 25059,
-      "note": "AI Parsed (Batch Sell)",
-      "relatedBuyId": "e62b6279-f54b-4372-9286-6e87f445e871",
-      "tax": 52757
-    },
-    {
       "id": "fd27d417-507e-44c6-b5f2-45cbbd129865",
       "date": "2011-11-21",
       "symbol": "2002",
@@ -2399,10 +2387,6 @@
       "updatedAt": "2025-12-30T17:12:14.135Z",
       "stockType": "個股",
       "dividendFreq": "年配"
-    },
-    "2009": {
-      "price": 49.6,
-      "updatedAt": "2025-12-30T17:12:14.029Z"
     },
     "2201": {
       "price": 33.65,
