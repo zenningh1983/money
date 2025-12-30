@@ -3071,7 +3071,7 @@
     {
       "id": "ebcab6fb-0d27-44b7-a6ce-8900826b9aab",
       "date": "2010-04-08",
-      "name": "1409",
+      "name": "新纖A",
       "symbol": "1409",
       "type": "sell",
       "price": 12.25,
@@ -3114,7 +3114,9 @@
     },
     "1409": {
       "price": 15.2,
-      "updatedAt": "2025-12-30T18:49:57.296Z"
+      "updatedAt": "2025-12-30T19:01:25.123Z",
+      "stockType": "個股",
+      "dividendFreq": "年配"
     },
     "1447": {
       "price": 5.43,
