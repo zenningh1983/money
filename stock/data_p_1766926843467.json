@@ -2407,17 +2407,6 @@
       "qty": 1000,
       "fee": 38,
       "note": "AI Table Import"
-    },
-    {
-      "id": "0a661b7b-39c0-4915-9a4d-ed40dc2d5c94",
-      "date": "2011/5/23",
-      "name": "國泰金控",
-      "symbol": "2882",
-      "type": "buy",
-      "price": 0,
-      "qty": 0,
-      "fee": 0,
-      "note": "AI Table Import"
     }
   ],
   "prices": {
