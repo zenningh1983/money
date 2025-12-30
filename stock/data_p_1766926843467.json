@@ -3326,6 +3326,20 @@
       "tax": 0,
       "realizedDividend": 0,
       "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "511d50ed-7d9d-4069-9758-f9c049898c34",
+      "date": "2010-10-15",
+      "name": "1301",
+      "symbol": "1301",
+      "type": "sell",
+      "price": 82.5,
+      "qty": 2000,
+      "fee": 636,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "08674de4-f40c-4e43-b2b2-820e3ea46eaa"
     }
   ],
   "prices": {
