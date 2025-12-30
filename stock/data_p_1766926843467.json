@@ -2847,15 +2847,15 @@
       "note": "AI Parsed (Import)"
     },
     {
-      "id": "96932036-04de-4ae8-93c1-b0e50c26b65c",
-      "date": "2010-01-04",
+      "id": "7c555fbf-7cd4-43b7-a1c2-fabda848da14",
+      "date": "2010-01-08",
       "name": "1447",
       "symbol": "1447",
       "type": "sell",
-      "price": 14.6,
-      "qty": 2000,
-      "fee": 41,
-      "tax": 87,
+      "price": 15.2,
+      "qty": 3000,
+      "fee": 64,
+      "tax": 136,
       "realizedDividend": 0,
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "b80d4dcf-b328-4194-8a8b-d8b1a842aae6"
