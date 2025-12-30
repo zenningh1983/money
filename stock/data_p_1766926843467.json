@@ -2734,6 +2734,20 @@
       "tax": 0,
       "realizedDividend": 0,
       "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "735738ec-11ed-4baa-a1f0-84add98d4a80",
+      "date": "2009-12-28",
+      "name": "2009",
+      "symbol": "2009",
+      "type": "sell",
+      "price": 24.4,
+      "qty": 1000,
+      "fee": 34,
+      "tax": 73,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "4c4d91f9-ae19-4996-ac95-503e0f0c1033"
     }
   ],
   "prices": {
