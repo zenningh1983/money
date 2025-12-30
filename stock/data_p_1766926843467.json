@@ -3109,6 +3109,20 @@
       "tax": 62954,
       "realizedDividend": 0,
       "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "58406308-339c-476e-90a2-f45ee3db8e70",
+      "date": "2010-08-10",
+      "name": "2201",
+      "symbol": "2201",
+      "type": "sell",
+      "price": 45.6,
+      "qty": 1000,
+      "fee": 176,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "b82bd2d8-eede-4360-8f27-f2b7f87f55d1"
     }
   ],
   "prices": {
