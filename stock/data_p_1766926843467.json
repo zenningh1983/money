@@ -2698,6 +2698,20 @@
       "qty": 2000,
       "fee": 24,
       "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "ea903ba2-f9f3-41e4-b0b0-4a35602e1448",
+      "date": "2009-12-22",
+      "name": "2313",
+      "symbol": "2313",
+      "type": "sell",
+      "price": 9.63,
+      "qty": 3000,
+      "fee": 41,
+      "tax": 86,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "a105f2b5-8dda-4c72-8954-0ec4971fb99c"
     }
   ],
   "prices": {
