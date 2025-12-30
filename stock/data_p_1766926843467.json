@@ -1679,7 +1679,7 @@
     {
       "id": "cbc192ee-79dc-4190-a4d2-9260b2b8356e",
       "date": "2020/8/20",
-      "name": "",
+      "name": "元大高股息",
       "symbol": "0056",
       "type": "buy",
       "price": 29.75,
@@ -1690,7 +1690,7 @@
     {
       "id": "d3ba2886-bd0b-4644-b831-4f45c45de500",
       "date": "2023/7/7",
-      "name": "",
+      "name": "元大高股息",
       "symbol": "0056",
       "type": "buy",
       "price": 33,
@@ -1701,7 +1701,7 @@
     {
       "id": "938da696-1d6c-4ef4-86e8-e59f07a4fa77",
       "date": "2025/1/13",
-      "name": "",
+      "name": "元大高股息",
       "symbol": "0056",
       "type": "buy",
       "price": 36,
@@ -1986,6 +1986,12 @@
       "updatedAt": "2025-12-30T13:10:28.777Z",
       "stockType": "債",
       "dividendFreq": "月配"
+    },
+    "0056": {
+      "stockType": "ETF",
+      "dividendFreq": "季配",
+      "price": 32.94466666666667,
+      "updatedAt": "2025-12-30T13:22:26.220Z"
     }
   }
 }
