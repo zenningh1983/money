@@ -2353,13 +2353,13 @@
       "symbol": "2002",
       "type": "sell",
       "price": 30.5,
-      "qty": 1000,
+      "qty": 2000,
       "fee": 235,
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "fc0c8c99-01c2-4ae0-b112-676def6a7c59",
       "tax": null,
-      "computedPL": 6719,
-      "computedROI": 0.12432002368352885,
+      "computedPL": 3242,
+      "computedROI": 0.11997187580949562,
       "isGrouped": true
     },
     {
