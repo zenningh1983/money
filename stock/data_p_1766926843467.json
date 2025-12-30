@@ -2724,11 +2724,14 @@
       "type": "sell",
       "price": 15.5,
       "qty": 2000,
-      "fee": 44,
-      "tax": 93,
+      "fee": 120,
+      "tax": 0,
       "realizedDividend": 0,
       "note": "AI Parsed (Batch Sell)",
-      "relatedBuyId": "c2baea62-b95e-4029-8814-7795d0edc444"
+      "relatedBuyId": "c2baea62-b95e-4029-8814-7795d0edc444",
+      "computedPL": 2439,
+      "computedROI": 0.08580776808330988,
+      "isGrouped": true
     }
   ],
   "prices": {
