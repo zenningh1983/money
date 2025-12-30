@@ -601,7 +601,7 @@
     {
       "id": "30bbe2eb-9bcc-4ec1-b94a-6c604760bb30",
       "date": "2025/2/24",
-      "name": "FT台灣smart(季）",
+      "name": "FT台灣smart",
       "symbol": "00905",
       "type": "buy",
       "price": 14.03,
@@ -612,7 +612,7 @@
     {
       "id": "5986c477-e7db-4879-9590-f540349aca1e",
       "date": "2025/3/19",
-      "name": "FT台灣smart(季）",
+      "name": "FT台灣smart",
       "symbol": "00905",
       "type": "buy",
       "price": 13.28,
@@ -623,7 +623,7 @@
     {
       "id": "43e2d0c5-316e-4ce5-b8a3-c1ef7f502dc6",
       "date": "2025/5/13",
-      "name": "FT台灣smart(季）",
+      "name": "FT台灣smart",
       "symbol": "00905",
       "type": "buy",
       "price": 12.8,
@@ -634,7 +634,7 @@
     {
       "id": "0208ce33-7f9b-4a9d-91a0-923fe22daaab",
       "date": "2025/5/19",
-      "name": "FT台灣smart(季）",
+      "name": "FT台灣smart",
       "symbol": "00905",
       "type": "buy",
       "price": 13,
@@ -645,7 +645,7 @@
     {
       "id": "7b1326b8-2397-4f2a-a4ee-96b327b81f9d",
       "date": "2025/5/19",
-      "name": "FT台灣smart(季）",
+      "name": "FT台灣smart",
       "symbol": "00905",
       "type": "buy",
       "price": 15.8,
@@ -656,7 +656,7 @@
     {
       "id": "8f6757a8-d157-4b15-b0d4-694689324535",
       "date": "2025/10/17",
-      "name": "FT台灣smart(季）",
+      "name": "FT台灣smart",
       "symbol": "00905",
       "type": "buy",
       "price": 16.75,
@@ -1131,6 +1131,10 @@
     "4938": {
       "price": 68.5,
       "updatedAt": "2025-12-30T12:32:35.113Z"
+    },
+    "00905": {
+      "price": 14.39408695652174,
+      "updatedAt": "2025-12-30T12:34:58.540Z"
     }
   }
 }
