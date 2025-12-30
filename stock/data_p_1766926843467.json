@@ -2185,6 +2185,39 @@
       "note": "賣出 2007/7/31 持倉",
       "relatedBuyId": "ce54d247-5edf-4987-aa79-d341861e6805",
       "id": "a1cb7a19-acc9-44d5-8239-bc024424bc3f"
+    },
+    {
+      "id": "644bb36a-df04-4371-be95-f836d00c17a7",
+      "date": "2007/7/31",
+      "name": "茂迪",
+      "symbol": "6244",
+      "type": "buy",
+      "price": 137.5,
+      "qty": 1000,
+      "fee": 193,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "041f29da-4c43-4063-a3d1-f4c327397ca7",
+      "date": "2007/7/31",
+      "name": "茂迪",
+      "symbol": "6244",
+      "type": "buy",
+      "price": 180,
+      "qty": 0,
+      "fee": 0,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "4287b56b-1846-4276-9392-e91ae9c1bf8c",
+      "date": "2007/7/31",
+      "name": "茂迪",
+      "symbol": "6244",
+      "type": "buy",
+      "price": 137.5,
+      "qty": 1000,
+      "fee": 193,
+      "note": "AI Table Import"
     }
   ],
   "prices": {
