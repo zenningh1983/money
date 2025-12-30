@@ -2423,10 +2423,10 @@
       "name": "中鋼",
       "symbol": "2002",
       "type": "buy",
-      "price": 27,
-      "qty": 2000,
-      "fee": 46,
-      "note": "AI Parsed (Import)"
+      "price": 0,
+      "qty": 86,
+      "fee": 0,
+      "note": "股票股利"
     },
     {
       "id": "953ca32d-d26d-46ce-b02a-475166043cdb",
