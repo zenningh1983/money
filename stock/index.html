@@ -16,128 +16,366 @@
     
     <style>
         /* 加入 Quicksand 讓數字與英文比較圓潤 */
-        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
         
-        body {
-            font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
-            background-color: #f4f4f5; /* Zinc 100 - 稍微深一點點的灰白，增加層次 */
-            color: #27272a; /* Zinc 800 */
-        }
-        .font-mono {
-            font-family: 'Quicksand', monospace; /* 使用圓潤字體取代原本的機械碼字體 */
-        }
-        
-        /* Custom Scrollbar - Muji Light Style */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f4f4f5; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #d4d4d8; 
-            border-radius: 10px; 
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #a1a1aa; 
-        }
-        
-        /* Soft Card: White, Rounded, Soft Shadow */
-        .muji-card {
-            background-color: #ffffff;
-            border: 1px solid #e4e4e7; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            border-radius: 16px; /* 圓角設定 */
-        }
-        
-        /* Input Reset - Rounded */
-        input, textarea {
-            background-color: #ffffff !important;
-            border: 1px solid #d4d4d8 !important; 
-            color: #18181b !important; 
-            border-radius: 12px !important; /* 輸入框也圓角 */
-            transition: all 0.2s;
-        }
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: #a1a1aa !important; 
-            background-color: #fafafa !important;
-            box-shadow: 0 0 0 2px rgba(228, 228, 231, 0.5);
-        }
-        input::placeholder, textarea::placeholder {
-            color: #a1a1aa !important; 
+        /* 莫蘭迪色系變數定義 */
+        :root {
+            --bg-base: #f5f5f4;      /* Stone 100 */
+            --bg-card: #ffffff;      /* White */
+            --text-main: #44403c;    /* Stone 700 */
+            --text-muted: #78716c;   /* Stone 500 */
+            --accent-primary: #57534e; /* Stone 600 */
+            --accent-hover: #292524;   /* Stone 800 */
+            
+            /* PnL Colors - High Contrast Morandi */
+            --color-up: #B87F78;     /* 漲/獲利: 飽和乾燥玫瑰紅 */
+            --color-down: #728A7A;   /* 跌/虧損: 深森林綠 */
+            
+            /* Stock Type Colors */
+            --color-stock-individual: #7A848D; /* 個股: 黑灰 */
+            --color-stock-etf: #A392A2;        /* ETF: 紫藕色 */
+            --color-stock-debt: #75809C;       /* 債: 藍灰色 */
+            --color-stock-fund: #E0A858;       /* 基金: 晨曦金 */
         }
 
-        /* Button Rounded */
-        button {
-            border-radius: 12px;
+        body {
+            font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
         }
+        .font-mono {
+            font-family: 'Quicksand', monospace;
+        }
+        
+        /* Table Styles */
+        th {
+            font-weight: 700 !important;
+            text-align: center !important;
+            padding: 12px !important;
+            font-size: 0.85rem; 
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background-color: var(--bg-card);
+            border-bottom: 2px solid #e7e5e4;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            cursor: pointer;
+            user-select: none;
+        }
+        th:hover {
+            background-color: #fafaf9;
+        }
+        td {
+            font-weight: 400 !important;
+            text-align: center !important;
+            vertical-align: middle;
+            padding: 12px !important;
+            border-bottom: 1px solid #f5f5f4;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
+        
+        /* Soft Card */
+        .muji-card {
+            background-color: var(--bg-card);
+            border: 1px solid #e7e5e4;
+            box-shadow: 0 4px 6px -1px rgba(68, 64, 60, 0.05), 0 2px 4px -1px rgba(68, 64, 60, 0.03);
+            border-radius: 16px; 
+        }
+        
+        /* Input Reset */
+        input, textarea, select {
+            background-color: #ffffff !important;
+            border: 1px solid #e7e5e4 !important;
+            color: var(--text-main) !important; 
+            border-radius: 12px !important; 
+            transition: all 0.2s;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #a8a29e !important;
+            background-color: #fafaf9 !important;
+            box-shadow: 0 0 0 2px rgba(231, 229, 228, 0.5);
+        }
+
+        /* Utility Classes - PnL */
+        .text-morandi-red { color: var(--color-up); }
+        .text-morandi-green { color: var(--color-down); }
+        .bg-morandi-red-light { background-color: rgba(184, 127, 120, 0.1); color: var(--color-up); }
+        .bg-morandi-green-light { background-color: rgba(114, 138, 122, 0.1); color: var(--color-down); }
+        
+        /* Utility Classes - Stock Types */
+        .text-stock-debt { color: var(--color-stock-debt); }
+        .text-stock-etf { color: var(--color-stock-etf); }
+        .text-stock-individual { color: var(--color-stock-individual); }
+        .text-stock-fund { color: var(--color-stock-fund); }
+
+        .bg-morandi-dark { background-color: var(--accent-primary); }
+        .hover-bg-morandi-dark:hover { background-color: var(--accent-hover); }
+        
+        /* Loader */
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #78716c;
+            width: 20px;
+            height: 20px;
+            -webkit-animation: spin 1s linear infinite;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Toast Animation */
+        @keyframes slideIn {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .toast-enter {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo, useContext, createContext } = React;
+        const CONFIG_GITHUB_TOKEN = "2HeFl4D7QeZLTRCf0SG97fD6UyjM2Y0F6uyl"; 
+        const CONFIG_REPO_BASE = "zenningh1983/money/stock";
 
-        // -----------------------------------------------------------------------------
-        // MODULE: ICONS
-        // -----------------------------------------------------------------------------
-        const Icon = ({ name, size = 20, className = "" }) => {
+        const { useState, useEffect, useMemo, useContext, createContext, useCallback } = React;
+
+        const Icon = React.memo(({ name, size = 20, className = "" }) => {
+            const ref = React.useRef(null);
             useEffect(() => {
-                if (window.lucide) window.lucide.createIcons();
-            }, [name]);
-            return <i data-lucide={name} className={className} style={{ width: size, height: size }}></i>;
-        };
+                if (window.lucide && ref.current) {
+                    ref.current.innerHTML = '';
+                    const i = document.createElement('i');
+                    i.setAttribute('data-lucide', name);
+                    ref.current.appendChild(i);
+                    window.lucide.createIcons({
+                        root: ref.current,
+                        attrs: { width: String(size), height: String(size), class: className }
+                    });
+                }
+            }, [name, size, className]);
+            return <span ref={ref} style={{ display: 'inline-flex', verticalAlign: 'middle' }}></span>;
+        });
 
-        // -----------------------------------------------------------------------------
-        // MODULE: UTILS
-        // -----------------------------------------------------------------------------
         const Utils = {
-            formatCurrency: (val) => new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'TWD', minimumFractionDigits: 0 }).format(val),
-            formatPercent: (val) => `${(val * 100).toFixed(2)}%`,
-            formatDate: (dateStr) => new Date(dateStr).toISOString().split('T')[0],
-            
-            calculatePortfolioStats: (transactions, currentPrices = {}) => {
+            formatCurrency: (val) => {
+                if (isNaN(val)) return "$0";
+                return new Intl.NumberFormat('zh-TW', { 
+                    style: 'currency', 
+                    currency: 'TWD', 
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0 
+                }).format(val);
+            },
+            formatPrice: (val) => {
+                if (isNaN(val)) return "0.00";
+                return new Intl.NumberFormat('zh-TW', { 
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2 
+                }).format(val);
+            },
+            formatPercent: (val) => {
+                if (isNaN(val)) return "0%";
+                return `${(val * 100).toFixed(2)}%`;
+            },
+            formatDate: (dateStr) => {
+                if (!dateStr) return '';
+                try {
+                    const normalized = dateStr.replace(/[\/\.]/g, '-');
+                    const parts = normalized.split('-');
+                    if (parts.length === 3) {
+                        const y = parts[0];
+                        const m = parts[1].padStart(2, '0');
+                        const d = parts[2].padStart(2, '0');
+                        return `${y}-${m}-${d}`;
+                    }
+                    const d = new Date(dateStr);
+                    if (isNaN(d.getTime())) return dateStr; 
+                    return d.toISOString().split('T')[0];
+                } catch (e) { return dateStr; }
+            },
+            toBase64: (str) => btoa(unescape(encodeURIComponent(str))),
+            fromBase64: (str) => decodeURIComponent(escape(atob(str))),
+            githubRequest: async (filename, content = null, method = 'GET') => {
+                if (!CONFIG_GITHUB_TOKEN) throw new Error("未設定 GitHub Token");
+                const parts = CONFIG_REPO_BASE.split('/');
+                const owner = parts[0];
+                const repo = parts[1];
+                const basePath = parts.slice(2).join('/');
+                const fullPath = basePath ? `${basePath}/${filename}` : filename;
+                const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${fullPath}`;
+                let token = CONFIG_GITHUB_TOKEN.trim();
+                if (!token.startsWith('ghp_') && !token.startsWith('github_pat_')) token = 'ghp_' + token;
+
+                let sha = null;
+                if (method === 'PUT') {
+                    try {
+                        const checkRes = await fetch(apiUrl, { headers: { "Authorization": `token ${token}` } });
+                        if (checkRes.ok) {
+                            const data = await checkRes.json();
+                            sha = data.sha;
+                        }
+                    } catch (e) { }
+                }
+                const options = {
+                    method,
+                    headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" }
+                };
+                if (method === 'PUT') {
+                    options.body = JSON.stringify({
+                        message: `Auto-save ${filename} ${new Date().toISOString()}`,
+                        content: Utils.toBase64(JSON.stringify(content, null, 2)),
+                        ...(sha && { sha })
+                    });
+                }
+                const res = await fetch(apiUrl, options);
+                if (method === 'GET') { if (res.status === 404) return null; }
+                if (!res.ok) { const err = await res.json(); throw new Error(`GitHub API Error (${res.status}): ${err.message}`); }
+                if (method === 'GET') { const data = await res.json(); return JSON.parse(Utils.fromBase64(data.content)); }
+                return true;
+            },
+            fetchYahooPrice: async (symbol) => {
+                const proxy = 'https://corsproxy.io/?';
+                const baseUrl = 'https://query1.finance.yahoo.com/v7/finance/quote';
+                
+                const tryFetch = async (suffix) => {
+                    try {
+                        const fullSymbol = symbol + suffix;
+                        const url = `${proxy}${encodeURIComponent(`${baseUrl}?symbols=${fullSymbol}&lang=zh-Hant-TW`)}`;
+                        const res = await fetch(url);
+                        if (!res.ok) return null;
+                        const data = await res.json();
+                        if (data.quoteResponse && data.quoteResponse.result && data.quoteResponse.result.length > 0) {
+                            const quote = data.quoteResponse.result[0];
+                            return {
+                                price: quote.regularMarketPrice,
+                                name: quote.longName || quote.shortName 
+                            };
+                        }
+                    } catch (e) { return null; }
+                    return null;
+                };
+
+                let result = await tryFetch('.TW');
+                if (!result) result = await tryFetch('.TWO');
+                
+                if (!result) {
+                     const chartUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/';
+                     try {
+                        const url = `${proxy}${encodeURIComponent(chartUrl + symbol + '.TW?interval=1d&range=1d')}`;
+                        const res = await fetch(url);
+                        if(res.ok) {
+                            const data = await res.json();
+                            if(data.chart?.result?.[0]?.meta?.regularMarketPrice) {
+                                return { price: data.chart.result[0].meta.regularMarketPrice, name: null };
+                            }
+                        }
+                     } catch(e){}
+                }
+                return result;
+            },
+            calculateStats: (transactions, currentPrices) => {
                 let inventory = {}; 
                 let globalStats = { totalAsset: 0, totalCost: 0, totalRealizedPL: 0, totalDividend: 0 };
                 const sortedTx = [...transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+                const txMap = {};
+                transactions.forEach(t => { txMap[t.id] = t; });
 
                 sortedTx.forEach(tx => {
                     const sym = tx.symbol;
-                    if (!inventory[sym]) inventory[sym] = { qty: 0, totalCost: 0, realizedPL: 0, dividendTotal: 0, avgCost: 0, history: [] };
+                    let name = tx.name || sym;
 
+                    if (!inventory[sym]) {
+                        inventory[sym] = { 
+                            name: name, qty: 0, totalCost: 0, realizedPL: 0, realizedCost: 0, 
+                            dividendTotal: 0, avgCost: 0, history: [], lastBuyDate: null 
+                        };
+                    } else {
+                        if (inventory[sym].name === sym && tx.name && tx.name !== sym) {
+                            inventory[sym].name = tx.name;
+                        }
+                    }
+
+                    const processedTx = { ...tx };
                     if (tx.type === 'buy') {
                         inventory[sym].qty += tx.qty;
-                        inventory[sym].totalCost += (tx.price * tx.qty) + (tx.fee || 0);
+                        const thisCost = (tx.price * tx.qty) + (tx.fee || 0);
+                        inventory[sym].totalCost += thisCost;
                         if (inventory[sym].qty > 0) inventory[sym].avgCost = inventory[sym].totalCost / inventory[sym].qty;
+                        if (!inventory[sym].lastBuyDate || new Date(tx.date) > new Date(inventory[sym].lastBuyDate)) {
+                            inventory[sym].lastBuyDate = tx.date;
+                        }
                     } else if (tx.type === 'sell') {
-                        const costBasis = inventory[sym].avgCost * tx.qty;
-                        const revenue = (tx.price * tx.qty) - (tx.fee || 0);
-                        const pl = revenue - costBasis;
+                        let costBasis = 0;
+                        if (tx.relatedBuyId && txMap[tx.relatedBuyId]) {
+                            const buyTx = txMap[tx.relatedBuyId];
+                            const buyUnitCost = (buyTx.price * buyTx.qty + (buyTx.fee || 0)) / buyTx.qty;
+                            costBasis = buyUnitCost * tx.qty;
+                        } else {
+                            costBasis = inventory[sym].avgCost * tx.qty;
+                        }
+                        inventory[sym].realizedCost += costBasis; 
+                        let revenue = tx.totalAmount ? tx.totalAmount : (tx.price * tx.qty) - (tx.fee || 0) - (tx.tax || 0);
+                        const realizedDividend = tx.realizedDividend || 0;
+                        const pl = revenue + realizedDividend - costBasis; 
+                        const roi = costBasis > 0 ? pl / costBasis : 0;
+                        processedTx.computedPL = pl;
+                        processedTx.computedROI = roi;
                         inventory[sym].realizedPL += pl;
                         inventory[sym].qty -= tx.qty;
                         inventory[sym].totalCost -= costBasis;
                         if (inventory[sym].qty <= 0) { inventory[sym].qty = 0; inventory[sym].totalCost = 0; inventory[sym].avgCost = 0; }
                     } else if (tx.type === 'dividend') {
                         inventory[sym].dividendTotal += tx.amount;
+                        processedTx.computedPL = tx.amount;
                     }
-                    inventory[sym].history.push(tx);
+                    inventory[sym].history.push(processedTx);
                 });
 
                 let holdings = [];
                 Object.keys(inventory).forEach(sym => {
                     const item = inventory[sym];
-                    const currentPrice = currentPrices[sym] || item.avgCost; 
-                    const marketValue = item.qty * currentPrice;
+                    let currentPriceVal = 0;
+                    let priceUpdatedAt = null;
+                    let stockType = '個股';
+                    let dividendFreq = '無';
+                    const priceData = currentPrices[sym];
+                    if (typeof priceData === 'object' && priceData !== null) {
+                        currentPriceVal = priceData.price;
+                        priceUpdatedAt = priceData.updatedAt;
+                        if(priceData.stockType) stockType = priceData.stockType;
+                        if(priceData.dividendFreq) dividendFreq = priceData.dividendFreq;
+                    } else {
+                        currentPriceVal = priceData || item.avgCost; 
+                    }
+                    if(!currentPriceVal && item.avgCost) currentPriceVal = item.avgCost;
+                    const marketValue = item.qty * currentPriceVal;
                     const unrealizedPL = marketValue - item.totalCost;
                     const unrealizedROI = item.totalCost > 0 ? unrealizedPL / item.totalCost : 0;
+                    const realizedROI = item.realizedCost > 0 ? item.realizedPL / item.realizedCost : 0;
 
                     if (item.qty > 0 || item.realizedPL !== 0 || item.dividendTotal !== 0) {
                         holdings.push({
-                            symbol: sym, qty: item.qty, avgCost: item.avgCost, currentPrice, marketValue,
-                            unrealizedPL, unrealizedROI, realizedPL: item.realizedPL, dividendTotal: item.dividendTotal, history: item.history
+                            symbol: sym, name: item.name, qty: item.qty, avgCost: item.avgCost, 
+                            currentPrice: currentPriceVal, priceUpdatedAt, 
+                            marketValue, unrealizedPL, unrealizedROI, realizedPL: item.realizedPL, 
+                            realizedCost: item.realizedCost, realizedROI, dividendTotal: item.dividendTotal, 
+                            history: item.history, lastBuyDate: item.lastBuyDate || '0000-00-00', 
+                            stockType, dividendFreq, totalCost: item.totalCost
                         });
                         globalStats.totalAsset += marketValue;
                         globalStats.totalCost += item.totalCost;
@@ -145,44 +383,101 @@
                         globalStats.totalDividend += item.dividendTotal;
                     }
                 });
-                const totalUnrealizedPL = globalStats.totalAsset - globalStats.totalCost;
-                const totalUnrealizedROI = globalStats.totalCost > 0 ? totalUnrealizedPL / globalStats.totalCost : 0;
-                return { holdings, globalStats, totalUnrealizedPL, totalUnrealizedROI };
+                return { holdings, globalStats };
             },
-
-            smartParse: (text) => {
+            smartParse: (text, defaultSymbol = null, defaultType = null) => {
                 const lines = text.split('\n');
                 const results = [];
                 const now = new Date().toISOString().split('T')[0];
+                
                 lines.forEach(line => {
                     line = line.trim();
                     if (!line) return;
-                    const dividendMatch = line.match(/(\d{4}[-/]\d{1,2}[-/]\d{1,2})?.*?(?:股利|股息|Dividend).*?([A-Za-z0-9]+).*?(\d+[\d,]*)/i) ||
-                                          line.match(/([A-Za-z0-9]+).*?(?:股利|股息|Dividend).*?(\d+[\d,]*)/i);
+                    if (line.includes('股票名稱') && line.includes('代號')) return;
+                    const cleanLine = line.replace(/,/g, ''); 
+                    
+                    const dividendMatch = cleanLine.match(/(\d{4}[-/]\d{1,2}[-/]\d{1,2})?.*?(?:股利|股息|Dividend).*?([A-Za-z0-9]+).*?(\d+)/i) ||
+                                          cleanLine.match(/([A-Za-z0-9]+).*?(?:股利|股息|Dividend).*?(\d+)/i);
                     if (dividendMatch) {
+                        let date = dividendMatch[1] || now;
+                        date = Utils.formatDate(date);
                         results.push({
-                            id: Date.now() + Math.random(),
-                            date: dividendMatch[1] || now,
-                            symbol: dividendMatch[1]?.match(/\d{4}/) ? dividendMatch[2] : (dividendMatch[1] || "UNKNOWN"),
-                            type: 'dividend',
-                            amount: parseFloat(dividendMatch[dividendMatch.length-1].replace(/,/g, '')),
-                            price: 0, qty: 0, fee: 0, note: 'AI Auto-Import'
+                            id: crypto.randomUUID(), date: date, symbol: dividendMatch[1]?.match(/\d{4}/) ? dividendMatch[2] : (dividendMatch[1] || "UNKNOWN"),
+                            type: 'dividend', amount: parseFloat(dividendMatch[dividendMatch.length-1]), price: 0, qty: 0, fee: 0, note: 'AI Auto-Import'
                         });
                         return;
                     }
+
+                    let type = defaultType;
                     const typeMatch = line.match(/(買進|買|Buy|賣出|賣|Sell)/i);
-                    const symbolMatch = line.match(/([A-Za-z]{2,5}|\d{4,6})/); 
-                    const nums = line.match(/(\d{1,3}(,\d{3})*(\.\d+)?)/g);
-                    if (typeMatch && symbolMatch && nums && nums.length >= 2) {
-                        let type = ['買進', '買', 'Buy'].includes(typeMatch[0]) ? 'buy' : 'sell';
-                        const val1 = parseFloat(nums[nums.length-2].replace(/,/g, ''));
-                        const val2 = parseFloat(nums[nums.length-1].replace(/,/g, ''));
-                        let price = val1 > val2 ? val2 : val1;
-                        let qty = val1 > val2 ? val1 : val2;
+                    if (typeMatch && !defaultType) {
+                        type = ['買進', '買', 'Buy'].includes(typeMatch[0]) ? 'buy' : 'sell';
+                    }
+
+                    let symbol = defaultSymbol;
+                    const symbolMatch = line.match(/([A-Za-z]{2,5}|\d{4,6})/);
+                    let name = null;
+                    
+                    if (symbolMatch && !defaultSymbol) {
+                        symbol = symbolMatch[0];
+                    } else if (symbolMatch && defaultSymbol && symbolMatch[0] !== defaultSymbol) {
+                        symbol = symbolMatch[0]; 
+                    }
+                    
+                    if (!name && !defaultSymbol) { 
+                        const nameMatch = line.match(/[\u4e00-\u9fa5]+/);
+                        if (nameMatch) name = nameMatch[0];
+                    }
+
+                    const nums = cleanLine.match(/(\d+(\.\d+)?)/g);
+                    
+                    if (!type && symbol && nums && nums.length >= 2) {
+                        type = 'buy';
+                    }
+                    
+                    if (type && symbol && nums && nums.length >= 2) {
+                        const dateMatch = line.match(/\d{4}[-/]\d{1,2}[-/]\d{1,2}/);
+                        let date = dateMatch ? dateMatch[0] : now;
+                        date = Utils.formatDate(date);
+
+                        let price = 0, qty = 0, fee = 0, tax = 0, realizedDividend = 0;
+
+                        const parts = line.replace(/,/g, '').split(/\s+/);
+                        const dateIdx = parts.findIndex(p => p.match(/\d{2,4}[-/]\d{1,2}[-/]\d{1,2}/));
+                        
+                        if (dateIdx > -1 && parts.length > dateIdx + 2) {
+                             price = parseFloat(parts[dateIdx+1]);
+                             qty = parseFloat(parts[dateIdx+2]);
+                             if (parts.length > dateIdx + 3) fee = parseFloat(parts[dateIdx+3]) || 0;
+                             if (parts.length > dateIdx + 4) tax = parseFloat(parts[dateIdx+4]) || 0;
+                             if (parts.length > dateIdx + 5) realizedDividend = parseFloat(parts[dateIdx+5]) || 0;
+                        } else {
+                             if (nums.length >= 2) {
+                                 let dataNums = [...nums];
+                                 if (symbol && !isNaN(symbol) && dataNums[0] == symbol) dataNums.shift();
+                                 
+                                 if (dataNums.length >= 2) {
+                                     price = parseFloat(dataNums[0]);
+                                     qty = parseFloat(dataNums[1]);
+                                     if (dataNums.length > 2) fee = parseFloat(dataNums[2]);
+                                     if (dataNums.length > 3) tax = parseFloat(dataNums[3]);
+                                     if (dataNums.length > 4) realizedDividend = parseFloat(dataNums[4]);
+                                 }
+                             }
+                        }
+                        
                         results.push({
-                            id: Date.now() + Math.random(),
-                            date: line.match(/\d{4}[-/]\d{1,2}[-/]\d{1,2}/)?.[0] || now,
-                            symbol: symbolMatch[0], type: type, price: price, qty: qty, fee: 0, note: 'AI Parsed'
+                            id: crypto.randomUUID(),
+                            date: date,
+                            name: name || symbol, 
+                            symbol: symbol,
+                            type: type,
+                            price: price,
+                            qty: qty,
+                            fee: fee,
+                            tax: tax,
+                            realizedDividend: realizedDividend,
+                            note: `AI Parsed (${type === 'sell' ? 'Batch Sell' : 'Import'})`
                         });
                     }
                 });
@@ -190,132 +485,494 @@
             }
         };
 
-        // -----------------------------------------------------------------------------
-        // MODULE: DATA CONTEXT
-        // -----------------------------------------------------------------------------
         const AppContext = createContext();
+
         const AppProvider = ({ children }) => {
-            const [portfolios, setPortfolios] = useState(() => JSON.parse(localStorage.getItem('tm_portfolios')) || [{ id: 'default', name: '主帳戶' }]);
-            const [currentPortfolioId, setCurrentPortfolioId] = useState(() => localStorage.getItem('tm_current_pid') || 'default');
-            const [transactions, setTransactions] = useState(() => JSON.parse(localStorage.getItem('tm_transactions')) || []);
-            const [prices, setPrices] = useState(() => JSON.parse(localStorage.getItem('tm_prices')) || {});
+            const [portfolios, setPortfolios] = useState([]);
+            const [currentPortfolioId, setCurrentPortfolioId] = useState(null);
+            const [transactions, setTransactions] = useState([]);
+            const [prices, setPrices] = useState({});
+            const [loading, setLoading] = useState(false);
+            const [syncStatus, setSyncStatus] = useState("就緒");
+            const [toast, setToast] = useState(null);
+            const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2000); }
 
             useEffect(() => {
-                localStorage.setItem('tm_portfolios', JSON.stringify(portfolios));
-                localStorage.setItem('tm_transactions', JSON.stringify(transactions));
-                localStorage.setItem('tm_prices', JSON.stringify(prices));
-                localStorage.setItem('tm_current_pid', currentPortfolioId);
-            }, [portfolios, transactions, prices, currentPortfolioId]);
+                const init = async () => {
+                    setLoading(true); setSyncStatus("正在讀取帳本列表...");
+                    try {
+                        let list = await Utils.githubRequest('portfolios.json');
+                        if (!list) { list = [{ id: 'default', name: '我的主帳本' }]; await Utils.githubRequest('portfolios.json', list, 'PUT'); }
+                        setPortfolios(list);
+                        const lastId = localStorage.getItem('tm_last_pid');
+                        const targetId = list.find(p => p.id === lastId) ? lastId : list[0].id;
+                        setCurrentPortfolioId(targetId);
+                    } catch (e) { setSyncStatus("初始化失敗: " + e.message); } finally { setLoading(false); }
+                };
+                if (CONFIG_GITHUB_TOKEN) init();
+            }, []);
 
-            const activeTransactions = useMemo(() => transactions.filter(t => t.portfolioId === currentPortfolioId), [transactions, currentPortfolioId]);
-            const portfolioStats = useMemo(() => Utils.calculatePortfolioStats(activeTransactions, prices), [activeTransactions, prices]);
+            useEffect(() => {
+                if (!currentPortfolioId) return;
+                const loadData = async () => {
+                    setLoading(true); setSyncStatus(`正在讀取 ${currentPortfolioId} 資料...`);
+                    try {
+                        const data = await Utils.githubRequest(`data_${currentPortfolioId}.json`);
+                        if (data) { 
+                            setTransactions(data.transactions || []); 
+                            setPrices(data.prices || {}); 
+                        } else {
+                            setTransactions([]);
+                            setPrices({});
+                        }
+                        localStorage.setItem('tm_last_pid', currentPortfolioId);
+                        setSyncStatus("同步完成");
+                    } catch (e) { setSyncStatus("讀取失敗: " + e.message); } finally { setLoading(false); }
+                };
+                loadData();
+            }, [currentPortfolioId]);
 
-            const addTransaction = (tx) => setTransactions(prev => [...prev, { ...tx, portfolioId: currentPortfolioId }]);
-            const removeTransaction = (id) => setTransactions(prev => prev.filter(t => t.id !== id));
-            const addPortfolio = (name) => {
-                const newId = 'p-' + Date.now();
-                setPortfolios(prev => [...prev, { id: newId, name }]);
-                setCurrentPortfolioId(newId);
+            const autoSave = async (newTx, newPrices) => {
+                setSyncStatus("正在備份...");
+                try { await Utils.githubRequest(`data_${currentPortfolioId}.json`, { transactions: newTx, prices: newPrices }, 'PUT'); setSyncStatus("已自動備份 " + new Date().toLocaleTimeString()); } catch (e) { setSyncStatus("備份失敗: " + e.message); }
             };
-            const updatePrice = (sym, price) => setPrices(prev => ({ ...prev, [sym]: parseFloat(price) }));
+
+            const addTransaction = (tx) => { const newTx = [...transactions, { ...tx, id: crypto.randomUUID() }]; setTransactions(newTx); autoSave(newTx, prices); };
+            const addBatchTransactions = (txList) => { const newTx = [...transactions, ...txList.map(t => ({...t, id: crypto.randomUUID()}))]; setTransactions(newTx); autoSave(newTx, prices); showToast(`已成功匯入 ${txList.length} 筆交易`); };
+            const updateTransaction = (updatedTx) => { const newTx = transactions.map(t => t.id === updatedTx.id ? updatedTx : t); setTransactions(newTx); autoSave(newTx, prices); };
+            const removeTransaction = (id) => { const newTx = transactions.filter(t => t.id !== id); setTransactions(newTx); autoSave(newTx, prices); };
+            const updatePrice = (sym, price) => {
+                const newPrices = { ...prices }; const oldData = newPrices[sym] || {};
+                newPrices[sym] = { ...oldData, price: parseFloat(price), updatedAt: new Date().toISOString() };
+                setPrices(newPrices); autoSave(transactions, newPrices);
+            };
+            const updateStockInfo = (oldSymbol, newSymbol, newName, newPrice, newType, newFreq) => {
+                const newTx = transactions.map(t => { if (t.symbol === oldSymbol) { return { ...t, symbol: newSymbol, name: newName }; } return t; });
+                setTransactions(newTx);
+                const newPrices = { ...prices }; const oldData = newPrices[oldSymbol] || {};
+                if (oldSymbol !== newSymbol) { delete newPrices[oldSymbol]; }
+                newPrices[newSymbol] = { ...oldData, stockType: newType || oldData.stockType || '個股', dividendFreq: newFreq || oldData.dividendFreq || '無' };
+                if (newPrice) { newPrices[newSymbol].price = parseFloat(newPrice); newPrices[newSymbol].updatedAt = new Date().toISOString(); }
+                setPrices(newPrices); autoSave(newTx, newPrices);
+            };
+            const removeStock = (symbol) => { const newTx = transactions.filter(t => t.symbol !== symbol); setTransactions(newTx); const newPrices = { ...prices }; delete newPrices[symbol]; setPrices(newPrices); autoSave(newTx, newPrices); showToast(`已刪除股票 ${symbol} 及其所有交易紀錄`); };
             
-            // Logic: Token Suffix Only
-            const syncToGithub = async (tokenSuffix, gistId = null) => { 
-                if (!tokenSuffix) throw new Error("需要 GitHub Token");
-                
-                // 自動組合 ghp_
-                const token = 'ghp_' + tokenSuffix;
+            const performUpdate = async (txs, currentP) => {
+                setLoading(true); setSyncStatus("正在更新股價與名稱...");
+                const symbols = [...new Set(txs.map(t => t.symbol))];
+                const newPrices = { ...currentP };
+                let updatedTransactions = [...txs];
+                let hasNameChange = false;
+                let count = 0;
 
-                const content = JSON.stringify({ portfolios, transactions, prices });
-                const body = { description: "TradeMind Backup " + new Date().toISOString(), public: false, files: { "trademind_data.json": { content } } };
-                let url = "https://api.github.com/gists"; let method = "POST";
-                if (gistId) { url += `/${gistId}`; method = "PATCH"; }
+                for (const sym of symbols) {
+                    await new Promise(r => setTimeout(r, 100)); 
+                    const result = await Utils.fetchYahooPrice(sym);
+                    if (result) {
+                        const oldData = newPrices[sym] || {};
+                        newPrices[sym] = { ...oldData, price: parseFloat(result.price), updatedAt: new Date().toISOString() };
+                        if (result.name) {
+                            const txsToUpdate = updatedTransactions.filter(t => t.symbol === sym && t.name !== result.name);
+                            if (txsToUpdate.length > 0) {
+                                hasNameChange = true;
+                                updatedTransactions = updatedTransactions.map(t => t.symbol === sym ? { ...t, name: result.name } : t);
+                            }
+                        }
+                        count++;
+                    }
+                }
                 
-                const res = await fetch(url, { method, headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" }, body: JSON.stringify(body) });
-                if (!res.ok) throw new Error("同步失敗 (請檢查 Token 是否正確)");
-                const data = await res.json();
-                return data.id;
+                setPrices(newPrices);
+                if (hasNameChange) {
+                    setTransactions(updatedTransactions);
+                    autoSave(updatedTransactions, newPrices);
+                } else {
+                    autoSave(txs, newPrices);
+                }
+                setLoading(false); setSyncStatus(`更新完成`); showToast(`成功更新 ${count} 檔股票資訊`);
             };
 
-            const loadFromGithub = async (tokenSuffix, gistId) => {
-                const token = 'ghp_' + tokenSuffix;
-                const res = await fetch(`https://api.github.com/gists/${gistId}`, { headers: { "Authorization": `token ${token}` } });
-                if (!res.ok) throw new Error("下載失敗");
-                const data = await res.json();
-                const content = JSON.parse(data.files["trademind_data.json"].content);
-                setPortfolios(content.portfolios); setTransactions(content.transactions); setPrices(content.prices || {});
+            const updateAllPrices = () => performUpdate(transactions, prices);
+
+            useEffect(() => {
+                if (transactions.length > 0 && !window.hasInitialUpdate) {
+                     window.hasInitialUpdate = true;
+                     setTimeout(() => performUpdate(transactions, prices), 500);
+                }
+            }, [transactions.length]);
+
+            const updateSinglePrice = async (sym) => { 
+                setLoading(true); 
+                const result = await Utils.fetchYahooPrice(sym); 
+                if (result) { 
+                    updatePrice(sym, result.price);
+                    if (result.name) {
+                         const newTx = transactions.map(t => t.symbol === sym ? { ...t, name: result.name } : t);
+                         setTransactions(newTx);
+                         const newPrices = { ...prices, [sym]: { ...prices[sym], price: parseFloat(result.price), updatedAt: new Date().toISOString() } };
+                         setPrices(newPrices);
+                         autoSave(newTx, newPrices);
+                    }
+                    showToast(`更新成功: ${result.name || sym} 現價 ${result.price}`); 
+                } else { 
+                    showToast(`更新失敗: 無法取得 ${sym} 股價`); 
+                } 
+                setLoading(false); 
             };
+            
+            const createPortfolio = async (name) => {
+                const newId = 'p_' + Date.now(); const newList = [...portfolios, { id: newId, name }];
+                setPortfolios(newList); setLoading(true);
+                try { await Utils.githubRequest('portfolios.json', newList, 'PUT'); await Utils.githubRequest(`data_${newId}.json`, { transactions: [], prices: {} }, 'PUT'); setCurrentPortfolioId(newId); } catch(e) { alert("建立失敗: " + e.message); } finally { setLoading(false); }
+            };
+            const deletePortfolio = async (id) => {
+                if (portfolios.length <= 1) return alert("至少保留一個帳本"); const newList = portfolios.filter(p => p.id !== id);
+                setPortfolios(newList); try { await Utils.githubRequest('portfolios.json', newList, 'PUT'); setCurrentPortfolioId(newList[0].id); } catch(e) { alert("刪除失敗: " + e.message); }
+            };
+            const renamePortfolio = async (id, newName) => { const newList = portfolios.map(p => p.id === id ? { ...p, name: newName } : p); setPortfolios(newList); await Utils.githubRequest('portfolios.json', newList, 'PUT'); };
+            const portfolioStats = useMemo(() => Utils.calculateStats(transactions, prices), [transactions, prices]);
 
             return (
-                <AppContext.Provider value={{ portfolios, currentPortfolioId, setCurrentPortfolioId, addPortfolio, transactions, activeTransactions, addTransaction, removeTransaction, prices, updatePrice, portfolioStats, syncToGithub, loadFromGithub }}>
+                <AppContext.Provider value={{
+                    portfolios, currentPortfolioId, setCurrentPortfolioId, transactions, addTransaction, addBatchTransactions, updateTransaction, removeTransaction, removeStock,
+                    prices, updatePrice, updateStockInfo, updateAllPrices, updateSinglePrice, createPortfolio, deletePortfolio, renamePortfolio, portfolioStats, loading, syncStatus, toast
+                }}>
                     {children}
                 </AppContext.Provider>
             );
         };
 
-        // -----------------------------------------------------------------------------
-        // MODULE: UI COMPONENTS
-        // -----------------------------------------------------------------------------
-
-        // Soft colors
-        const getPnLColor = (val) => {
-            if (val > 0) return "text-zinc-800 font-bold"; 
-            if (val < 0) return "text-zinc-400"; 
-            return "text-zinc-500"; 
+        const getPnLColor = (val) => val > 0 ? "text-morandi-red font-bold" : val < 0 ? "text-morandi-green font-bold" : "text-stone-400 font-bold";
+        const getStockColor = (type) => {
+            if (type === 'ETF') return 'text-stock-etf'; 
+            if (type === '債') return 'text-stock-debt';   
+            if (type === '基金') return 'text-stock-fund'; 
+            return 'text-stock-individual'; 
+        };
+        const getStockColorHex = (type) => {
+            if (type === 'ETF') return '#A392A2'; 
+            if (type === '債') return '#75809C';   
+            if (type === '基金') return '#E0A858'; 
+            return '#7A848D'; 
         };
 
-        const Sidebar = ({ setView, currentView }) => {
-            const { portfolios, currentPortfolioId, setCurrentPortfolioId, addPortfolio } = useContext(AppContext);
-            const [isAdding, setIsAdding] = useState(false);
-            const [newPName, setNewPName] = useState("");
+        const Toast = ({ msg }) => (
+            <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-stone-800 text-white px-6 py-3 rounded-full shadow-lg z-50 flex items-center gap-2 toast-enter">
+                <Icon name="check-circle" size={18} className="text-emerald-400"/>
+                <span className="text-sm font-bold">{msg}</span>
+            </div>
+        );
 
-            return (
-                <div className="w-64 bg-white/50 border-r border-zinc-200 h-screen flex flex-col p-6 backdrop-blur-sm">
-                    <div className="flex items-center gap-3 mb-10 text-zinc-800 font-bold text-xl tracking-wide">
-                        <Icon name="box" size={26} className="text-zinc-700" /> TradeMind
+        const ConfirmModal = ({ title, message, onConfirm, onCancel, confirmText = "確認", cancelText = "取消", isDangerous = false }) => (
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[60]">
+                <div className="bg-white p-6 rounded-2xl w-96 shadow-xl transform transition-all scale-100 opacity-100 border border-stone-100">
+                    <h3 className="font-bold text-lg mb-2 text-stone-800">{title}</h3>
+                    <p className="text-stone-500 text-sm mb-6 leading-relaxed whitespace-pre-wrap">{message}</p>
+                    <div className="flex gap-3">
+                        <button onClick={onCancel} className="flex-1 py-2.5 bg-stone-100 rounded-xl text-stone-600 font-bold hover:bg-stone-200 transition-colors">{cancelText}</button>
+                        <button onClick={onConfirm} className={`flex-1 py-2.5 rounded-xl text-white font-bold transition-colors ${isDangerous ? 'bg-rose-500 hover:bg-rose-600' : 'bg-morandi-dark hover-bg-morandi-dark'}`}>{confirmText}</button>
                     </div>
-                    
-                    <div className="mb-8">
-                        <label className="text-xs text-zinc-400 font-bold mb-4 block pl-1">投資帳本</label>
-                        <div className="space-y-2">
+                </div>
+            </div>
+        );
+
+        const InputModal = ({ title, placeholder, initialValue = "", onConfirm, onCancel }) => {
+            const [value, setValue] = useState(initialValue);
+            return (
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[60]">
+                    <div className="bg-white p-6 rounded-2xl w-96 shadow-xl transform transition-all scale-100 opacity-100 border border-stone-100">
+                        <h3 className="font-bold text-lg mb-4 text-stone-800">{title}</h3>
+                        <input 
+                            autoFocus
+                            value={value} 
+                            onChange={e => setValue(e.target.value)} 
+                            className="w-full p-3 border rounded-xl mb-6 bg-stone-50 focus:bg-white transition-colors" 
+                            placeholder={placeholder}
+                        />
+                        <div className="flex gap-3">
+                            <button onClick={onCancel} className="flex-1 py-2.5 bg-stone-100 rounded-xl text-stone-600 font-bold hover:bg-stone-200 transition-colors">取消</button>
+                            <button onClick={() => onConfirm(value)} className="flex-1 py-2.5 bg-morandi-dark hover-bg-morandi-dark text-white rounded-xl font-bold transition-colors">確認</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const PortfolioModal = ({ onClose }) => {
+            const { portfolios, currentPortfolioId, setCurrentPortfolioId } = useContext(AppContext);
+            return (
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[70]" onClick={onClose}>
+                    <div className="bg-white p-6 rounded-2xl w-80 shadow-xl border border-stone-100" onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="font-bold text-lg text-stone-800">切換帳本</h3>
+                            <button onClick={onClose}><Icon name="x" size={20} className="text-stone-400 hover:text-stone-600"/></button>
+                        </div>
+                        <div className="space-y-2 max-h-60 overflow-y-auto">
                             {portfolios.map(p => (
-                                <button key={p.id} 
-                                    onClick={() => setCurrentPortfolioId(p.id)}
-                                    className={`w-full text-left px-4 py-2.5 text-sm transition-all duration-300 rounded-xl ${currentPortfolioId === p.id ? 'bg-white text-zinc-900 border border-zinc-200 shadow-sm font-bold' : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100'}`}>
-                                    <span className="truncate">{p.name}</span>
+                                <button key={p.id} onClick={() => { setCurrentPortfolioId(p.id); onClose(); }} className={`w-full text-left px-4 py-3 text-sm transition-all rounded-xl ${currentPortfolioId === p.id ? 'bg-stone-800 text-white font-bold' : 'bg-stone-50 text-stone-600 hover:bg-stone-100'}`}>
+                                    {p.name}
                                 </button>
                             ))}
                         </div>
-                        {isAdding ? (
-                            <div className="mt-4 flex gap-1 border-b border-zinc-300 pb-1">
-                                <input value={newPName} onChange={e => setNewPName(e.target.value)} className="w-full bg-transparent text-sm p-1 text-zinc-900 focus:outline-none placeholder-zinc-400" placeholder="名稱..." />
-                                <button onClick={() => { if(newPName) { addPortfolio(newPName); setIsAdding(false); setNewPName(""); }}} className="text-zinc-500 hover:text-zinc-900"><Icon name="check" size={14}/></button>
-                            </div>
-                        ) : (
-                            <button onClick={() => setIsAdding(true)} className="mt-4 text-xs flex items-center gap-2 text-zinc-400 hover:text-zinc-700 pl-3 transition-colors">
-                                <Icon name="plus" size={14} /> 新增帳本
-                            </button>
-                        )}
                     </div>
+                </div>
+            );
+        };
 
+        const ImportModal = ({ onClose, onImport, title="匯入交易資料", defaultSymbol=null, defaultType=null, relatedBuyId=null, confirmText="確認匯入", confirmColor="bg-stone-600" }) => {
+            const [inputText, setInputText] = useState("");
+            const [parsedData, setParsedData] = useState([]);
+            const handleParse = () => { 
+                let results = Utils.smartParse(inputText, defaultSymbol, defaultType); 
+                if (relatedBuyId) {
+                    results = results.map(r => {
+                        const amount = r.price * r.qty;
+                        const fee = r.fee > 0 ? r.fee : Math.floor(amount * 0.001425);
+                        const tax = r.tax > 0 ? r.tax : 0;
+                        const realizedDividend = r.realizedDividend || 0;
+                        return { ...r, relatedBuyId, type: 'sell', fee, tax, realizedDividend };
+                    });
+                }
+                setParsedData(results); 
+            };
+            const confirmImport = () => { onImport(parsedData); setParsedData([]); setInputText(""); onClose(); };
+            const removeParsedItem = (id) => { setParsedData(prev => prev.filter(item => item.id !== id)); };
+
+            return (
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-2xl w-[800px] h-[600px] shadow-xl flex flex-col border border-stone-100">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="font-bold text-lg text-stone-800">{title}</h3>
+                            <button onClick={onClose}><Icon name="x" size={24} className="text-stone-400 hover:text-stone-600"/></button>
+                        </div>
+                        <div className="flex-1 grid grid-cols-2 gap-4 min-h-0">
+                            <div className="flex flex-col gap-2 h-full">
+                                <textarea className="flex-1 p-4 font-mono text-sm text-stone-800 leading-relaxed resize-none border rounded-xl focus:shadow-inner bg-stone-50" placeholder={`格式範例:\n2023-12-31 1000 20.5 (日期 股數 股價)\n(批次賣出支援: 股價 股數 手續費 證交稅 現金股利)`} value={inputText} onChange={e => setInputText(e.target.value)}></textarea>
+                                <button onClick={handleParse} className="bg-morandi-dark hover-bg-morandi-dark text-white py-2 rounded-xl font-bold transition-colors">開始解析</button>
+                            </div>
+                            <div className="flex flex-col gap-2 h-full min-h-0">
+                                <div className="flex justify-between items-center p-2 bg-stone-100 rounded-t-xl border-b border-stone-200">
+                                    <span className="text-xs font-bold text-stone-500">預覽 ({parsedData.length})</span>
+                                    {parsedData.length > 0 && <button onClick={confirmImport} className={`text-xs text-white px-3 py-1 rounded-lg font-bold ${defaultType==='sell' ? 'bg-[#728A7A] hover:bg-[#607466]' : 'bg-stone-600 hover:bg-stone-700'}`}>{confirmText}</button>}
+                                </div>
+                                <div className="flex-1 overflow-y-auto border border-t-0 rounded-b-xl p-2 space-y-2 border-stone-200">
+                                     {parsedData.length === 0 && <div className="h-full flex items-center justify-center text-stone-400 text-sm">等待輸入...</div>}
+                                     {parsedData.map(item => (
+                                        <div key={item.id} className="p-3 border-b border-stone-100 flex justify-between items-center group hover:bg-stone-50 rounded-lg">
+                                            <div className="flex items-center gap-3">
+                                                <span className={`text-[10px] w-8 text-center py-0.5 border rounded-md ${item.type==='buy'?'bg-morandi-red-light text-morandi-red':'bg-morandi-green-light text-morandi-green'}`}>{item.type.substr(0,1).toUpperCase()}</span>
+                                                <div><div className="font-mono text-sm text-stone-800 font-bold">{item.name || item.symbol}</div><div className="text-[10px] text-stone-500 font-mono">{item.date} • {item.symbol}</div></div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-xs text-stone-600 font-mono">{item.type==='dividend'?`$${Utils.formatCurrency(item.amount)}`:`${item.qty} x ${Utils.formatPrice(item.price)}`}</div>
+                                                {item.type === 'sell' && (
+                                                    <div className="text-[10px] text-stone-400">
+                                                        F:{item.fee} T:{item.tax} {item.realizedDividend > 0 ? `D:${item.realizedDividend}` : ''}
+                                                    </div>
+                                                )}
+                                                <button onClick={() => removeParsedItem(item.id)} className="text-stone-400 hover:text-rose-600 mt-1"><Icon name="x" size={14}/></button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const EditTransactionModal = ({ tx, onClose, onSave }) => {
+            const [data, setData] = useState(tx);
+            const [dateInput, setDateInput] = useState(tx.date);
+            useEffect(() => setDateInput(tx.date), [tx]);
+            const handleDateChange = (val) => { setDateInput(val); };
+            const handleSave = () => { const formattedDate = Utils.formatDate(dateInput); onSave({ ...data, date: formattedDate }); onClose(); };
+            const buyCost = (data.price || 0) * (data.qty || 0) + (data.fee || 0);
+            const sellAmount = (data.price || 0) * (data.qty || 0) - (data.fee || 0) - (data.tax || 0);
+
+            return (
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-2xl w-96 shadow-xl max-h-[90vh] overflow-y-auto border border-stone-100">
+                        <h3 className="font-bold text-lg mb-4 text-stone-800 text-center">編輯{data.type==='buy'?'買進':data.type==='sell'?'賣出':'股利'}紀錄</h3>
+                        <div className="space-y-4">
+                            <h4 className="text-center text-stone-500 text-sm">{data.name || data.symbol} ({data.symbol})</h4>
+                            <div><label className="text-xs text-stone-500 mb-1 block">日期 (YYYY-MM-DD)</label><input type="text" value={dateInput} onChange={e => handleDateChange(e.target.value)} className="w-full p-2 border rounded text-sm text-center font-mono" placeholder="2023-12-31" /></div>
+
+                            {data.type === 'buy' && (
+                                <>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div><label className="text-xs text-stone-500 mb-1 block">股數</label><input type="number" value={data.qty} onChange={e => setData({...data, qty: parseFloat(e.target.value)})} className="w-full p-2 border rounded text-sm text-center" /></div>
+                                        <div><label className="text-xs text-stone-500 mb-1 block">股價</label><input type="number" value={data.price} onChange={e => setData({...data, price: parseFloat(e.target.value)})} className="w-full p-2 border rounded text-sm text-center" /></div>
+                                    </div>
+                                    <div><label className="text-xs text-stone-500 mb-1 block">手續費</label><input type="number" value={data.fee || 0} onChange={e => setData({...data, fee: parseFloat(e.target.value)})} className="w-full p-2 border rounded text-sm text-center" /></div>
+                                    <div className="pt-2 border-t border-stone-100 text-center"><label className="text-xs text-stone-500">買進總成本</label><div className="text-lg font-bold font-mono text-stone-700">{Utils.formatCurrency(buyCost)}</div></div>
+                                </>
+                            )}
+                            {data.type === 'sell' && (
+                                <>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div><label className="text-xs text-stone-500 mb-1 block">賣出股數</label><input type="number" value={data.qty} onChange={e => setData({...data, qty: parseFloat(e.target.value)})} className="w-full p-2 border rounded text-sm text-center" /></div>
+                                        <div><label className="text-xs text-stone-500 mb-1 block">賣出股價</label><input type="number" value={data.price} onChange={e => setData({...data, price: parseFloat(e.target.value)})} className="w-full p-2 border rounded text-sm text-center" /></div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div><label className="text-xs text-stone-500 mb-1 block">手續費</label><input type="number" value={data.fee || 0} onChange={e => setData({...data, fee: parseFloat(e.target.value)})} className="w-full p-2 border rounded text-sm text-center" /></div>
+                                        <div><label className="text-xs text-stone-500 mb-1 block">證交稅</label><input type="number" value={data.tax || 0} onChange={e => setData({...data, tax: parseFloat(e.target.value)})} className="w-full p-1 border rounded text-xs text-center bg-white" /></div>
+                                    </div>
+                                    <div><label className="text-xs text-stone-500 mb-1 block">已實現股利</label><input type="number" value={data.realizedDividend || 0} onChange={e => setData({...data, realizedDividend: parseFloat(e.target.value)})} className="w-full p-2 border rounded text-sm text-center" /></div>
+                                    <div className="pt-2 border-t border-stone-100 text-center"><label className="text-xs text-stone-500">賣出入帳金額</label><div className="text-lg font-bold font-mono text-stone-700">{Utils.formatCurrency(sellAmount)}</div></div>
+                                </>
+                            )}
+                             {data.type === 'dividend' && (
+                                <div><label className="text-xs text-stone-500 mb-1 block">金額</label><input type="number" value={data.amount} onChange={e => setData({...data, amount: parseFloat(e.target.value)})} className="w-full p-2 border rounded text-sm text-center" /></div>
+                            )}
+
+                            <div><label className="text-xs text-stone-500 mb-1 block">備註</label><input value={data.note || ''} onChange={e => setData({...data, note: e.target.value})} className="w-full p-2 border rounded text-sm" placeholder="備註..." /></div>
+                        </div>
+                        <div className="flex gap-3 mt-6">
+                            <button onClick={onClose} className="flex-1 py-2.5 bg-stone-100 rounded-xl text-stone-600 font-bold hover:bg-stone-200 transition-colors">取消</button>
+                            <button onClick={handleSave} className="flex-1 py-2.5 bg-morandi-dark hover-bg-morandi-dark text-white rounded-xl font-bold transition-colors">儲存變更</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const EditStockModal = ({ stock, onClose, onSave }) => {
+            const [symbol, setSymbol] = useState(stock.symbol);
+            const [name, setName] = useState(stock.name || stock.symbol);
+            const [price, setPrice] = useState(stock.currentPrice || 0);
+            const [stockType, setStockType] = useState(stock.stockType || '個股');
+            const [dividendFreq, setDividendFreq] = useState(stock.dividendFreq || '無');
+
+            return (
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-2xl w-[400px] shadow-xl border border-stone-100">
+                        <h3 className="font-bold text-lg mb-4 text-stone-800 text-center">編輯股票資訊</h3>
+                        <div className="space-y-4">
+                            <div><label className="text-xs text-stone-500 mb-1 block">股票名稱</label><input value={name} onChange={e => setName(e.target.value)} className="w-full p-2 border rounded text-sm text-center" /></div>
+                            <div><label className="text-xs text-stone-500 mb-1 block">股票代號</label><input value={symbol} onChange={e => setSymbol(e.target.value)} className="w-full p-2 border rounded text-sm text-center" /></div>
+                            <div><label className="text-xs text-stone-500 mb-1 block">目前現價</label><input type="number" value={price} onChange={e => setPrice(parseFloat(e.target.value))} className="w-full p-2 border rounded text-sm text-center font-mono font-bold" /></div>
+                            
+                            <div>
+                                <label className="text-xs text-stone-500 mb-2 block">股票類型</label>
+                                <div className="flex flex-wrap gap-2 justify-center">
+                                    {['個股', 'ETF', '債', '基金'].map(type => (
+                                        <label key={type} className={`cursor-pointer px-3 py-1.5 rounded-lg border text-xs font-bold transition-colors ${stockType === type ? 'bg-stone-700 text-white border-stone-700' : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-50'}`}>
+                                            <input type="radio" className="hidden" value={type} checked={stockType === type} onChange={() => setStockType(type)} />{type}
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="text-xs text-stone-500 mb-2 block">配息頻率</label>
+                                <div className="flex flex-wrap gap-2 justify-center">
+                                    {['月配', '季配', '半配', '年配', '無'].map(freq => (
+                                        <label key={freq} className={`cursor-pointer px-3 py-1.5 rounded-lg border text-xs font-bold transition-colors ${dividendFreq === freq ? 'bg-stone-700 text-white border-stone-700' : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-50'}`}>
+                                            <input type="radio" className="hidden" value={freq} checked={dividendFreq === freq} onChange={() => setDividendFreq(freq)} />{freq}
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex gap-3 mt-6">
+                            <button onClick={onClose} className="flex-1 py-2.5 bg-stone-100 rounded-xl text-stone-600 font-bold hover:bg-stone-200 transition-colors">取消</button>
+                            <button onClick={() => { onSave(stock.symbol, symbol, name, price, stockType, dividendFreq); onClose(); }} className="flex-1 py-2.5 bg-morandi-dark hover-bg-morandi-dark text-white rounded-xl font-bold transition-colors">確認修改</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const SellLotModal = ({ buyTx, onClose, onSave }) => {
+            const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+            const [qty, setQty] = useState(buyTx.remainingQty);
+            const [price, setPrice] = useState(0); 
+            const [fee, setFee] = useState(0);
+            const [tax, setTax] = useState(0);
+            const [realizedDividend, setRealizedDividend] = useState(0);
+            useEffect(() => { if(price && qty) { const amount = price * qty; setFee(Math.floor(amount * 0.001425)); setTax(Math.floor(amount * 0.003)); } }, [price, qty]);
+            const totalAmount = (price * qty) - fee - tax;
+            const originalCost = (buyTx.price * qty) + ((buyTx.fee || 0) / (buyTx.qty || 1) * qty);
+            const estimatedPL = (totalAmount + realizedDividend) - originalCost;
+
+            return (
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-2xl w-96 shadow-xl max-h-[90vh] overflow-y-auto border border-stone-100">
+                        <div className="bg-stone-50 -m-6 mb-4 p-4 border-b border-stone-100">
+                             <h3 className="font-bold text-lg text-stone-800 text-center">賣出持倉</h3>
+                             <p className="text-xs text-stone-500 mt-1 text-center font-mono">
+                                {buyTx.name || buyTx.symbol} <span className="mx-1">|</span> {buyTx.date} 買進 <span className="mx-1">|</span> 成本 {buyTx.price}
+                             </p>
+                        </div>
+                        <div className="space-y-3">
+                            <div><label className="text-xs text-stone-500 mb-1 block">賣出日期</label><input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full p-2 border rounded text-sm text-center" /></div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div><label className="text-xs text-stone-500 mb-1 block">賣出股數 (餘 {buyTx.remainingQty})</label><input type="number" value={qty} max={buyTx.remainingQty} onChange={e => setQty(parseFloat(e.target.value))} className="w-full p-2 border rounded text-sm text-center font-bold" /></div>
+                                <div><label className="text-xs text-stone-500 mb-1 block">賣出股價</label><input type="number" value={price} onChange={e => setPrice(parseFloat(e.target.value))} className="w-full p-2 border rounded text-sm text-center font-bold" placeholder="單價" /></div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3 bg-stone-50 p-2 rounded-lg">
+                                <div><label className="text-[10px] text-stone-400 mb-1 block text-center">手續費</label><input type="number" value={fee} onChange={e => setFee(parseFloat(e.target.value))} className="w-full p-1 border rounded text-xs text-center bg-white" /></div>
+                                <div><label className="text-[10px] text-stone-400 mb-1 block text-center">證交稅</label><input type="number" value={tax} onChange={e => setTax(parseFloat(e.target.value))} className="w-full p-1 border rounded text-xs text-center bg-white" /></div>
+                            </div>
+                            <div><label className="text-xs text-stone-500 mb-1 block">已實現股利 (選填)</label><input type="number" value={realizedDividend} onChange={e => setRealizedDividend(parseFloat(e.target.value))} className="w-full p-2 border rounded text-sm text-center" placeholder="持有期間領取的股利" /></div>
+                            <div className="border-t border-stone-100 pt-3 mt-2">
+                                <div className="flex justify-between items-end mb-2">
+                                    <label className="text-xs text-stone-500">賣出入帳金額</label>
+                                    <div className="text-lg font-mono font-bold text-stone-800">{Utils.formatCurrency(totalAmount)}</div>
+                                </div>
+                                <div className="flex justify-between items-end">
+                                    <label className="text-xs text-stone-500">預估損益</label>
+                                    <div className={`text-base font-mono font-bold ${getPnLColor(estimatedPL)}`}>{Utils.formatCurrency(estimatedPL)}</div>
+                                </div>
+                            </div>
+                            <div><label className="text-xs text-stone-500 mb-1 block">備註</label><input className="w-full p-2 border rounded text-sm" placeholder="備註..." id="sell-note" /></div>
+                        </div>
+                        <div className="flex gap-3 mt-6">
+                            <button onClick={onClose} className="flex-1 py-2.5 bg-stone-100 rounded-xl text-stone-600 font-bold hover:bg-stone-200 transition-colors">取消</button>
+                            <button onClick={() => { 
+                                const note = document.getElementById('sell-note').value;
+                                onSave({ symbol: buyTx.symbol, name: buyTx.name, type: 'sell', date: date, qty: Number(qty), price: Number(price), fee: Number(fee), tax: Number(tax), totalAmount: Number(totalAmount), realizedDividend: Number(realizedDividend), note: note || `賣出 ${buyTx.date} 持倉`, relatedBuyId: buyTx.id }); 
+                                onClose(); 
+                            }} className="flex-1 py-2.5 bg-morandi-dark hover-bg-morandi-dark text-white rounded-xl font-bold transition-colors">確認賣出</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const Sidebar = ({ setView, currentView, isCollapsed, toggleSidebar, setShowPortfolioModal }) => {
+            const { portfolios, currentPortfolioId, syncStatus, updateAllPrices } = useContext(AppContext); // [FIX] Added updateAllPrices
+            const currentPortfolio = portfolios.find(p => p.id === currentPortfolioId) || { name: '我的主帳本' };
+            const widthClass = isCollapsed ? 'w-20' : 'w-64';
+            const alignClass = isCollapsed ? 'justify-center' : '';
+
+            return (
+                <div className={`${widthClass} bg-stone-100/60 border-r border-stone-200 h-screen flex flex-col p-4 backdrop-blur-sm transition-all duration-300 relative`}>
+                    <button onClick={toggleSidebar} className="absolute -right-3 top-9 bg-white border border-stone-200 rounded-full p-1.5 text-stone-500 hover:text-stone-800 shadow-sm z-50 flex items-center justify-center transition-transform hover:scale-105">
+                        {isCollapsed ? <Icon name="chevrons-right" size={14}/> : <Icon name="chevrons-left" size={14}/>}
+                    </button>
+                    
+                    <div className={`flex items-center gap-3 mb-6 h-12 ${alignClass} ${isCollapsed ? '' : 'px-3'}`}>
+                         <button onClick={() => setShowPortfolioModal(true)} className={`flex-shrink-0 flex items-center justify-center rounded-xl transition-all shadow-sm ${isCollapsed ? 'w-10 h-10 bg-stone-800 text-white' : 'w-auto h-auto p-0 bg-transparent text-stone-800 hover:text-stone-600'}`} title="切換帳本">
+                             {isCollapsed ? <span className="font-bold text-sm">{currentPortfolio.name.charAt(0)}</span> : <Icon name="arrow-right-left" size={18} />}
+                         </button>
+                         {!isCollapsed && (<div className="flex-1 min-w-0"><div className="text-[10px] text-stone-400 font-bold uppercase tracking-wider">目前帳本</div><div className="text-stone-800 font-bold text-lg truncate">{currentPortfolio.name}</div></div>)}
+                    </div>
                     <nav className="flex-1 space-y-2">
-                        {[
-                            { id: 'dashboard', icon: 'layout-grid', label: '總覽' },
-                            { id: 'holdings', icon: 'list', label: '庫存明細' },
-                            { id: 'import', icon: 'arrow-down-to-line', label: '匯入資料' },
-                            { id: 'settings', icon: 'sliders-horizontal', label: '設定' },
-                        ].map(item => (
-                            <button key={item.id}
-                                onClick={() => setView(item.id)}
-                                className={`w-full flex items-center gap-4 px-4 py-3 text-sm transition-all rounded-xl ${currentView === item.id ? 'text-zinc-900 bg-zinc-200/50 font-bold' : 'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800'}`}>
-                                <Icon name={item.icon} size={20} strokeWidth={1.5} />
-                                <span className="tracking-wide">{item.label}</span>
+                        {[{ id: 'dashboard', icon: 'layout-grid', label: '總覽' }, { id: 'holdings', icon: 'list', label: '庫存明細' }, { id: 'settings', icon: 'settings', label: '帳本設定' }].map(item => (
+                            <button key={item.id} onClick={() => setView(item.id)} title={isCollapsed ? item.label : ''} className={`w-full flex items-center ${alignClass} gap-4 px-3 py-3 text-sm transition-all rounded-xl ${currentView === item.id ? 'text-stone-900 bg-stone-200/60 font-bold' : 'text-stone-500 hover:bg-stone-100 hover:text-stone-800'}`}>
+                                <Icon name={item.icon} size={20} strokeWidth={1.5} className="flex-shrink-0" />
+                                <span className={`tracking-wide whitespace-nowrap overflow-hidden transition-all duration-300 ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>{item.label}</span>
                             </button>
                         ))}
                     </nav>
-
-                    <div className="text-[10px] text-zinc-400 mt-auto pt-4 border-t border-zinc-200 font-mono text-center">
-                        MUJI SOFT v1.2
+                    <div className="mt-auto pt-4 border-t border-stone-200">
+                        <div className={`flex items-center gap-2 text-[10px] text-stone-400 font-mono ${alignClass}`}>
+                            <div className={`w-2 h-2 rounded-full ${syncStatus.includes('失敗') ? 'bg-rose-400' : syncStatus.includes('正在') ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'}`}></div>
+                            {!isCollapsed && <span className="truncate">{syncStatus}</span>}
+                        </div>
                     </div>
                 </div>
             );
@@ -323,383 +980,222 @@
 
         const Dashboard = () => {
             const { portfolioStats } = useContext(AppContext);
-            const { globalStats, totalUnrealizedPL, totalUnrealizedROI } = portfolioStats;
-
-            const MetricCard = ({ label, value, subValue, isCurrency = true, subLabel = "" }) => (
-                <div className="muji-card p-6 flex flex-col justify-between h-36 hover:border-zinc-300 transition-colors">
-                    <div className="flex justify-between items-start">
-                        <h3 className="text-zinc-500 text-sm font-bold">{label}</h3>
-                        {subValue && (
-                            <div className={`text-sm font-mono flex items-center gap-1 ${getPnLColor(subValue)}`}>
-                                {subValue > 0 ? '+' : ''}{Utils.formatPercent(subValue)}
-                            </div>
-                        )}
-                    </div>
-                    <div>
-                        <div className={`text-3xl font-medium font-mono text-zinc-900`}>
-                            {isCurrency ? Utils.formatCurrency(value) : value}
-                        </div>
-                        {subLabel && <div className="text-zinc-400 text-xs mt-1">{subLabel}</div>}
-                    </div>
-                </div>
-            );
-
-            return (
-                <div className="space-y-8">
-                    <header>
-                        <h2 className="text-3xl font-medium text-zinc-900 tracking-tight">資產總覽</h2>
-                        <p className="text-zinc-500 text-sm mt-1">資產配置與績效分析</p>
-                    </header>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <MetricCard label="總資產 (現值)" value={globalStats.totalAsset} subValue={totalUnrealizedROI} />
-                        <MetricCard label="總成本" value={globalStats.totalCost} />
-                        <MetricCard label="未實現損益" value={totalUnrealizedPL} 
-                             subLabel={totalUnrealizedPL >= 0 ? "獲利中" : "虧損中"} />
-                        <MetricCard label="已實現 + 股利" value={globalStats.totalRealizedPL + globalStats.totalDividend} />
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div className="muji-card p-8">
-                            <h3 className="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-6">資產分佈</h3>
-                            <div className="space-y-5">
-                                {portfolioStats.holdings.sort((a,b) => b.marketValue - a.marketValue).slice(0, 6).map(h => (
-                                    <div key={h.symbol} className="flex items-center gap-4 group">
-                                        <div className="w-20 text-sm text-zinc-500 font-mono font-bold group-hover:text-zinc-900 transition-colors">{h.symbol}</div>
-                                        <div className="flex-1 h-2 bg-zinc-100 overflow-hidden rounded-full">
-                                            <div className="h-full bg-zinc-600 rounded-full" style={{ width: `${(h.marketValue / globalStats.totalAsset) * 100}%` }}></div>
-                                        </div>
-                                        <div className="w-24 text-sm font-mono text-right text-zinc-600">{Utils.formatCurrency(h.marketValue)}</div>
-                                    </div>
-                                ))}
-                                {portfolioStats.holdings.length === 0 && <div className="text-zinc-400 text-sm text-center py-10">尚無資料</div>}
-                            </div>
-                        </div>
-                        <div className="muji-card p-8">
-                             <h3 className="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-6">近期動態</h3>
-                             <div className="space-y-1">
-                                {portfolioStats.holdings.flatMap(h => h.history).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8).map(tx => (
-                                    <div key={tx.id} className="flex justify-between items-center text-sm py-3 border-b border-zinc-100 last:border-0 hover:bg-zinc-50 transition-colors px-2 -mx-2 rounded-lg">
-                                        <div className="flex items-center gap-3">
-                                            <span className={`text-[10px] font-bold w-12 text-center py-1 rounded-full border ${tx.type === 'buy' ? 'bg-zinc-800 text-white border-zinc-800' : tx.type === 'sell' ? 'bg-white text-zinc-900 border-zinc-300' : 'bg-zinc-100 text-zinc-500 border-zinc-200'}`}>
-                                                {tx.type === 'buy' ? '買進' : tx.type === 'sell' ? '賣出' : '股利'}
-                                            </span>
-                                            <div>
-                                                <div className="font-mono text-zinc-800 font-bold">{tx.symbol}</div>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="font-mono text-zinc-400 text-xs">{tx.date}</div>
-                                            <div className="font-mono text-zinc-800 text-xs mt-0.5">
-                                                {tx.type === 'dividend' ? `+${tx.amount}` : `${tx.qty} @ ${tx.price}`}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                             </div>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        const ImportView = () => {
-            const { addTransaction } = useContext(AppContext);
-            const [inputText, setInputText] = useState("");
-            const [parsedData, setParsedData] = useState([]);
-
-            const handleParse = () => { const results = Utils.smartParse(inputText); setParsedData(results); };
-            const confirmImport = () => { parsedData.forEach(tx => addTransaction(tx)); setParsedData([]); setInputText(""); };
-            const removeParsedItem = (id) => { setParsedData(prev => prev.filter(item => item.id !== id)); };
-
-            return (
-                <div className="space-y-6 max-w-4xl mx-auto">
-                    <header>
-                        <h2 className="text-3xl font-medium text-zinc-900 tracking-tight">匯入交易資料</h2>
-                        <p className="text-zinc-500 text-sm mt-1">請在下方貼上券商交易紀錄或筆記。</p>
-                    </header>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 h-[500px]">
-                        <div className="flex flex-col gap-4">
-                            <textarea 
-                                className="flex-1 p-6 font-mono text-sm text-zinc-800 leading-relaxed resize-none focus:shadow-inner"
-                                placeholder={`格式範例 (系統會自動辨識):\n\n2023/10/05 Buy TSLA 10 @ 240\n2330 台積電 股利 5000\n賣出 AAPL 5股 價格150\n\n(支援整段文字貼上)`}
-                                value={inputText}
-                                onChange={e => setInputText(e.target.value)}
-                            ></textarea>
-                            <button onClick={handleParse} className="bg-zinc-800 hover:bg-zinc-700 text-white py-3 px-6 text-sm font-bold tracking-widest transition-colors shadow-md rounded-xl">
-                                開始解析
-                            </button>
-                        </div>
-
-                        <div className="muji-card flex flex-col overflow-hidden">
-                            <div className="p-4 border-b border-zinc-200 flex justify-between items-center bg-zinc-50">
-                                <span className="text-zinc-500 text-xs font-bold uppercase">預覽結果 ({parsedData.length})</span>
-                                {parsedData.length > 0 && (
-                                    <button onClick={confirmImport} className="text-xs text-zinc-600 border border-zinc-300 px-3 py-1.5 hover:bg-white bg-white rounded-lg shadow-sm font-bold">確認匯入</button>
-                                )}
-                            </div>
-                            <div className="flex-1 overflow-y-auto p-2 space-y-1">
-                                {parsedData.length === 0 && <div className="h-full flex items-center justify-center text-zinc-400 text-sm">等待輸入...</div>}
-                                {parsedData.map(item => (
-                                    <div key={item.id} className="p-3 border-b border-zinc-100 flex justify-between items-center group hover:bg-zinc-50 rounded-lg">
-                                        <div className="flex items-center gap-3">
-                                            <span className={`text-[10px] w-8 text-center py-0.5 border rounded-md ${item.type==='buy'?'bg-zinc-800 text-white border-zinc-800': 'bg-white text-zinc-900 border-zinc-300'}`}>{item.type.substr(0,1).toUpperCase()}</span>
-                                            <div>
-                                                <div className="font-mono text-sm text-zinc-800 font-bold">{item.symbol}</div>
-                                                <div className="text-[10px] text-zinc-500 font-mono">{item.date}</div>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="text-xs text-zinc-600 font-mono">{item.type==='dividend'?`$${item.amount}`:`${item.qty} x ${item.price}`}</div>
-                                            <button onClick={() => removeParsedItem(item.id)} className="text-zinc-400 hover:text-red-600 mt-1"><Icon name="x" size={14}/></button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        const HoldingsView = () => {
-            const { portfolioStats, updatePrice } = useContext(AppContext);
+            const { globalStats } = portfolioStats;
             const { holdings } = portfolioStats;
-            const [filter, setFilter] = useState('');
-            const [selectedStock, setSelectedStock] = useState(null);
-
-            const autoUpdatePrices = () => {
-                holdings.forEach(h => { const newPrice = h.avgCost * (0.9 + Math.random() * 0.2); updatePrice(h.symbol, newPrice.toFixed(2)); });
+            const totalInvCost = holdings.reduce((sum, h) => sum + (h.qty > 0 ? h.totalCost : 0), 0);
+            const totalRealizedPL = holdings.reduce((sum, h) => sum + (h.realizedPL !== 0 || h.realizedCost > 0 ? h.realizedPL : 0), 0);
+            const totalRealizedCost = holdings.reduce((sum, h) => sum + (h.realizedPL !== 0 || h.realizedCost > 0 ? h.realizedCost : 0), 0);
+            const realizedROI = totalRealizedCost ? totalRealizedPL / totalRealizedCost : 0;
+            const totalUnrealized = holdings.reduce((sum, h) => sum + (h.qty > 0 ? h.unrealizedPL : 0), 0);
+            const unrealizedROI = totalInvCost ? totalUnrealized / totalInvCost : 0;
+            const typeStats = useMemo(() => {
+                const types = { '個股': 0, 'ETF': 0, '債': 0, '基金': 0 };
+                holdings.forEach(h => { if (h.qty > 0 && types[h.stockType] !== undefined) { types[h.stockType] += h.marketValue; } });
+                const total = Object.values(types).reduce((a, b) => a + b, 0) || 1;
+                let currentDeg = 0;
+                const segments = Object.entries(types).map(([type, value]) => {
+                    const deg = (value / total) * 360; const start = currentDeg; currentDeg += deg;
+                    return { type, value, start, end: currentDeg, color: getStockColorHex(type) };
+                });
+                return { types, total, segments };
+            }, [holdings]);
+            const BarChart = ({ title, type }) => {
+                const items = holdings.filter(h => h.stockType === type && h.qty > 0).sort((a, b) => b.marketValue - a.marketValue);
+                if (items.length === 0) return null;
+                const maxVal = Math.max(...items.map(i => i.marketValue));
+                return (
+                    <div className="muji-card p-6"><h4 className="text-sm font-bold text-stone-500 mb-4">{title}</h4><div className="space-y-3">{items.map(h => (<div key={h.symbol} className="flex items-center gap-3 text-xs"><div className="w-16 font-bold truncate text-stone-700" title={h.name}>{h.name}</div><div className="flex-1 h-2 bg-stone-100 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${(h.marketValue / maxVal) * 100}%`, backgroundColor: getStockColorHex(type) }}></div></div><div className="w-20 text-right font-mono text-stone-500">{Utils.formatCurrency(h.marketValue)}</div></div>))}</div></div>
+                );
             };
+            return (
+                <div className="space-y-8"><header><h2 className="text-3xl font-medium text-stone-800">資產總覽</h2></header><div className="grid grid-cols-1 md:grid-cols-4 gap-6"><div className="muji-card p-6 flex flex-col justify-between h-36 text-center"><h3 className="text-stone-500 text-sm font-bold">總資產 (現值)</h3><div className="text-2xl font-medium font-mono text-stone-800 flex flex-col justify-center flex-1">{Utils.formatCurrency(globalStats.totalAsset)}<div className="h-4"></div></div></div><div className="muji-card p-6 flex flex-col justify-between h-36 text-center"><h3 className="text-stone-500 text-sm font-bold">總投資成本</h3><div className="text-2xl font-medium font-mono text-stone-800 flex flex-col justify-center flex-1">{Utils.formatCurrency(totalInvCost)}<div className="h-4"></div></div></div><div className="muji-card p-6 flex flex-col justify-between h-36 text-center"><h3 className="text-stone-500 text-sm font-bold">未實現損益 / 報酬率</h3><div className={`text-2xl font-medium font-mono flex flex-col justify-center flex-1 ${getPnLColor(totalUnrealized)}`}>{Utils.formatCurrency(totalUnrealized)}<div className={`text-sm font-mono mt-1 ${getPnLColor(totalUnrealized)}`}>({Utils.formatPercent(unrealizedROI)})</div></div></div><div className="muji-card p-6 flex flex-col justify-between h-36 text-center"><h3 className="text-stone-500 text-sm font-bold">已實現損益 / 報酬率</h3><div className={`text-2xl font-medium font-mono flex flex-col justify-center flex-1 ${getPnLColor(totalRealizedPL)}`}>{Utils.formatCurrency(totalRealizedPL)}<div className={`text-sm font-mono mt-1 ${getPnLColor(totalRealizedPL)}`}>({Utils.formatPercent(realizedROI)})</div></div></div></div><div className="grid grid-cols-1 md:grid-cols-3 gap-6"><div className="muji-card p-8 flex flex-col items-center justify-start h-full"><h3 className="text-stone-400 text-xs font-bold uppercase tracking-wider mb-6 w-full text-left">資產分佈</h3><div className="relative w-48 h-48 rounded-full mb-6" style={{ background: `conic-gradient(${typeStats.segments.map(s => `${s.color} ${s.start}deg ${s.end}deg`).join(', ')})` }}><div className="absolute inset-4 bg-white rounded-full flex items-center justify-center flex-col"><span className="text-xs text-stone-400 font-bold">Total</span></div></div><div className="flex flex-wrap justify-center gap-4 text-xs">{typeStats.segments.map(s => (<div key={s.type} className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full" style={{ backgroundColor: s.color }}></div><span className="text-stone-600 font-bold">{s.type} {Math.round(s.value/typeStats.total*100)}%</span></div>))}</div></div><div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6"><BarChart title="個股分佈" type="個股" /><BarChart title="ETF 分佈" type="ETF" /><BarChart title="債券分佈" type="債" /><BarChart title="基金分佈" type="基金" /></div></div></div>
+            );
+        };
 
-            if (selectedStock) {
+        const HoldingsView = ({ openImport }) => {
+            const { portfolioStats, updateStockInfo, updateTransaction, removeTransaction, removeStock, addTransaction, updateSinglePrice, updateAllPrices, addBatchTransactions } = useContext(AppContext);
+            const { holdings } = portfolioStats;
+            const [selectedStock, setSelectedStock] = useState(null);
+            const [editingTx, setEditingTx] = useState(null);
+            const [sellingLot, setSellingLot] = useState(null);
+            const [editingStock, setEditingStock] = useState(null);
+            const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, stock: null });
+            const [deleteItemConfirmation, setDeleteItemConfirmation] = useState({ show: false, id: null });
+            const [batchSellLotId, setBatchSellLotId] = useState(null); 
+            const [activeTab, setActiveTab] = useState('inventory');
+            const allTypes = ['個股', 'ETF', '債', '基金'];
+            const allFreqs = ['月配', '季配', '半配', '年配', '無'];
+            const [filterTypes, setFilterTypes] = useState(allTypes);
+            const [filterFreqs, setFilterFreqs] = useState(allFreqs);
+            const [holdingsSort, setHoldingsSort] = useState({ key: 'lastBuyDate', direction: 'desc' });
+            const [txSort, setTxSort] = useState({ key: 'date', direction: 'desc' });
+            
+            const activeStock = selectedStock ? holdings.find(h => h.symbol === selectedStock.symbol) : null;
+            const handleFilterChange = (filterSet, setFilter, value) => { if (filterSet.includes(value)) { setFilter(filterSet.filter(item => item !== value)); } else { setFilter([...filterSet, value]); } };
+            const FilterTag = ({ label, active, onClick }) => (<button onClick={onClick} className={`px-3 py-1 rounded-full text-xs font-bold border transition-colors ${active ? 'bg-stone-700 text-white border-stone-700' : 'bg-white text-stone-400 border-stone-200 hover:bg-stone-50 hover:text-stone-600'}`}>{label}</button>);
+            const handleSort = (key, config, setConfig) => { let direction = 'asc'; if (config.key === key && config.direction === 'asc') { direction = 'desc'; } setConfig({ key, direction }); };
+            const SortIcon = ({ colKey, config }) => { if (config.key !== colKey) return <Icon name="arrow-up-down" size={14} className="ml-1 text-stone-300 inline" />; return config.direction === 'asc' ? <Icon name="arrow-up" size={14} className="ml-1 text-stone-600 inline" /> : <Icon name="arrow-down" size={14} className="ml-1 text-stone-600 inline" />; };
+
+            const sortedHoldings = useMemo(() => {
+                let result = [...holdings];
+                if (activeTab === 'inventory') { result = result.filter(h => h.qty > 0); } else { result = result.filter(h => h.qty === 0); }
+                if (filterTypes.length > 0) { result = result.filter(h => filterTypes.includes(h.stockType)); }
+                if (filterFreqs.length > 0) { result = result.filter(h => filterFreqs.includes(h.dividendFreq)); }
+                result.sort((a, b) => {
+                    let valA = a[holdingsSort.key]; let valB = b[holdingsSort.key];
+                    if (typeof valA === 'string') valA = valA.toLowerCase(); if (typeof valB === 'string') valB = valB.toLowerCase();
+                    if (valA < valB) return holdingsSort.direction === 'asc' ? -1 : 1;
+                    if (valA > valB) return holdingsSort.direction === 'asc' ? 1 : -1;
+                    return 0;
+                });
+                return result;
+            }, [holdings, holdingsSort, filterTypes, filterFreqs, activeTab]);
+
+            const groupedTransactions = useMemo(() => {
+                if (!activeStock) return [];
+                const history = [...activeStock.history];
+                const childrenMap = new Map();
+                const independent = [];
+                history.forEach(t => {
+                    if (t.relatedBuyId) {
+                        if (!childrenMap.has(t.relatedBuyId)) childrenMap.set(t.relatedBuyId, []);
+                        childrenMap.get(t.relatedBuyId).push(t);
+                    } else { independent.push(t); }
+                });
+                independent.sort((a,b) => {
+                     return txSort.direction === 'asc' ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date);
+                });
+                const result = [];
+                independent.forEach(p => {
+                    result.push(p);
+                    if (childrenMap.has(p.id)) {
+                        const kids = childrenMap.get(p.id);
+                        kids.sort((a,b) => new Date(a.date) - new Date(b.date));
+                        result.push(...kids.map(k => ({...k, isGrouped: true})));
+                    }
+                });
+                return result;
+            }, [activeStock, txSort]);
+
+            if (activeStock) {
                 return (
                     <div className="space-y-6">
-                        <button onClick={() => setSelectedStock(null)} className="flex items-center gap-2 text-zinc-400 hover:text-zinc-900 mb-6 text-sm group transition-colors font-bold">
-                            <Icon name="arrow-left" size={18} className="group-hover:-translate-x-1 transition-transform"/> 返回列表
-                        </button>
-                        
-                        <div className="flex justify-between items-end border-b border-zinc-200 pb-6">
-                            <div>
-                                <h2 className="text-4xl font-medium text-zinc-900 font-mono">{selectedStock.symbol}</h2>
-                                <span className="text-xs text-zinc-500 mt-2 block font-bold">個股詳細資料</span>
+                        <div className="border-b border-stone-200 pb-6 relative">
+                            <div className="flex items-center justify-between mb-4 absolute top-0 w-full">
+                                <button onClick={() => setSelectedStock(null)} className="flex items-center gap-2 text-stone-400 hover:text-stone-800 text-sm font-bold transition-colors"><Icon name="arrow-left" size={18}/> 返回列表</button>
                             </div>
-                            <div className="text-right">
-                                <div className="text-xs text-zinc-400 font-bold mb-1">目前股價</div>
-                                <div className="text-3xl font-mono text-zinc-800">{selectedStock.currentPrice}</div>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {[
-                                { l: '庫存股數', v: selectedStock.qty },
-                                { l: '平均成本', v: Utils.formatCurrency(selectedStock.avgCost) },
-                                { l: '未實現損益', v: Utils.formatCurrency(selectedStock.unrealizedPL), c: getPnLColor(selectedStock.unrealizedPL) },
-                                { l: '已實現損益', v: Utils.formatCurrency(selectedStock.realizedPL), c: getPnLColor(selectedStock.realizedPL) },
-                            ].map((s, i) => (
-                                <div key={i} className="muji-card p-5">
-                                    <div className="text-zinc-400 text-xs font-bold mb-2">{s.l}</div>
-                                    <div className={`text-xl font-mono ${s.c || 'text-zinc-700'}`}>{s.v}</div>
+                            <div className="flex flex-col items-center justify-center gap-3 pt-10">
+                                <div className="flex items-center gap-3 cursor-pointer hover:opacity-70 transition-opacity" onClick={() => setEditingStock(activeStock)}>
+                                    <h2 className={`text-4xl font-medium font-mono ${getStockColor(activeStock.stockType)}`}>{activeStock.name || activeStock.symbol}</h2>
+                                    <span className="text-xl text-stone-400 font-mono">{activeStock.symbol}</span>
+                                    <Icon name="edit-2" size={16} className="text-stone-300"/>
                                 </div>
-                            ))}
+                                <div className="flex gap-2 items-center">
+                                    <span className="px-2 py-0.5 bg-stone-100 text-stone-500 text-xs rounded border border-stone-200">{activeStock.stockType}</span>
+                                    <span className="px-2 py-0.5 bg-stone-100 text-stone-500 text-xs rounded border border-stone-200">{activeStock.dividendFreq}</span>
+                                </div>
+                                <div className="flex items-center gap-3 mt-1">
+                                    <span className="text-3xl font-mono text-stone-700 font-bold tracking-tight">{Utils.formatPrice(activeStock.currentPrice)}</span>
+                                    <button onClick={() => updateSinglePrice(activeStock.symbol)} className="text-stone-400 hover:text-stone-600 transition-colors p-1 rounded-full hover:bg-stone-100" title="更新現價"><Icon name="refresh-cw" size={18}/></button>
+                                </div>
+                                <div className="flex flex-col items-center gap-2 mt-2">
+                                    {activeStock.priceUpdatedAt && (<div className="text-[10px] text-stone-400">更新於: {Utils.formatDate(activeStock.priceUpdatedAt)}</div>)}
+                                    {/* [MOD] Buttons centered below date */}
+                                    <div className="flex gap-2 justify-center">
+                                        <button onClick={openImport} className="flex items-center gap-2 text-stone-500 hover:text-stone-800 text-xs font-bold bg-stone-100 px-3 py-1.5 rounded-lg transition-colors"><Icon name="arrow-down-to-line" size={14}/> 匯入交易</button>
+                                        <button onClick={() => { setDeleteConfirmation({ show: true, stock: activeStock }); }} className="flex items-center gap-2 text-stone-500 hover:text-rose-600 text-xs font-bold bg-stone-100 hover:bg-rose-50 px-3 py-1.5 rounded-lg transition-colors"><Icon name="trash-2" size={14}/> 刪除股票</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-
-                        <div className="muji-card mt-8 overflow-hidden">
-                             <div className="p-4 border-b border-zinc-200 text-zinc-400 text-xs font-bold uppercase tracking-widest bg-zinc-50">交易歷史紀錄</div>
-                             <table className="w-full text-sm text-left text-zinc-600">
-                                <thead className="text-[10px] text-zinc-400 uppercase bg-white border-b border-zinc-200">
-                                    <tr>
-                                        <th className="px-6 py-3 font-normal">日期</th>
-                                        <th className="px-6 py-3 font-normal">類型</th>
-                                        <th className="px-6 py-3 text-right font-normal">數量 / 金額</th>
-                                        <th className="px-6 py-3 text-right font-normal">單價</th>
-                                        <th className="px-6 py-3 text-right font-normal">小計</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {selectedStock.history.sort((a,b)=> new Date(b.date) - new Date(a.date)).map(tx => (
-                                        <tr key={tx.id} className="border-b border-zinc-100 hover:bg-zinc-50">
-                                            <td className="px-6 py-4 font-mono text-zinc-400">{tx.date}</td>
-                                            <td className="px-6 py-4"><span className="text-xs font-bold">{tx.type}</span></td>
-                                            <td className="px-6 py-4 text-right font-mono">{tx.type === 'dividend' ? '-' : tx.qty}</td>
-                                            <td className="px-6 py-4 text-right font-mono">{tx.type === 'dividend' ? '-' : tx.price}</td>
-                                            <td className="px-6 py-4 text-right font-mono text-zinc-800">
-                                                {tx.type === 'dividend' ? Utils.formatCurrency(tx.amount) : Utils.formatCurrency(tx.price * tx.qty)}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                            <div className="muji-card p-5 text-center flex flex-col justify-between"><div className="text-stone-400 text-xs font-bold mb-2">庫存股數</div><div className="text-xl font-mono text-stone-700">{activeStock.qty}</div></div>
+                            <div className="muji-card p-5 text-center flex flex-col justify-between"><div className="text-stone-400 text-xs font-bold mb-2">均價</div><div className="text-xl font-mono text-stone-700">{Utils.formatPrice(activeStock.avgCost)}</div></div>
+                            <div className="muji-card p-5 text-center flex flex-col justify-between"><div className="text-stone-400 text-xs font-bold mb-2">總投資成本</div><div className="text-xl font-mono text-stone-700">{Utils.formatCurrency(activeStock.totalCost)}</div></div>
+                            <div className="muji-card p-5 text-center flex flex-col justify-between"><div className="text-stone-400 text-xs font-bold mb-2">未實現損益 / 報酬率</div><div className="flex flex-col items-center"><div className={`text-xl font-mono leading-none mb-1 ${getPnLColor(activeStock.unrealizedPL)}`}>{Utils.formatCurrency(activeStock.unrealizedPL)}</div><div className={`text-sm font-mono ${getPnLColor(activeStock.unrealizedPL)}`}>({Utils.formatPercent(activeStock.unrealizedROI)})</div></div></div>
+                            <div className="muji-card p-5 text-center flex flex-col justify-between"><div className="text-stone-400 text-xs font-bold mb-2">已實現損益 / 報酬率</div><div className="flex flex-col items-center"><div className={`text-xl font-mono leading-none mb-1 ${getPnLColor(activeStock.realizedPL)}`}>{Utils.formatCurrency(activeStock.realizedPL)}</div><div className={`text-sm font-mono ${getPnLColor(activeStock.realizedPL)}`}>({Utils.formatPercent(activeStock.realizedROI)})</div></div></div>
                         </div>
+                        <div className="muji-card mt-8 overflow-hidden flex flex-col h-[600px]">
+                            <div className="p-4 border-b border-stone-200 text-stone-400 text-xs font-bold uppercase tracking-widest bg-stone-50">交易紀錄</div>
+                            <div className="overflow-y-auto flex-1">
+                                <table className="w-full text-sm text-left text-stone-600 relative table-fixed">
+                                    <thead className="text-[10px] text-stone-400 uppercase bg-white border-b border-stone-200 sticky top-0 z-10">
+                                        <tr><th className="w-[8%]" onClick={() => handleSort('type', txSort, setTxSort)}>類型 <SortIcon colKey="type" config={txSort}/></th><th className="w-[12%]" onClick={() => handleSort('date', txSort, setTxSort)}>日期 <SortIcon colKey="date" config={txSort}/></th><th className="w-[10%]" onClick={() => handleSort('qty', txSort, setTxSort)}>股數 <SortIcon colKey="qty" config={txSort}/></th><th className="w-[10%]" onClick={() => handleSort('price', txSort, setTxSort)}>股價 <SortIcon colKey="price" config={txSort}/></th><th className="w-[10%]" onClick={() => handleSort('fee', txSort, setTxSort)}>手續費 <SortIcon colKey="fee" config={txSort}/></th><th className="w-[12%]" onClick={() => handleSort('amount', txSort, setTxSort)}>金額 <SortIcon colKey="amount" config={txSort}/></th><th className="w-[12%]" onClick={() => handleSort('computedPL', txSort, setTxSort)}>損益/報酬率 <SortIcon colKey="computedPL" config={txSort}/></th><th className="w-[15%]" onClick={() => handleSort('note', txSort, setTxSort)}>備註 <SortIcon colKey="note" config={txSort}/></th><th className="w-[11%]"></th></tr>
+                                    </thead>
+                                    <tbody>
+                                        {groupedTransactions.map(tx => { 
+                                            let amount = 0; if (tx.type === 'buy') amount = (tx.qty * tx.price) + (tx.fee || 0); else if (tx.type === 'sell') { amount = (tx.qty * tx.price) - (tx.fee || 0) - (tx.tax || 0); if (tx.totalAmount) amount = tx.totalAmount; } else amount = tx.amount; 
+                                            const costBasis = tx.type === 'dividend' ? 0 : (tx.qty * tx.price + (tx.fee || 0));
+                                            const rowClass = tx.isGrouped ? "bg-stone-50/50" : "border-b border-stone-100 hover:bg-stone-100 transition-colors duration-150";
+                                            const typeCellContent = (<div className={`flex items-center ${tx.isGrouped ? 'pl-8' : 'justify-center'}`}>{tx.isGrouped && (<React.Fragment><Icon name="corner-down-right" size={14} className="mr-2 text-stone-300"/><span className={`text-xs font-bold px-2 py-1 rounded ${tx.type==='buy'?'bg-morandi-red-light text-morandi-red':tx.type==='sell'?'bg-morandi-green-light text-morandi-green':'bg-amber-50 text-amber-600'}`}>{tx.type==='buy'?'買進':tx.type==='sell'?'賣出':'股利'}</span></React.Fragment>)} {!tx.isGrouped && (<span className={`text-xs font-bold px-2 py-1 rounded ${tx.type==='buy'?'bg-morandi-red-light text-morandi-red':tx.type==='sell'?'bg-morandi-green-light text-morandi-green':'bg-amber-50 text-amber-600'}`}>{tx.type==='buy'?'買進':tx.type==='sell'?'賣出':'股利'}</span>)}</div>);
+                                            return (<tr key={tx.id} className={rowClass}><td className="py-4">{typeCellContent}</td><td className="font-mono text-stone-600 text-center">{tx.date}</td><td className="font-mono text-stone-600 text-center">{tx.type === 'dividend' ? '-' : tx.qty}</td><td className="font-mono text-stone-600 text-center">{tx.type === 'dividend' ? '-' : Utils.formatPrice(tx.price)}</td><td className="font-mono text-stone-600 text-center text-xs">{tx.fee ? Utils.formatCurrency(tx.fee) : '-'}</td><td className="font-mono text-stone-600 font-bold text-center">{tx.type === 'dividend' ? <span className="text-amber-600">+{Utils.formatCurrency(amount)}</span> : Utils.formatCurrency(tx.type === 'buy' ? costBasis : amount)}</td><td className="font-mono font-bold text-center">{tx.type === 'sell' && tx.computedPL !== undefined && (<div className={getPnLColor(tx.computedPL)}>{Utils.formatCurrency(tx.computedPL)}<div className="text-[10px] opacity-70">{Utils.formatPercent(tx.computedROI)}</div></div>)}{tx.type === 'dividend' && <span className="text-amber-600">+{Utils.formatCurrency(amount)}</span>}{tx.type === 'buy' && <span className="text-stone-300">-</span>}</td><td className="text-xs text-stone-600 text-center truncate px-2" title={tx.note}>{tx.note}</td>
+                                            <td className="flex justify-center gap-2"><button onClick={() => setEditingTx(tx)} className="p-1 hover:bg-stone-200 rounded text-stone-500"><Icon name="edit" size={14}/></button><button onClick={() => setDeleteItemConfirmation({ show: true, id: tx.id })} className="p-1 hover:bg-rose-100 text-rose-400 rounded"><Icon name="trash" size={14}/></button>{tx.type === 'buy' && (() => { const linkedSells = activeStock.history.filter(s => s.relatedBuyId === tx.id); const soldFromThis = linkedSells.reduce((sum, s) => sum + s.qty, 0); const rem = tx.qty - soldFromThis; if (rem > 0) return <button onClick={() => setBatchSellLotId(tx.id)} className="p-1 hover:bg-[#728A7A]/10 text-[#728A7A] rounded text-xs font-bold px-2 ml-1">賣出</button>; return null; })()}</td></tr>); 
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {editingTx && <EditTransactionModal tx={editingTx} onClose={() => setEditingTx(null)} onSave={updateTransaction} />}
+                        {sellingLot && <SellLotModal buyTx={sellingLot} onClose={() => setSellingLot(null)} onSave={addTransaction} />}
+                        {editingStock && <EditStockModal stock={editingStock} onClose={() => setEditingStock(null)} onSave={updateStockInfo} />}
+                        {deleteConfirmation.show && (<ConfirmModal title="刪除股票" message={`確定要刪除 ${deleteConfirmation.stock.name} (${deleteConfirmation.stock.symbol}) 的所有資料嗎？\n\n此動作將刪除所有相關交易紀錄且無法復原。`} confirmText="確認刪除" isDangerous={true} onCancel={() => setDeleteConfirmation({ show: false, stock: null })} onConfirm={() => { removeStock(deleteConfirmation.stock.symbol); setDeleteConfirmation({ show: false, stock: null }); setSelectedStock(null); }} />)}
+                        {deleteItemConfirmation.show && (<ConfirmModal title="刪除紀錄" message="確定要刪除這筆交易紀錄嗎？" confirmText="確認刪除" isDangerous={true} onCancel={() => setDeleteItemConfirmation({ show: false, id: null })} onConfirm={() => { removeTransaction(deleteItemConfirmation.id); setDeleteItemConfirmation({ show: false, id: null }); }} />)}
+                        {batchSellLotId && (<ImportModal onClose={() => setBatchSellLotId(null)} onImport={addBatchTransactions} title="批次賣出 (指定買入批次)" confirmText="確認賣出" defaultSymbol={activeStock.symbol} defaultType="sell" relatedBuyId={batchSellLotId} />)}
                     </div>
-                )
+                );
             }
 
             return (
                 <div className="space-y-8">
-                    <header className="flex justify-between items-center">
-                         <div>
-                            <h2 className="text-3xl font-medium text-zinc-900 tracking-tight">庫存明細</h2>
-                            <p className="text-zinc-500 text-sm mt-1">管理您的持股部位。</p>
+                    <header className="flex flex-col gap-4">
+                        <div className="flex justify-between items-center">
+                             <div className="flex items-center gap-6"><h2 className="text-3xl font-medium text-stone-800">庫存明細</h2><div className="flex bg-stone-100 p-1 rounded-xl"><button onClick={() => setActiveTab('inventory')} className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'inventory' ? 'bg-white text-stone-800 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}>庫存股</button><button onClick={() => setActiveTab('history')} className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'history' ? 'bg-white text-stone-800 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}>歷史股</button></div></div>
+                             <div className="flex gap-2"><button onClick={updateAllPrices} className="flex items-center gap-2 text-stone-500 hover:text-stone-800 text-sm font-bold bg-white border border-stone-200 px-3 py-2 rounded-xl shadow-sm"><Icon name="refresh-cw" size={16}/> 更新現價</button><button onClick={openImport} className="flex items-center gap-2 text-stone-500 hover:text-stone-800 text-sm font-bold bg-white border border-stone-200 px-3 py-2 rounded-xl shadow-sm"><Icon name="arrow-down-to-line" size={16}/> 匯入資料</button></div>
                         </div>
-                        <div className="flex gap-2">
-                             <input type="text" placeholder="搜尋代號..." 
-                                className="w-48 px-4 py-2 text-sm font-mono focus:w-64 transition-all shadow-sm"
-                                value={filter} onChange={e => setFilter(e.target.value)} />
-                            <button onClick={autoUpdatePrices} className="bg-white border border-zinc-300 hover:bg-zinc-100 text-zinc-600 px-4 py-2 shadow-sm rounded-xl">
-                                <Icon name="refresh-cw" size={16}/>
-                            </button>
-                        </div>
+                        <div className="flex flex-wrap items-center gap-2 p-3 bg-white rounded-2xl border border-stone-200 shadow-sm">{allTypes.map(type => (<FilterTag key={type} label={type} active={filterTypes.includes(type)} onClick={() => handleFilterChange(filterTypes, setFilterTypes, type)} />))}<div className="w-px h-4 bg-stone-200 mx-1"></div>{allFreqs.map(freq => (<FilterTag key={freq} label={freq} active={filterFreqs.includes(freq)} onClick={() => handleFilterChange(filterFreqs, setFilterFreqs, freq)} />))}</div>
                     </header>
-
-                    <div className="muji-card overflow-hidden">
-                        <table className="w-full text-sm text-left text-zinc-600">
-                            <thead className="text-[10px] text-zinc-400 uppercase bg-zinc-50 border-b border-zinc-200">
-                                <tr>
-                                    <th className="px-6 py-4 font-normal tracking-widest">代號</th>
-                                    <th className="px-6 py-4 text-right font-normal tracking-widest">股數</th>
-                                    <th className="px-6 py-4 text-right font-normal tracking-widest">均價</th>
-                                    <th className="px-6 py-4 text-right font-normal tracking-widest">現價</th>
-                                    <th className="px-6 py-4 text-right font-normal tracking-widest">市值</th>
-                                    <th className="px-6 py-4 text-right font-normal tracking-widest">未實現損益</th>
-                                    <th className="px-6 py-4 text-right font-normal tracking-widest"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {holdings.filter(h => h.symbol.toLowerCase().includes(filter.toLowerCase())).map(h => (
-                                    <tr key={h.symbol} className="border-b border-zinc-100 hover:bg-zinc-50 cursor-pointer group transition-colors" onClick={() => setSelectedStock(h)}>
-                                        <td className="px-6 py-4 font-bold text-zinc-900 font-mono text-base">{h.symbol}</td>
-                                        <td className="px-6 py-4 text-right font-mono text-zinc-500">{h.qty}</td>
-                                        <td className="px-6 py-4 text-right font-mono text-zinc-500">{Utils.formatCurrency(h.avgCost)}</td>
-                                        <td className="px-6 py-4 text-right font-mono text-zinc-800 group-hover:text-black font-medium" onClick={(e) => {
-                                            e.stopPropagation(); const p = prompt("手動更新價格:", h.currentPrice); if(p) updatePrice(h.symbol, p);
-                                        }}>{h.currentPrice}</td>
-                                        <td className="px-6 py-4 text-right font-mono text-zinc-800">{Utils.formatCurrency(h.marketValue)}</td>
-                                        <td className={`px-6 py-4 text-right font-mono ${getPnLColor(h.unrealizedPL)}`}>
-                                            {Utils.formatCurrency(h.unrealizedPL)} <span className="text-[10px] ml-1 opacity-50 font-normal">{Utils.formatPercent(h.unrealizedROI)}</span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <Icon name="chevron-right" size={16} className="ml-auto text-zinc-300 group-hover:text-zinc-600"/>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {holdings.length === 0 && <tr><td colSpan="7" className="text-center py-12 text-zinc-400 text-sm">查無庫存資料</td></tr>}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                    <div className="muji-card overflow-hidden flex flex-col h-[calc(100vh-280px)]"><div className="overflow-y-auto flex-1"><table className="w-full text-sm text-left text-stone-600 relative table-fixed"><thead className="text-[10px] text-stone-400 uppercase bg-white border-b border-stone-200 sticky top-0 z-20"><tr><th className="w-[15%]" onClick={() => handleSort('symbol', holdingsSort, setHoldingsSort)}>名稱/代號 <SortIcon colKey="symbol" config={holdingsSort}/></th><th className="w-[12%]" onClick={() => handleSort('qty', holdingsSort, setHoldingsSort)}>庫存股數 <SortIcon colKey="qty" config={holdingsSort}/></th><th className="w-[12%]" onClick={() => handleSort('avgCost', holdingsSort, setHoldingsSort)}>均價 <SortIcon colKey="avgCost" config={holdingsSort}/></th><th className="w-[12%]" onClick={() => handleSort('currentPrice', holdingsSort, setHoldingsSort)}>現價 <SortIcon colKey="currentPrice" config={holdingsSort}/></th><th className="w-[12%]" onClick={() => handleSort('marketValue', holdingsSort, setHoldingsSort)}>市值 <SortIcon colKey="marketValue" config={holdingsSort}/></th><th className="w-[15%]" onClick={() => handleSort('unrealizedPL', holdingsSort, setHoldingsSort)}>未實現損益/報酬率 <SortIcon colKey="unrealizedPL" config={holdingsSort}/></th><th className="w-[15%]" onClick={() => handleSort('realizedPL', holdingsSort, setHoldingsSort)}>已實現損益/報酬率 <SortIcon colKey="realizedPL" config={holdingsSort}/></th><th className="w-[7%]"></th></tr></thead><tbody>{sortedHoldings.map(h => (<tr key={h.symbol} className="border-b border-stone-100 hover:bg-stone-50 cursor-pointer group transition-colors" onClick={() => setSelectedStock(h)}><td className="text-center"><div className={`font-bold text-base truncate px-2 ${getStockColor(h.stockType)}`}>{h.name || h.symbol}</div><div className="text-xs text-stone-400 font-mono">{h.symbol}</div><div className="mt-1"><span className="text-[10px] bg-stone-100 text-stone-500 px-1.5 py-0.5 rounded">{h.dividendFreq}</span></div></td><td className="font-mono text-stone-700 text-center">{h.qty}</td><td className="font-mono text-stone-700 text-center">{Utils.formatPrice(h.avgCost)}</td><td className="font-mono text-stone-700 text-center" onClick={(e) => { e.stopPropagation(); setEditingStock(h); }}>{Utils.formatPrice(h.currentPrice)}</td><td className="font-mono text-stone-700 text-center">{Utils.formatCurrency(h.marketValue)}</td><td className={`font-mono text-center ${getPnLColor(h.unrealizedPL)}`}><div className="font-bold">{Utils.formatCurrency(h.unrealizedPL)}</div><div className="text-xs font-bold opacity-80">({Utils.formatPercent(h.unrealizedROI)})</div></td><td className={`font-mono text-center ${getPnLColor(h.realizedPL)}`}><div className="font-bold">{Utils.formatCurrency(h.realizedPL)}</div><div className="text-xs font-bold opacity-80">({Utils.formatPercent(h.realizedROI)})</div></td><td className="text-center"><Icon name="chevron-right" size={16} className="mx-auto text-stone-300 group-hover:text-stone-600"/></td></tr>))}</tbody></table></div></div></div>
             );
         };
 
         const SettingsView = () => {
-            const { syncToGithub, loadFromGithub } = useContext(AppContext);
-            // 改為只儲存 suffix
-            const [tokenSuffix, setTokenSuffix] = useState(localStorage.getItem('tm_gh_token_suffix') || '');
-            const [gistId, setGistId] = useState(localStorage.getItem('tm_gh_gist') || '');
-            const [status, setStatus] = useState('');
-
-            const handleSave = () => { 
-                localStorage.setItem('tm_gh_token_suffix', tokenSuffix); 
-                localStorage.setItem('tm_gh_gist', gistId); 
-                alert("設定已儲存");
-            }
-
-            const handleSync = async () => {
-                setStatus('同步中...'); 
-                try { 
-                    const newId = await syncToGithub(tokenSuffix, gistId || null); 
-                    setGistId(newId); 
-                    localStorage.setItem('tm_gh_gist', newId); 
-                    setStatus('備份成功! ID: ' + newId); 
-                } catch (e) { 
-                    setStatus('錯誤: ' + e.message); 
-                }
-            };
-
-            const handleLoad = async () => {
-                if(!gistId) return; 
-                setStatus('下載中...'); 
-                try { 
-                    await loadFromGithub(tokenSuffix, gistId); 
-                    setStatus('資料已還原，即將重整...'); 
-                    setTimeout(() => window.location.reload(), 1000);
-                } catch (e) { 
-                    setStatus('錯誤: ' + e.message); 
-                }
-            };
+            const { portfolios, createPortfolio, deletePortfolio, renamePortfolio } = useContext(AppContext);
+            const [promptAction, setPromptAction] = useState({ show: false, title: "", placeholder: "", onConfirm: null });
+            const [confirmAction, setConfirmAction] = useState({ show: false, title: "", message: "", onConfirm: null, isDangerous: false });
 
             return (
-                <div className="max-w-xl mx-auto space-y-8">
-                     <header>
-                        <h2 className="text-3xl font-medium text-zinc-900 tracking-tight">系統設定</h2>
-                        <p className="text-zinc-500 text-sm mt-1">參數配置與雲端同步</p>
-                    </header>
-                    
-                    <div className="muji-card p-8 space-y-6">
-                        <div className="flex items-center gap-3 mb-6 text-zinc-800">
-                            <Icon name="github" />
-                            <h3 className="font-bold text-sm tracking-widest">GitHub Gist 同步</h3>
-                        </div>
-                        
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-bold text-zinc-500 mb-2">
-                                    GitHub Token (系統已預設 ghp_ 前綴，請只填寫後面的字串)
-                                </label>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-zinc-400 font-mono bg-zinc-100 px-3 py-3 rounded-xl border border-zinc-200">ghp_</span>
-                                    <input type="password" value={tokenSuffix} onChange={e => setTokenSuffix(e.target.value)} className="flex-1 p-3 font-mono text-sm" placeholder="xxxxxxxxxxxx" />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-zinc-500 mb-2">Gist ID (還原用，選填)</label>
-                                <input type="text" value={gistId} onChange={e => setGistId(e.target.value)} className="w-full p-3 font-mono text-sm" placeholder="..." />
-                            </div>
-                        </div>
-
-                        <div className="flex gap-4 pt-4 border-t border-zinc-100">
-                            <button onClick={handleSave} className="flex-1 py-3 bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-bold shadow-md transition-colors rounded-xl">儲存設定</button>
-                            <button onClick={handleSync} className="flex-1 py-3 bg-white border border-zinc-300 hover:bg-zinc-50 text-zinc-800 text-sm font-bold transition-colors rounded-xl">上傳備份</button>
-                            <button onClick={handleLoad} className="flex-1 py-3 bg-white border border-zinc-300 hover:bg-zinc-50 text-zinc-800 text-sm font-bold transition-colors rounded-xl">下載還原</button>
-                        </div>
-                        {status && <div className="text-xs font-mono text-zinc-500 text-center bg-zinc-50 p-2 rounded-lg">{status}</div>}
-                    </div>
-
-                    <div className="muji-card p-8 border-red-100 bg-red-50/10">
-                        <h3 className="font-bold text-sm tracking-widest text-red-900/50 mb-4">危險區域</h3>
-                        <button onClick={() => { if(confirm("確定要刪除所有資料嗎？")) { localStorage.clear(); window.location.reload(); }}} 
-                            className="w-full py-3 border border-red-200 text-red-700 hover:bg-red-50 text-sm font-bold transition-colors rounded-xl">
-                            重置所有資料
-                        </button>
-                    </div>
-                </div>
+                <div className="max-w-xl mx-auto space-y-8"><header><h2 className="text-3xl font-medium text-stone-800">帳本管理</h2></header><div className="muji-card p-8 space-y-6"><div className="flex items-center gap-2"><input id="new-portfolio-name" className="flex-1 p-3 border rounded-xl" placeholder="輸入新帳本名稱..." /><button onClick={() => { const val = document.getElementById('new-portfolio-name').value; if(val) { createPortfolio(val); document.getElementById('new-portfolio-name').value = ""; }}} className="px-6 py-3 bg-morandi-dark hover-bg-morandi-dark text-white rounded-xl font-bold transition-colors">建立</button></div><div className="space-y-3">{portfolios.map(p => (<div key={p.id} className="flex justify-between items-center p-4 bg-stone-50 rounded-xl border border-stone-200"><div className="font-bold text-stone-700">{p.name} <span className="text-xs text-stone-400 font-normal ml-2">ID: {p.id}</span></div><div className="flex gap-2"><button onClick={() => { setPromptAction({ show: true, title: "修改帳本名稱", placeholder: p.name, initialValue: p.name, onConfirm: (newName) => { if(newName) renamePortfolio(p.id, newName); setPromptAction({ show: false }); } }); }} className="p-2 bg-white border border-stone-200 rounded-lg text-stone-500 hover:text-stone-900"><Icon name="edit-2" size={14}/></button>{portfolios.length > 1 && (<button onClick={() => { setConfirmAction({ show: true, title: "刪除帳本", message: `確定要刪除帳本「${p.name}」嗎？\n資料將無法復原。`, isDangerous: true, onConfirm: () => { deletePortfolio(p.id); setConfirmAction({ show: false }); } }); }} className="p-2 bg-white border border-stone-200 rounded-lg text-stone-500 hover:text-rose-500"><Icon name="trash" size={14}/></button>)}</div></div>))}</div></div>{promptAction.show && (<InputModal title={promptAction.title} placeholder={promptAction.placeholder} initialValue={promptAction.placeholder} onConfirm={promptAction.onConfirm} onCancel={() => setPromptAction({ show: false })} />)}{confirmAction.show && (<ConfirmModal title={confirmAction.title} message={confirmAction.message} confirmText="確認" isDangerous={confirmAction.isDangerous} onConfirm={confirmAction.onConfirm} onCancel={() => setConfirmAction({ show: false })} />)}</div>
             );
         };
 
         const Layout = () => {
             const [currentView, setCurrentView] = useState('dashboard');
+            const [showImport, setShowImport] = useState(false);
+            const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
+            const [showPortfolioModal, setShowPortfolioModal] = useState(false);
+            
+            const { loading, syncStatus, toast } = useContext(AppContext);
+            const { addBatchTransactions } = useContext(AppContext);
+            const handleImport = (data) => { addBatchTransactions(data); };
+
             return (
-                <div className="flex h-screen overflow-hidden bg-zinc-50">
-                    <Sidebar setView={setCurrentView} currentView={currentView} />
-                    <main className="flex-1 overflow-y-auto p-12 bg-[#fafafa]">
+                <div className="flex h-screen overflow-hidden bg-stone-50">
+                    <Sidebar setView={setCurrentView} currentView={currentView} openImport={() => setShowImport(true)} isCollapsed={isSidebarCollapsed} toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)} setShowPortfolioModal={setShowPortfolioModal} />
+                    <main className="flex-1 overflow-y-auto p-12 bg-[#f5f5f4] relative">
+                        {loading && (<div className="absolute top-4 right-4 bg-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-sm font-bold z-50 text-stone-600"><div className="loader"></div> 處理中...</div>)}
                         {currentView === 'dashboard' && <Dashboard />}
-                        {currentView === 'holdings' && <HoldingsView />}
+                        {currentView === 'holdings' && <HoldingsView openImport={() => setShowImport(true)} />}
                         {currentView === 'import' && <ImportView />}
                         {currentView === 'settings' && <SettingsView />}
+                        {toast && <Toast msg={toast} />}
                     </main>
+                    {showImport && <ImportModal onClose={() => setShowImport(false)} onImport={handleImport} />}
+                    {showPortfolioModal && <PortfolioModal onClose={() => setShowPortfolioModal(false)} />}
                 </div>
             );
         };
 
-        const App = () => {
-            return (
-                <AppProvider>
-                    <Layout />
-                </AppProvider>
-            );
-        };
-
+        const App = () => { return <AppProvider><Layout /></AppProvider>; };
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
