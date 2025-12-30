@@ -2849,7 +2849,7 @@
     {
       "id": "7c555fbf-7cd4-43b7-a1c2-fabda848da14",
       "date": "2010-01-08",
-      "name": "1447",
+      "name": "力鵬",
       "symbol": "1447",
       "type": "sell",
       "price": 15.2,
@@ -2866,7 +2866,7 @@
     {
       "id": "c967b1a1-14ff-449b-8be2-a0dd174e92ec",
       "date": "2010-01-04",
-      "name": "1447",
+      "name": "力鵬",
       "symbol": "1447",
       "type": "sell",
       "price": 14.6,
@@ -2914,7 +2914,9 @@
     },
     "1447": {
       "price": 5.43,
-      "updatedAt": "2025-12-30T17:21:55.227Z"
+      "updatedAt": "2025-12-30T18:35:33.196Z",
+      "stockType": "個股",
+      "dividendFreq": "年配"
     },
     "1504": {
       "price": 84.9,
