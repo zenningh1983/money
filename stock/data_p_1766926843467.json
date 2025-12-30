@@ -2824,6 +2824,20 @@
       "computedPL": -303,
       "computedROI": -0.007024132415327909,
       "isGrouped": true
+    },
+    {
+      "id": "ae05f5c4-dd5e-4a22-9acd-c2dd549944d3",
+      "date": "2009-12-30",
+      "name": "5347",
+      "symbol": "5347",
+      "type": "sell",
+      "price": 15.35,
+      "qty": 1000,
+      "fee": 21,
+      "tax": 46,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "44e214fb-1b94-4d57-95c7-e7dd978cfdd7"
     }
   ],
   "prices": {
