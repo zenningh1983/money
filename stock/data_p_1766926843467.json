@@ -2751,6 +2751,45 @@
       "computedPL": 1862,
       "computedROI": 0.0830101199233204,
       "isGrouped": true
+    },
+    {
+      "id": "b7a19567-79cb-4a06-97fb-5f7948ddb35e",
+      "date": "2009-11-25",
+      "name": "光寶科技",
+      "symbol": "2301",
+      "type": "buy",
+      "price": 44.75,
+      "qty": 3000,
+      "fee": 115,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "67318cf2-382f-4e07-a0fc-a3324c01469d",
+      "date": "2010-04-07",
+      "name": "光寶科技",
+      "symbol": "2301",
+      "type": "buy",
+      "price": 43.1,
+      "qty": 1000,
+      "fee": 37,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "3bd4e66b-8ea7-468b-9985-e7ff2bbf547c",
+      "date": "2010-04-07",
+      "name": "光寶科技",
+      "symbol": "2301",
+      "type": "buy",
+      "price": 2010,
+      "qty": 4,
+      "fee": 7,
+      "tax": 14,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
