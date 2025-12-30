@@ -2405,6 +2405,28 @@
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "8787f3e2-8228-4916-889d-057498245d0b",
       "tax": 237
+    },
+    {
+      "id": "6375f10b-f111-4d41-aeb0-50c07fa43097",
+      "date": "2008-12-09",
+      "name": "中鋼",
+      "symbol": "2002",
+      "type": "buy",
+      "price": 22.05,
+      "qty": 2000,
+      "fee": 62,
+      "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "cffe0c44-a6fa-4052-8051-c4e0bbd509c5",
+      "date": "2011-11-21",
+      "name": "中鋼",
+      "symbol": "2002",
+      "type": "buy",
+      "price": 27,
+      "qty": 2000,
+      "fee": 46,
+      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
