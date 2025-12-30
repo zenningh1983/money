@@ -3180,14 +3180,14 @@
       "symbol": "4106",
       "type": "sell",
       "price": 35.3,
-      "qty": 1049,
+      "qty": 1050,
       "fee": 143,
       "tax": 0,
-      "realizedDividend": 3430,
+      "realizedDividend": 3465,
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "a84270bf-b867-477e-9a7f-45643553f994",
-      "computedPL": 1190.278999999995,
-      "computedROI": 0.03334449131468936,
+      "computedPL": 4620.278999999995,
+      "computedROI": 0.12943255571756043,
       "isGrouped": true
     }
   ],
