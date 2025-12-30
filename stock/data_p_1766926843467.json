@@ -2779,6 +2779,20 @@
       "tax": 14,
       "realizedDividend": 0,
       "note": "股票股利"
+    },
+    {
+      "id": "5cce194f-a9da-47d0-b803-3e09cb762568",
+      "date": "2009-12-30",
+      "name": "2301",
+      "symbol": "2301",
+      "type": "sell",
+      "price": 48.2,
+      "qty": 3000,
+      "fee": 557,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "b7a19567-79cb-4a06-97fb-5f7948ddb35e"
     }
   ],
   "prices": {
