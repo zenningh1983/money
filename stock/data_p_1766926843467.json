@@ -3402,6 +3402,20 @@
       "realizedDividend": 0,
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "c9105bab-12e8-4610-ae3f-8af8988a14e3"
+    },
+    {
+      "id": "2ffa2159-e873-4e1a-88d9-1000cae4f3cd",
+      "date": "2025-12-30",
+      "symbol": "00953B",
+      "name": "00953B",
+      "type": "sell",
+      "price": 56,
+      "qty": 3000,
+      "fee": 0,
+      "tax": 0,
+      "realizedDividend": 0,
+      "relatedBuyId": "fd1a87d8-6a43-485c-9e6c-4de008b10e02",
+      "note": "Manual Input"
     }
   ],
   "prices": {
