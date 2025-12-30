@@ -2528,10 +2528,13 @@
       "type": "sell",
       "price": 24.8,
       "qty": 3000,
-      "fee": 106,
+      "fee": 287,
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "99746faf-caf4-4942-be7d-29c3ae746141",
-      "tax": 223
+      "tax": 0,
+      "computedPL": 4522,
+      "computedROI": 0.06501890753281858,
+      "isGrouped": true
     }
   ],
   "prices": {
