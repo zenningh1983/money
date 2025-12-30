@@ -2734,6 +2734,20 @@
       "tax": 0,
       "realizedDividend": 0,
       "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "f1b66d51-f1d2-4be6-b4db-3f788ab95c76",
+      "date": "2009-12-28",
+      "name": "5491",
+      "symbol": "5491",
+      "type": "sell",
+      "price": 24.4,
+      "qty": 1000,
+      "fee": 34,
+      "tax": 73,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "4c4d91f9-ae19-4996-ac95-503e0f0c1033"
     }
   ],
   "prices": {
