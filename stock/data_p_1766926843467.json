@@ -1908,17 +1908,6 @@
       "note": "AI Table Import"
     },
     {
-      "id": "2ec64209-9cc7-471a-a3fb-26b1fc882099",
-      "date": "2009/11/26",
-      "name": "中石化",
-      "symbol": "1314",
-      "type": "buy",
-      "price": 12.45,
-      "qty": 2000,
-      "fee": 21,
-      "note": "AI Table Import"
-    },
-    {
       "id": "f6b41f14-17af-4d75-ba85-86d623255352",
       "date": "2009/11/26",
       "name": "中石化",
