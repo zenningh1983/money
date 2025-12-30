@@ -2269,6 +2269,21 @@
       "computedPL": -83503,
       "computedROI": -0.6064433195587284,
       "isGrouped": true
+    },
+    {
+      "symbol": "5203",
+      "name": "訊連",
+      "type": "sell",
+      "date": "2009-09-18",
+      "qty": 1000,
+      "price": 132.5,
+      "fee": 188,
+      "tax": 397,
+      "totalAmount": 131915,
+      "realizedDividend": 7488,
+      "note": "賣出 2009-09-02 持倉",
+      "relatedBuyId": "73294df8-acb1-4830-bf31-3d5f260410de",
+      "id": "9aa2e853-251f-45cd-afcf-85236df6a012"
     }
   ],
   "prices": {
