@@ -2583,6 +2583,19 @@
       "computedPL": 2071,
       "computedROI": 0.07094652461375081,
       "isGrouped": true
+    },
+    {
+      "id": "eda15602-6e21-4305-b0cd-e7a1584bc83a",
+      "date": "2009-12-28",
+      "name": "2457",
+      "symbol": "2457",
+      "type": "sell",
+      "price": 31,
+      "qty": 1000,
+      "fee": 44,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "a453ccdd-9ead-4c49-840a-4a97b1e664c0",
+      "tax": 93
     }
   ],
   "prices": {
