@@ -2295,6 +2295,21 @@
       "qty": 9,
       "fee": 0,
       "note": "AI Table Import"
+    },
+    {
+      "symbol": "5203",
+      "name": "訊連",
+      "type": "sell",
+      "date": "2009-11-11",
+      "qty": 9,
+      "price": 137,
+      "fee": 5,
+      "tax": 0,
+      "totalAmount": 1228,
+      "realizedDividend": 0,
+      "note": "賣出 2009-09-02 持倉",
+      "relatedBuyId": "e9975c7c-94e9-427b-b84c-d604d04ed4fa",
+      "id": "efbe2dae-c02a-4222-aad4-dc70cc350151"
     }
   ],
   "prices": {
