@@ -2455,6 +2455,19 @@
       "qty": 2000,
       "fee": 46,
       "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "134989b9-9a25-4752-b208-ad7eef4cb591",
+      "date": "2012-02-29",
+      "name": "2002",
+      "symbol": "2002",
+      "type": "sell",
+      "price": 30.5,
+      "qty": 2000,
+      "fee": 86,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "fc0c8c99-01c2-4ae0-b112-676def6a7c59",
+      "tax": 183
     }
   ],
   "prices": {
