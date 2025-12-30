@@ -3043,7 +3043,7 @@
     {
       "id": "bfb7cf88-bfac-442e-b314-73b383178feb",
       "date": "2010-03-12",
-      "name": "8064",
+      "name": "東捷",
       "symbol": "8064",
       "type": "sell",
       "price": 23.5,
@@ -3256,7 +3256,9 @@
     },
     "8064": {
       "price": 47,
-      "updatedAt": "2025-12-30T17:21:55.647Z"
+      "updatedAt": "2025-12-30T18:59:18.558Z",
+      "stockType": "個股",
+      "dividendFreq": "年配"
     },
     "8103": {
       "price": 86,
