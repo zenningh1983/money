@@ -2301,17 +2301,6 @@
       "name": "中鋼"
     },
     {
-      "id": "bb35254a-9eaf-4db2-813b-885b9be76f39",
-      "date": "2008-12-9",
-      "name": "中鋼",
-      "symbol": "2002",
-      "type": "buy",
-      "price": 22.05,
-      "qty": 2000,
-      "fee": 62,
-      "note": "AI Table (Import)"
-    },
-    {
       "id": "390b5066-9b67-4cc1-aa4f-e35f46bdbc72",
       "date": "2009/7/23",
       "name": "國泰金控",
