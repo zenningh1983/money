@@ -2414,6 +2414,16 @@
       "note": "賣出 2011-05-03 持倉",
       "relatedBuyId": "4acff501-b7eb-47fe-abae-772f7214c414",
       "id": "30b5efaa-435d-4b56-b258-474898310362"
+    },
+    {
+      "id": "880c2683-c74e-420a-a64a-10b9509c222d",
+      "date": "2011-11-21",
+      "symbol": "2002",
+      "type": "buy",
+      "price": 27,
+      "qty": 2000,
+      "fee": 46,
+      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
