@@ -3137,6 +3137,20 @@
       "realizedDividend": 0,
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "8989fe53-23a3-4f54-ad47-4bd58cf562f9"
+    },
+    {
+      "id": "0351db84-f210-496f-a966-030a96fb6a5f",
+      "date": "2023-02-16",
+      "name": "2201",
+      "symbol": "2201",
+      "type": "sell",
+      "price": 82,
+      "qty": 1000,
+      "fee": 70,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "57d94976-a244-46f3-872f-b531f307fe0b"
     }
   ],
   "prices": {
