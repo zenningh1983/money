@@ -2773,12 +2773,12 @@
       "name": "光寶科技",
       "symbol": "2301",
       "type": "buy",
-      "price": 2010,
-      "qty": 4,
-      "fee": 7,
+      "price": 0,
+      "qty": 14,
+      "fee": 0,
       "tax": 14,
       "realizedDividend": 0,
-      "note": "AI Parsed (Import)"
+      "note": "股票股利"
     }
   ],
   "prices": {
