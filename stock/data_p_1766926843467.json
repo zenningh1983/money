@@ -3387,7 +3387,10 @@
       "tax": 0,
       "realizedDividend": 0,
       "note": "AI Parsed (Batch Sell)",
-      "relatedBuyId": "c9105bab-12e8-4610-ae3f-8af8988a14e3"
+      "relatedBuyId": "c9105bab-12e8-4610-ae3f-8af8988a14e3",
+      "computedPL": 1634,
+      "computedROI": 0.021481627555380266,
+      "isGrouped": true
     }
   ],
   "prices": {
