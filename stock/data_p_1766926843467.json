@@ -2487,6 +2487,19 @@
       "computedPL": 2610.1,
       "computedROI": 0,
       "isGrouped": true
+    },
+    {
+      "id": "f9db7971-ccf6-437f-a5fd-19cb0658305e",
+      "date": "2009-11-11",
+      "name": "6282",
+      "symbol": "6282",
+      "type": "sell",
+      "price": 1000,
+      "qty": 23,
+      "fee": 32,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "4b2ac7c1-6db9-458b-b80e-e17a7a816780",
+      "tax": 69
     }
   ],
   "prices": {
