@@ -3025,6 +3025,20 @@
       "realizedDividend": 0,
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "fa9a7336-23c3-4a01-ad73-1d733b3d7790"
+    },
+    {
+      "id": "2169fb33-cfa0-43d4-94a9-fe4c8f1b7b81",
+      "date": "2012-05-02",
+      "name": "2404",
+      "symbol": "2404",
+      "type": "sell",
+      "price": 28.4,
+      "qty": 5000,
+      "fee": 547,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "a4699921-3c26-4096-972e-8ee266f1fc7c"
     }
   ],
   "prices": {
