@@ -2287,13 +2287,13 @@
     },
     {
       "id": "e9975c7c-94e9-427b-b84c-d604d04ed4fa",
-      "date": "2009/9/2",
+      "date": "2009-09-02",
       "name": "訊連",
       "symbol": "5203",
       "type": "buy",
-      "price": 130,
-      "qty": 1000,
-      "fee": 182,
+      "price": 0,
+      "qty": 9,
+      "fee": 0,
       "note": "AI Table Import"
     }
   ],
