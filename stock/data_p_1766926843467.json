@@ -2422,6 +2422,21 @@
       "note": "賣出 2009/7/23 持倉",
       "relatedBuyId": "390b5066-9b67-4cc1-aa4f-e35f46bdbc72",
       "id": "e3bffdaf-cc3e-4cee-bdf6-5efc00b2475e"
+    },
+    {
+      "symbol": "2882",
+      "name": "國泰金控",
+      "type": "sell",
+      "date": "2013-02-04",
+      "qty": 1000,
+      "price": 33.9,
+      "fee": 131,
+      "tax": 0,
+      "totalAmount": 33769,
+      "realizedDividend": 0,
+      "note": "賣出 2011/5/23 持倉",
+      "relatedBuyId": "40db5fa9-f263-419f-8d1b-d833a9d80885",
+      "id": "3a28eeef-8dd6-4ba9-87dc-74d1c98d5f4d"
     }
   ],
   "prices": {
