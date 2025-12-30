@@ -2429,7 +2429,8 @@
       "computedPL": 18849,
       "computedROI": 0.42681490874507494,
       "isGrouped": true,
-      "realizedDividend": 2590
+      "realizedDividend": 2590,
+      "name": "中鋼"
     },
     {
       "id": "9ffc311c-8708-4600-ac37-c7b278acb949",
@@ -2439,7 +2440,8 @@
       "price": 0,
       "qty": 86,
       "fee": 0,
-      "note": "AI Parsed (Import)"
+      "note": "AI Parsed (Import)",
+      "name": "中鋼"
     }
   ],
   "prices": {
@@ -2483,7 +2485,7 @@
     },
     "2002": {
       "price": 19.25,
-      "updatedAt": "2025-12-30T17:29:13.995Z",
+      "updatedAt": "2025-12-30T17:39:33.006Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
