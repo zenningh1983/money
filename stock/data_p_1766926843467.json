@@ -2407,6 +2407,21 @@
       "qty": 1000,
       "fee": 38,
       "note": "AI Table Import"
+    },
+    {
+      "symbol": "2882",
+      "name": "國泰金控",
+      "type": "sell",
+      "date": "2009-10-20",
+      "qty": 2000,
+      "price": 61.9,
+      "fee": 545,
+      "tax": 0,
+      "totalAmount": 123255,
+      "realizedDividend": 0,
+      "note": "賣出 2009/7/23 持倉",
+      "relatedBuyId": "390b5066-9b67-4cc1-aa4f-e35f46bdbc72",
+      "id": "e3bffdaf-cc3e-4cee-bdf6-5efc00b2475e"
     }
   ],
   "prices": {
