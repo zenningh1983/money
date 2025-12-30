@@ -3232,6 +3232,20 @@
       "tax": 0,
       "realizedDividend": 0,
       "note": "股票股利"
+    },
+    {
+      "id": "78ce7adf-110b-4931-beae-d95975606ec0",
+      "date": "2010-08-16",
+      "name": "4106",
+      "symbol": "4106",
+      "type": "sell",
+      "price": 35.3,
+      "qty": 50,
+      "fee": 2,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "4ab9ff29-43e1-4fe6-a072-e72f16f1b653"
     }
   ],
   "prices": {
