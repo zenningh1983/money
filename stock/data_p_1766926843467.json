@@ -3213,12 +3213,12 @@
       "name": "雅博",
       "symbol": "4106",
       "type": "buy",
-      "price": 34,
+      "price": 0,
       "qty": 50,
       "fee": 0,
       "tax": 0,
       "realizedDividend": 0,
-      "note": "AI Parsed (Import)"
+      "note": "股票股利"
     },
     {
       "id": "dc63e369-8989-4a61-b881-d7c3895fefdc",
