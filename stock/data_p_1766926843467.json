@@ -3081,6 +3081,45 @@
       "realizedDividend": 0,
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "0995f1a4-b21c-4563-856f-bc575260b6d0"
+    },
+    {
+      "id": "b82bd2d8-eede-4360-8f27-f2b7f87f55d1",
+      "date": "2009-12-09",
+      "name": "裕隆",
+      "symbol": "2201",
+      "type": "buy",
+      "price": 39.1,
+      "qty": 1000,
+      "fee": 33,
+      "tax": 39133,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "8989fe53-23a3-4f54-ad47-4bd58cf562f9",
+      "date": "2015-05-19",
+      "name": "裕隆",
+      "symbol": "2201",
+      "type": "buy",
+      "price": 62.95,
+      "qty": 271,
+      "fee": 15,
+      "tax": 17074,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "57d94976-a244-46f3-872f-b531f307fe0b",
+      "date": "2015-05-19",
+      "name": "裕隆",
+      "symbol": "2201",
+      "type": "buy",
+      "price": 62.9,
+      "qty": 1000,
+      "fee": 54,
+      "tax": 62954,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
