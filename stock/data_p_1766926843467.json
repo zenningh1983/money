@@ -2615,6 +2615,39 @@
       "computedPL": 1982,
       "computedROI": 0.05490304709141274,
       "isGrouped": true
+    },
+    {
+      "id": "930f9167-d791-41c7-a4fd-029219110272",
+      "date": "2009-09-21",
+      "name": "仲琦",
+      "symbol": "2419",
+      "type": "buy",
+      "price": 19.2,
+      "qty": 1000,
+      "fee": 27,
+      "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "50e81960-7a2e-469d-bb73-88bfb5df5548",
+      "date": "2015-01-26",
+      "name": "仲琦",
+      "symbol": "2419",
+      "type": "buy",
+      "price": 16.4,
+      "qty": 1000,
+      "fee": 14,
+      "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "94a555a4-be9f-477b-8edb-e2a47ebe8576",
+      "date": "2015-01-26",
+      "name": "仲琦",
+      "symbol": "2419",
+      "type": "buy",
+      "price": 16.4,
+      "qty": 1000,
+      "fee": 14,
+      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
