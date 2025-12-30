@@ -2416,6 +2416,19 @@
       "qty": 2000,
       "fee": 95,
       "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "734385cd-44c1-46f9-b8aa-03d8ba2ff135",
+      "date": "2009-11-11",
+      "name": "2881",
+      "symbol": "2881",
+      "type": "sell",
+      "price": 39.5,
+      "qty": 2000,
+      "fee": 112,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "8787f3e2-8228-4916-889d-057498245d0b",
+      "tax": 237
     }
   ],
   "prices": {
