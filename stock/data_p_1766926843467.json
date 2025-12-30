@@ -3039,6 +3039,20 @@
       "realizedDividend": 0,
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "a4699921-3c26-4096-972e-8ee266f1fc7c"
+    },
+    {
+      "id": "bfb7cf88-bfac-442e-b314-73b383178feb",
+      "date": "2010-03-12",
+      "name": "8064",
+      "symbol": "8064",
+      "type": "sell",
+      "price": 23.5,
+      "qty": 1000,
+      "fee": 91,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "c5ca527c-5327-4598-b699-824fcfb578d7"
     }
   ],
   "prices": {
