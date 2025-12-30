@@ -2310,6 +2310,18 @@
       "note": "賣出 2009-09-02 持倉",
       "relatedBuyId": "e9975c7c-94e9-427b-b84c-d604d04ed4fa",
       "id": "efbe2dae-c02a-4222-aad4-dc70cc350151"
+    },
+    {
+      "id": "9931ecc7-8ba2-48a5-a3bf-756ad9acbc26",
+      "date": "2009-10-19",
+      "symbol": "2009",
+      "type": "sell",
+      "price": 279,
+      "qty": 63032,
+      "fee": 25059,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "e62b6279-f54b-4372-9286-6e87f445e871",
+      "tax": 52757
     }
   ],
   "prices": {
