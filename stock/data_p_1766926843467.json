@@ -2859,20 +2859,6 @@
       "realizedDividend": 0,
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "b80d4dcf-b328-4194-8a8b-d8b1a842aae6"
-    },
-    {
-      "id": "061bfe44-ca93-44a5-ad36-d967495755a0",
-      "date": "2010-01-08",
-      "name": "1447",
-      "symbol": "1447",
-      "type": "sell",
-      "price": 15.2,
-      "qty": 3000,
-      "fee": 64,
-      "tax": 136,
-      "realizedDividend": 0,
-      "note": "AI Parsed (Batch Sell)",
-      "relatedBuyId": "cee87ceb-a937-44ea-bed8-34e0bb710c2c"
     }
   ],
   "prices": {
