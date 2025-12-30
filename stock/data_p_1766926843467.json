@@ -2748,19 +2748,6 @@
       "realizedDividend": 0,
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "4c4d91f9-ae19-4996-ac95-503e0f0c1033"
-    },
-    {
-      "id": "822724ab-3e61-4be3-a131-9ed09980cba7",
-      "date": "2009-09-21",
-      "name": "連展",
-      "symbol": "5491",
-      "type": "buy",
-      "price": 22.4,
-      "qty": 1000,
-      "fee": 31,
-      "tax": 0,
-      "realizedDividend": 0,
-      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
