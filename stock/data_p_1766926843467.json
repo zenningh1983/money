@@ -2879,6 +2879,32 @@
       "computedPL": 1649,
       "computedROI": 0.06013200598038143,
       "isGrouped": true
+    },
+    {
+      "id": "26da108c-8726-4bfe-89d5-b66e0bc187bd",
+      "date": "2009-12-17",
+      "name": "三商行",
+      "symbol": "2905",
+      "type": "buy",
+      "price": 16.3,
+      "qty": 2000,
+      "fee": 28,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "2e127538-169e-4a64-abda-9e9c323b19ea",
+      "date": "2009-12-17",
+      "name": "三商行",
+      "symbol": "2905",
+      "type": "buy",
+      "price": 16.2,
+      "qty": 1000,
+      "fee": 14,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
