@@ -2181,10 +2181,13 @@
       "fee": 451,
       "tax": 0,
       "totalAmount": 116549,
-      "realizedDividend": 0,
+      "realizedDividend": 93335,
       "note": "賣出 2007/7/31 持倉",
       "relatedBuyId": "ce54d247-5edf-4987-aa79-d341861e6805",
-      "id": "4cd7666c-a666-413f-a801-0987e051f996"
+      "id": "4cd7666c-a666-413f-a801-0987e051f996",
+      "computedPL": -294526,
+      "computedROI": -0.7164775284315514,
+      "isGrouped": true
     }
   ],
   "prices": {
