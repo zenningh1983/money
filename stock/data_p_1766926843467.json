@@ -2284,6 +2284,17 @@
       "note": "賣出 2009-09-02 持倉",
       "relatedBuyId": "73294df8-acb1-4830-bf31-3d5f260410de",
       "id": "9aa2e853-251f-45cd-afcf-85236df6a012"
+    },
+    {
+      "id": "e9975c7c-94e9-427b-b84c-d604d04ed4fa",
+      "date": "2009/9/2",
+      "name": "訊連",
+      "symbol": "5203",
+      "type": "buy",
+      "price": 130,
+      "qty": 1000,
+      "fee": 182,
+      "note": "AI Table Import"
     }
   ],
   "prices": {
