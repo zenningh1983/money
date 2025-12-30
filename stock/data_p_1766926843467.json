@@ -2894,6 +2894,20 @@
       "tax": 0,
       "realizedDividend": 0,
       "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "669e5fb2-991d-4c6d-9cd1-77fe333c6432",
+      "date": "2010-01-05",
+      "name": "2905",
+      "symbol": "2905",
+      "type": "sell",
+      "price": 17.65,
+      "qty": 2000,
+      "fee": 50,
+      "tax": 105,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "26da108c-8726-4bfe-89d5-b66e0bc187bd"
     }
   ],
   "prices": {
