@@ -1708,6 +1708,94 @@
       "qty": 1000,
       "fee": 31,
       "note": "AI Table Import"
+    },
+    {
+      "id": "5f865945-2c25-4424-9efc-73b73f302303",
+      "date": "2022/1/7",
+      "name": "",
+      "symbol": "00878",
+      "type": "buy",
+      "price": 19.15,
+      "qty": 2000,
+      "fee": 33,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "ff767dfa-54b5-4db6-bb0c-6a53634e13fa",
+      "date": "2022/1/12",
+      "name": "",
+      "symbol": "00878",
+      "type": "buy",
+      "price": 19.3,
+      "qty": 2000,
+      "fee": 33,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "b8b35951-9120-4b1c-80fe-0d81ce271fc7",
+      "date": "2022/2/21",
+      "name": "",
+      "symbol": "00878",
+      "type": "buy",
+      "price": 19.68,
+      "qty": 2000,
+      "fee": 34,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "8dc0d6ce-b105-4554-8f7f-98a47daff1e4",
+      "date": "2022/3/7",
+      "name": "",
+      "symbol": "00878",
+      "type": "buy",
+      "price": 18.78,
+      "qty": 4000,
+      "fee": 64,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "62a93ef0-784d-4c4f-ae77-66714d9083a5",
+      "date": "2024/12/4",
+      "name": "",
+      "symbol": "00878",
+      "type": "buy",
+      "price": 22.15,
+      "qty": 4000,
+      "fee": 76,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "ecab41dc-c013-43aa-9045-67e7139ffd8a",
+      "date": "2025/1/13",
+      "name": "",
+      "symbol": "00878",
+      "type": "buy",
+      "price": 21.84,
+      "qty": 1000,
+      "fee": 19,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "31561fe5-c6e9-49c6-bc3b-ee990a917898",
+      "date": "2025/2/21",
+      "name": "",
+      "symbol": "00878",
+      "type": "buy",
+      "price": 22.49,
+      "qty": 2000,
+      "fee": 38,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "c5638cac-c714-4c48-86f7-5e08f7049ca5",
+      "date": "2025/2/27",
+      "name": "",
+      "symbol": "00878",
+      "type": "buy",
+      "price": 22.6,
+      "qty": 5000,
+      "fee": 97,
+      "note": "AI Table Import"
     }
   ],
   "prices": {
