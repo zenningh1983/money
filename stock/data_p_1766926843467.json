@@ -2233,6 +2233,21 @@
       "note": "賣出 2007/7/31 持倉",
       "relatedBuyId": "644bb36a-df04-4371-be95-f836d00c17a7",
       "id": "16174e13-b647-4ecf-955d-72a2e486ce98"
+    },
+    {
+      "symbol": "6244",
+      "name": "茂迪",
+      "type": "sell",
+      "date": "2013-01-13",
+      "qty": 180,
+      "price": 29.1,
+      "fee": 20,
+      "tax": 0,
+      "totalAmount": 5218,
+      "realizedDividend": 0,
+      "note": "賣出 2007/7/31 持倉",
+      "relatedBuyId": "041f29da-4c43-4063-a3d1-f4c327397ca7",
+      "id": "24f92f10-24c5-4dd5-9234-01c3ea674af7"
     }
   ],
   "prices": {
