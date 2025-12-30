@@ -3206,6 +3206,32 @@
       "computedPL": 1191.5499999999956,
       "computedROI": 0.03334830655645242,
       "isGrouped": true
+    },
+    {
+      "id": "4ab9ff29-43e1-4fe6-a072-e72f16f1b653",
+      "date": "2009-12-09",
+      "name": "雅博",
+      "symbol": "4106",
+      "type": "buy",
+      "price": 34,
+      "qty": 50,
+      "fee": 0,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "dc63e369-8989-4a61-b881-d7c3895fefdc",
+      "date": "2009-12-11",
+      "name": "雅博",
+      "symbol": "4106",
+      "type": "buy",
+      "price": 35.5,
+      "qty": 49,
+      "fee": 0,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
