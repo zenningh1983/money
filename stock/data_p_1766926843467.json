@@ -2911,6 +2911,20 @@
       "computedPL": 2517,
       "computedROI": 0.07714233173961015,
       "isGrouped": true
+    },
+    {
+      "id": "f059df6f-bfd5-455f-a256-7b8ae9d898a4",
+      "date": "2009-12-30",
+      "name": "2905",
+      "symbol": "2905",
+      "type": "sell",
+      "price": 17.4,
+      "qty": 1000,
+      "fee": 24,
+      "tax": 52,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "2e127538-169e-4a64-abda-9e9c323b19ea"
     }
   ],
   "prices": {
