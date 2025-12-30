@@ -80,6 +80,193 @@
       "note": "賣出 2014-10-01 持倉",
       "relatedBuyId": "4e8b2352-5281-413a-b42b-5d5531fe10fe",
       "id": "a3e87f92-6d99-4c25-a33e-b484239c8654"
+    },
+    {
+      "id": "6c7860ed-e1da-4e22-8326-0c2c24a68ce2",
+      "date": "2010/1/20",
+      "name": "仁寶A",
+      "symbol": "2324",
+      "type": "buy",
+      "price": 46.15,
+      "qty": 2000,
+      "fee": 79,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "f44c1896-26e0-4ba0-8e40-79a72e67d419",
+      "date": "2017/12/5",
+      "name": "鴻海",
+      "symbol": "2317",
+      "type": "buy",
+      "price": 95.6,
+      "qty": 1000,
+      "fee": 80,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "a8a9cd54-cfb0-40ac-8dff-a6ca114870cb",
+      "date": "2020/3/13",
+      "name": "鴻海",
+      "symbol": "2317",
+      "type": "buy",
+      "price": 76,
+      "qty": 1000,
+      "fee": 64,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "8c2431fa-30d7-4e98-ad19-27820f96fc8e",
+      "date": "2015/1/16",
+      "name": "喬鼎",
+      "symbol": "3057",
+      "type": "buy",
+      "price": 38,
+      "qty": 1000,
+      "fee": 32,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "184825ed-10d4-4aa0-9594-0b70b964785f",
+      "date": "2017/9/13",
+      "name": "和碩",
+      "symbol": "4938",
+      "type": "buy",
+      "price": 89.4,
+      "qty": 1000,
+      "fee": 76,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "42b97600-040e-42da-991b-ec78ea6b90f8",
+      "date": "2017/10/19",
+      "name": "和碩",
+      "symbol": "4938",
+      "type": "buy",
+      "price": 79.3,
+      "qty": 1000,
+      "fee": 68,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "3359eeed-abc2-4abc-89e4-2896d3ad7bc8",
+      "date": "2025/6/20",
+      "name": "和碩",
+      "symbol": "4938",
+      "type": "buy",
+      "price": 75,
+      "qty": 1000,
+      "fee": 64,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "08640381-bc01-425e-bad2-ead828091a17",
+      "date": "2025/4/22",
+      "name": "愛之味",
+      "symbol": "1217",
+      "type": "buy",
+      "price": 11.4,
+      "qty": 2000,
+      "fee": 19,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "d0b128a8-c995-430c-b118-22322fdd3c87",
+      "date": "2025/4/28",
+      "name": "中信金",
+      "symbol": "2891",
+      "type": "buy",
+      "price": 37.5,
+      "qty": 2000,
+      "fee": 64,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "371496d5-e0c2-4def-a27b-a9f57994bcf8",
+      "date": "2025/5/27",
+      "name": "中信金",
+      "symbol": "2891",
+      "type": "buy",
+      "price": 41,
+      "qty": 1000,
+      "fee": 35,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "6c92f93c-d3a8-4068-8d80-a8a050be3454",
+      "date": "2025/5/12",
+      "name": "凱基金",
+      "symbol": "2883",
+      "type": "buy",
+      "price": 16.2,
+      "qty": 3000,
+      "fee": 42,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "145bb387-6e7f-4251-a425-15e4d9649fae",
+      "date": "2025/5/12",
+      "name": "永信",
+      "symbol": "3705",
+      "type": "buy",
+      "price": 62.4,
+      "qty": 1000,
+      "fee": 53,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "7c3d32d6-35ac-453f-abeb-880b1c48340e",
+      "date": "2025/5/15",
+      "name": "永信",
+      "symbol": "3705",
+      "type": "buy",
+      "price": 60.6,
+      "qty": 1000,
+      "fee": 52,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "5876efca-3a6b-4812-ad16-3f3bc097de7d",
+      "date": "2025/5/12",
+      "name": "統一",
+      "symbol": "1216",
+      "type": "buy",
+      "price": 81.2,
+      "qty": 2000,
+      "fee": 139,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "abed733e-0599-4e34-ad86-cc9d83e48693",
+      "date": "2025/5/13",
+      "name": "永豐金",
+      "symbol": "2890",
+      "type": "buy",
+      "price": 23,
+      "qty": 3000,
+      "fee": 59,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "ec234228-f69b-42b6-9113-bc9d9f0a94a8",
+      "date": "2025/5/15",
+      "name": "永豐金",
+      "symbol": "2890",
+      "type": "buy",
+      "price": 23,
+      "qty": 3000,
+      "fee": 59,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "3de9a70f-8502-422a-9d17-ebe1bf6ab730",
+      "date": "2025/5/15",
+      "name": "台泥",
+      "symbol": "1101",
+      "type": "buy",
+      "price": 30.1,
+      "qty": 2000,
+      "fee": 51,
+      "note": "AI Table Import"
     }
   ],
   "prices": {
