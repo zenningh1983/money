@@ -2687,6 +2687,28 @@
       "computedROI": 0.2283416595589131,
       "isGrouped": true,
       "realizedDividend": 510
+    },
+    {
+      "id": "a105f2b5-8dda-4c72-8954-0ec4971fb99c",
+      "date": "2009-10-14",
+      "name": "華通",
+      "symbol": "2313",
+      "type": "buy",
+      "price": 9.09,
+      "qty": 3000,
+      "fee": 38,
+      "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "c2baea62-b95e-4029-8814-7795d0edc444",
+      "date": "2011-06-13",
+      "name": "華通",
+      "symbol": "2313",
+      "type": "buy",
+      "price": 14.2,
+      "qty": 2000,
+      "fee": 24,
+      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
