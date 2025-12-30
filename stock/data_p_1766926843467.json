@@ -1811,21 +1811,6 @@
       "note": "賣出 2025/9/23 持倉",
       "relatedBuyId": "fd1a87d8-6a43-485c-9e6c-4de008b10e02",
       "id": "beeef77c-fa40-4a02-9da8-5b6580b1124b"
-    },
-    {
-      "symbol": "00953B",
-      "name": "群益優選非投等債",
-      "type": "sell",
-      "date": "2025-12-30",
-      "qty": 2000,
-      "price": 6,
-      "fee": 17,
-      "tax": 36,
-      "totalAmount": 11947,
-      "realizedDividend": 0,
-      "note": "賣出 2025/9/23 持倉",
-      "relatedBuyId": "fd1a87d8-6a43-485c-9e6c-4de008b10e02",
-      "id": "82efba6d-54ae-43e2-84af-be18358a6518"
     }
   ],
   "prices": {
