@@ -1470,7 +1470,7 @@
     {
       "id": "4bda83db-ff31-4dcc-9630-f9006ca3497d",
       "date": "2023/10/20",
-      "name": "凱基ESGBBB債15+（季）",
+      "name": "凱基ESGBBB債15+",
       "symbol": "00890B",
       "type": "buy",
       "price": 30.25,
@@ -1992,7 +1992,9 @@
     },
     "00890B": {
       "price": 32.76,
-      "updatedAt": "2025-12-30T12:47:31.738Z"
+      "updatedAt": "2025-12-30T13:13:31.585Z",
+      "stockType": "債",
+      "dividendFreq": "季配"
     },
     "00967B": {
       "price": 9.28,
