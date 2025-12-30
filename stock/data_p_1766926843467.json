@@ -2637,6 +2637,19 @@
       "qty": 1000,
       "fee": 14,
       "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "1b38ea72-e17e-45c8-bea9-276baf60a6d4",
+      "date": "2009-12-15",
+      "name": "2419",
+      "symbol": "2419",
+      "type": "sell",
+      "price": 20.15,
+      "qty": 1000,
+      "fee": 28,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "930f9167-d791-41c7-a4fd-029219110272",
+      "tax": 60
     }
   ],
   "prices": {
