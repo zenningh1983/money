@@ -2979,6 +2979,20 @@
       "computedPL": 3238,
       "computedROI": 0.08661922850569793,
       "isGrouped": true
+    },
+    {
+      "id": "13e89a01-cc9f-47c1-a7ba-23b4eedb5cea",
+      "date": "2010-01-06",
+      "name": "1314",
+      "symbol": "1314",
+      "type": "sell",
+      "price": 13.3,
+      "qty": 2000,
+      "fee": 37,
+      "tax": 79,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "fa2d05b6-b27f-427f-a93e-ca4142b6f533"
     }
   ],
   "prices": {
