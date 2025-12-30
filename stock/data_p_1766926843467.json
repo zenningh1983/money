@@ -1850,9 +1850,9 @@
     },
     "00984A": {
       "price": 11.03,
-      "updatedAt": "2025-12-30T13:05:28.775Z",
+      "updatedAt": "2025-12-30T13:06:13.426Z",
       "stockType": "ETF",
-      "dividendFreq": "無"
+      "dividendFreq": "季配"
     },
     "00980A": {
       "price": 15.25,
