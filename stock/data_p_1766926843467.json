@@ -1796,6 +1796,21 @@
       "qty": 5000,
       "fee": 97,
       "note": "AI Table Import"
+    },
+    {
+      "symbol": "00953B",
+      "name": "群益優選非投等債",
+      "type": "sell",
+      "date": "2025-12-30",
+      "qty": 5000,
+      "price": 59,
+      "fee": 420,
+      "tax": 885,
+      "totalAmount": 293695,
+      "realizedDividend": 0,
+      "note": "賣出 2025/9/23 持倉",
+      "relatedBuyId": "fd1a87d8-6a43-485c-9e6c-4de008b10e02",
+      "id": "f56eef58-c9e5-4a88-affb-24adfc7f9952"
     }
   ],
   "prices": {
