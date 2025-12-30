@@ -2402,7 +2402,7 @@
       "qty": 2000,
       "fee": 46,
       "note": "AI Parsed (Import)",
-      "name": "中鋼"
+      "name": "2002"
     },
     {
       "id": "a8563327-85f5-42cf-b659-8477bdc186ee",
@@ -2413,7 +2413,7 @@
       "qty": 2000,
       "fee": 62,
       "note": "AI Parsed (Import)",
-      "name": "中鋼"
+      "name": "2002"
     },
     {
       "id": "ef38f1d7-3a82-4bd2-aa9c-ab73d266bb8a",
@@ -2430,7 +2430,7 @@
       "computedROI": 0.42681490874507494,
       "isGrouped": true,
       "realizedDividend": 2590,
-      "name": "中鋼"
+      "name": "2002"
     },
     {
       "id": "9ffc311c-8708-4600-ac37-c7b278acb949",
@@ -2441,7 +2441,7 @@
       "qty": 86,
       "fee": 0,
       "note": "AI Parsed (Import)",
-      "name": "中鋼"
+      "name": "2002"
     },
     {
       "id": "f5304915-0a6d-4407-a11c-c846c6e92c23",
@@ -2497,7 +2497,7 @@
     },
     "2002": {
       "price": 19.25,
-      "updatedAt": "2025-12-30T17:39:33.006Z",
+      "updatedAt": "2025-12-30T17:40:06.107Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
