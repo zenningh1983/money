@@ -2599,6 +2599,19 @@
       "computedPL": 1672,
       "computedROI": 0.05727792812853277,
       "isGrouped": true
+    },
+    {
+      "id": "41a0c657-3c60-482f-bc3e-1fab0aaf3ec6",
+      "date": "2009-12-14",
+      "name": "8103",
+      "symbol": "8103",
+      "type": "sell",
+      "price": 38.25,
+      "qty": 1000,
+      "fee": 54,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "a8195348-b1ed-4bef-9b71-d802f4b8e2e8",
+      "tax": 114
     }
   ],
   "prices": {
