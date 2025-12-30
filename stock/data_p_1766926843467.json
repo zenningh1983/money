@@ -2322,6 +2322,16 @@
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "e62b6279-f54b-4372-9286-6e87f445e871",
       "tax": 52757
+    },
+    {
+      "id": "fd27d417-507e-44c6-b5f2-45cbbd129865",
+      "date": "2011-11-21",
+      "symbol": "2002",
+      "type": "buy",
+      "price": 46,
+      "qty": 54046,
+      "fee": 0,
+      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
