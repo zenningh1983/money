@@ -2535,6 +2535,19 @@
       "computedPL": 4522,
       "computedROI": 0.06501890753281858,
       "isGrouped": true
+    },
+    {
+      "id": "417ad370-699f-4f45-a396-2fc7ab1d1c03",
+      "date": "2010-04-07",
+      "name": "9904",
+      "symbol": "9904",
+      "type": "sell",
+      "price": 25.95,
+      "qty": 2000,
+      "fee": 73,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "ab733f4d-8bbe-4dee-8d3c-1dabaa2b92de",
+      "tax": 155
     }
   ],
   "prices": {
