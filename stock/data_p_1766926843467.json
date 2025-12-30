@@ -2471,6 +2471,19 @@
       "computedPL": 6685,
       "computedROI": 0.12369092994856233,
       "isGrouped": true
+    },
+    {
+      "id": "b3c20b30-8d14-4760-a30a-7e4573ecd819",
+      "date": "2009-10-19",
+      "name": "2002",
+      "symbol": "2002",
+      "type": "sell",
+      "price": 86,
+      "qty": 30.35,
+      "fee": 3,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "cffe0c44-a6fa-4052-8051-c4e0bbd509c5",
+      "tax": 7
     }
   ],
   "prices": {
