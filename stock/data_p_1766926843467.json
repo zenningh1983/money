@@ -2845,6 +2845,20 @@
       "tax": 41135,
       "realizedDividend": 0,
       "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "96932036-04de-4ae8-93c1-b0e50c26b65c",
+      "date": "2010-01-04",
+      "name": "1447",
+      "symbol": "1447",
+      "type": "sell",
+      "price": 14.6,
+      "qty": 2000,
+      "fee": 41,
+      "tax": 87,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "b80d4dcf-b328-4194-8a8b-d8b1a842aae6"
     }
   ],
   "prices": {
