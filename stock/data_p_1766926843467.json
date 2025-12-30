@@ -3294,6 +3294,71 @@
       "realizedDividend": 0,
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "32f5e270-7386-41f1-8334-0a054145ad66"
+    },
+    {
+      "id": "08674de4-f40c-4e43-b2b2-820e3ea46eaa",
+      "date": "2008-02-15",
+      "name": "台塑",
+      "symbol": "1301",
+      "type": "buy",
+      "price": 79.93,
+      "qty": 2000,
+      "fee": 224,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "41311fb2-57c0-4343-943a-f5665e13614a",
+      "date": "2008-02-15",
+      "name": "台塑",
+      "symbol": "1301",
+      "type": "buy",
+      "price": 79.93,
+      "qty": 2000,
+      "fee": 224,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "e9381be1-f10f-457d-9a0c-8ba0fb9e3242",
+      "date": "2008-02-15",
+      "name": "台塑",
+      "symbol": "1301",
+      "type": "buy",
+      "price": 0,
+      "qty": 280,
+      "fee": 0,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "f728083f-bad8-417c-a313-e48466cd627b",
+      "date": "2012-11-13",
+      "name": "台塑",
+      "symbol": "1301",
+      "type": "buy",
+      "price": 73,
+      "qty": 1000,
+      "fee": 62,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "c9105bab-12e8-4610-ae3f-8af8988a14e3",
+      "date": "2012-11-05",
+      "name": "台塑",
+      "symbol": "1301",
+      "type": "buy",
+      "price": 76,
+      "qty": 1000,
+      "fee": 65,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
