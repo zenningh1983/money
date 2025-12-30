@@ -2402,6 +2402,16 @@
       "qty": 2000,
       "fee": 46,
       "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "a8563327-85f5-42cf-b659-8477bdc186ee",
+      "date": "2008-12-9",
+      "symbol": "2002",
+      "type": "buy",
+      "price": 22.05,
+      "qty": 2000,
+      "fee": 62,
+      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
