@@ -3053,6 +3053,20 @@
       "realizedDividend": 0,
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "c5ca527c-5327-4598-b699-824fcfb578d7"
+    },
+    {
+      "id": "457a1f50-7dac-494e-97f3-733fde470bec",
+      "date": "2010-03-31",
+      "name": "5326",
+      "symbol": "5326",
+      "type": "sell",
+      "price": 16.9,
+      "qty": 3000,
+      "fee": 195,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "c4761e54-86cf-404b-be55-9134552835fb"
     }
   ],
   "prices": {
