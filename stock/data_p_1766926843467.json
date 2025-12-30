@@ -1908,17 +1908,6 @@
       "note": "AI Table Import"
     },
     {
-      "id": "32bc6a60-a1aa-428d-b4ff-e2731e6f7b63",
-      "date": "2009/12/17",
-      "name": "三商行",
-      "symbol": "2905",
-      "type": "buy",
-      "price": 16.3,
-      "qty": 2000,
-      "fee": 28,
-      "note": "AI Table Import"
-    },
-    {
       "id": "2ec64209-9cc7-471a-a3fb-26b1fc882099",
       "date": "2009/11/26",
       "name": "中石化",
