@@ -2455,14 +2455,14 @@
     },
     {
       "id": "4acff501-b7eb-47fe-abae-772f7214c414",
-      "date": "2011/5/23",
+      "date": "2011-05-03",
       "name": "國泰金控",
       "symbol": "2882",
       "type": "buy",
       "price": 0,
-      "qty": 0,
+      "qty": 219,
       "fee": 0,
-      "note": "AI Table Import"
+      "note": "股票股利"
     }
   ],
   "prices": {
