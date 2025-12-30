@@ -1768,7 +1768,9 @@
   "prices": {
     "1101": {
       "price": 23.6,
-      "updatedAt": "2025-12-30T12:47:25.570Z"
+      "updatedAt": "2025-12-30T13:12:11.728Z",
+      "stockType": "個股",
+      "dividendFreq": "年配"
     },
     "1216": {
       "price": 77.8,
