@@ -2454,6 +2454,18 @@
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "9ffc311c-8708-4600-ac37-c7b278acb949",
       "tax": 7
+    },
+    {
+      "id": "082e3fa6-cb0f-4414-b976-d680858fa2dc",
+      "date": "2009-10-19",
+      "symbol": "2009",
+      "type": "sell",
+      "price": 86,
+      "qty": 30.35,
+      "fee": 3,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "9ffc311c-8708-4600-ac37-c7b278acb949",
+      "tax": 7
     }
   ],
   "prices": {
