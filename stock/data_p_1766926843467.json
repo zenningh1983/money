@@ -1832,7 +1832,7 @@
     },
     {
       "id": "99746faf-caf4-4942-be7d-29c3ae746141",
-      "date": "2009/10/21",
+      "date": "2009-10-21",
       "name": "寶成",
       "symbol": "9904",
       "type": "buy",
@@ -2519,6 +2519,19 @@
       "computedPL": 414,
       "computedROI": 0.004134212103055722,
       "isGrouped": true
+    },
+    {
+      "id": "9c76e7c6-bf5e-4510-9f97-f937e33d2bb5",
+      "date": "2009-11-24",
+      "name": "9904",
+      "symbol": "9904",
+      "type": "sell",
+      "price": 24.8,
+      "qty": 3000,
+      "fee": 106,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "99746faf-caf4-4942-be7d-29c3ae746141",
+      "tax": 223
     }
   ],
   "prices": {
