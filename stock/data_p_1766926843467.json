@@ -3388,6 +3388,20 @@
       "realizedDividend": 0,
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "f728083f-bad8-417c-a313-e48466cd627b"
+    },
+    {
+      "id": "f85e9926-de42-4304-a4f1-26e7e2cde015",
+      "date": "2013-01-30",
+      "name": "1301",
+      "symbol": "1301",
+      "type": "sell",
+      "price": 80,
+      "qty": 1000,
+      "fee": 308,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "c9105bab-12e8-4610-ae3f-8af8988a14e3"
     }
   ],
   "prices": {
