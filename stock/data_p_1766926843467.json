@@ -2715,6 +2715,20 @@
       "computedPL": 1455.0000000000073,
       "computedROI": 0.05328108979053785,
       "isGrouped": true
+    },
+    {
+      "id": "f050f53f-5f28-4223-9272-c7a4187b6e35",
+      "date": "2012-03-16",
+      "name": "2313",
+      "symbol": "2313",
+      "type": "sell",
+      "price": 15.5,
+      "qty": 2000,
+      "fee": 44,
+      "tax": 93,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "c2baea62-b95e-4029-8814-7795d0edc444"
     }
   ],
   "prices": {
