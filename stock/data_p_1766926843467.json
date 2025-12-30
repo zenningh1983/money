@@ -3172,6 +3172,20 @@
       "tax": 35530,
       "realizedDividend": 0,
       "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "d8c7fe83-e69d-461c-9139-df7a23937afb",
+      "date": "2010-08-16",
+      "name": "4106",
+      "symbol": "4106",
+      "type": "sell",
+      "price": 35.3,
+      "qty": 1049,
+      "fee": 143,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "f8086ed9-f7f8-4cad-ac15-4bd9746b3ccf"
     }
   ],
   "prices": {
