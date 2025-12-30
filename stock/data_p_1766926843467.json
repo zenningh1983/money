@@ -2290,17 +2290,6 @@
       "id": "efbe2dae-c02a-4222-aad4-dc70cc350151"
     },
     {
-      "id": "fd27d417-507e-44c6-b5f2-45cbbd129865",
-      "date": "2011-11-21",
-      "symbol": "2002",
-      "type": "buy",
-      "price": 46,
-      "qty": 54046,
-      "fee": 0,
-      "note": "AI Parsed (Import)",
-      "name": "中鋼"
-    },
-    {
       "id": "13ff5626-6359-495e-9b6e-27b6c7647491",
       "date": "2008-12-9",
       "symbol": "2002",
