@@ -2463,6 +2463,21 @@
       "qty": 219,
       "fee": 0,
       "note": "股票股利"
+    },
+    {
+      "symbol": "2882",
+      "name": "國泰金控",
+      "type": "sell",
+      "date": "2013-11-20",
+      "qty": 219,
+      "price": 46.2,
+      "fee": 39,
+      "tax": 0,
+      "totalAmount": 10078.800000000001,
+      "realizedDividend": 0,
+      "note": "賣出 2011-05-03 持倉",
+      "relatedBuyId": "4acff501-b7eb-47fe-abae-772f7214c414",
+      "id": "30b5efaa-435d-4b56-b258-474898310362"
     }
   ],
   "prices": {
