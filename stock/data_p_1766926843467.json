@@ -3354,9 +3354,12 @@
       "qty": 2000,
       "fee": 657,
       "tax": 0,
-      "realizedDividend": 0,
+      "realizedDividend": 22200,
       "note": "AI Parsed (Batch Sell)",
-      "relatedBuyId": "41311fb2-57c0-4343-943a-f5665e13614a"
+      "relatedBuyId": "41311fb2-57c0-4343-943a-f5665e13614a",
+      "computedPL": 9659,
+      "computedROI": 0.06033707303665575,
+      "isGrouped": true
     }
   ],
   "prices": {
