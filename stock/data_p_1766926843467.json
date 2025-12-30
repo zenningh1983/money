@@ -2862,6 +2862,20 @@
       "computedPL": 4265,
       "computedROI": 0.10368299501640939,
       "isGrouped": true
+    },
+    {
+      "id": "c967b1a1-14ff-449b-8be2-a0dd174e92ec",
+      "date": "2010-01-04",
+      "name": "1447",
+      "symbol": "1447",
+      "type": "sell",
+      "price": 14.6,
+      "qty": 2000,
+      "fee": 41,
+      "tax": 87,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "cee87ceb-a937-44ea-bed8-34e0bb710c2c"
     }
   ],
   "prices": {
