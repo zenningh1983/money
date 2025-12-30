@@ -2256,7 +2256,7 @@
       "symbol": "6244",
       "name": "茂迪",
       "type": "sell",
-      "date": "2025-12-30",
+      "date": "2013-10-15",
       "qty": 1000,
       "price": 54.4,
       "fee": 210,
@@ -2265,7 +2265,10 @@
       "realizedDividend": 0,
       "note": "賣出 2007/7/31 持倉",
       "relatedBuyId": "4287b56b-1846-4276-9392-e91ae9c1bf8c",
-      "id": "d943272f-04b0-442a-ab2a-aa4b283d6587"
+      "id": "d943272f-04b0-442a-ab2a-aa4b283d6587",
+      "computedPL": -83503,
+      "computedROI": -0.6064433195587284,
+      "isGrouped": true
     }
   ],
   "prices": {
