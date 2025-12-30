@@ -2394,56 +2394,6 @@
       "id": "30b5efaa-435d-4b56-b258-474898310362"
     },
     {
-      "id": "880c2683-c74e-420a-a64a-10b9509c222d",
-      "date": "2011-11-21",
-      "symbol": "2002",
-      "type": "buy",
-      "price": 27,
-      "qty": 2000,
-      "fee": 46,
-      "note": "AI Parsed (Import)",
-      "name": "中鋼"
-    },
-    {
-      "id": "a8563327-85f5-42cf-b659-8477bdc186ee",
-      "date": "2008-12-09",
-      "symbol": "2002",
-      "type": "buy",
-      "price": 22.05,
-      "qty": 2000,
-      "fee": 62,
-      "note": "AI Parsed (Import)",
-      "name": "中鋼"
-    },
-    {
-      "id": "ef38f1d7-3a82-4bd2-aa9c-ab73d266bb8a",
-      "date": "2009-10-19",
-      "symbol": "2002",
-      "type": "sell",
-      "price": 30.35,
-      "qty": 2000,
-      "fee": 267,
-      "note": "股票股利 86",
-      "relatedBuyId": "a8563327-85f5-42cf-b659-8477bdc186ee",
-      "tax": null,
-      "computedPL": 18849,
-      "computedROI": 0.42681490874507494,
-      "isGrouped": true,
-      "realizedDividend": 2590,
-      "name": "中鋼"
-    },
-    {
-      "id": "9ffc311c-8708-4600-ac37-c7b278acb949",
-      "date": "2008-12-9",
-      "symbol": "2002",
-      "type": "buy",
-      "price": 0,
-      "qty": 86,
-      "fee": 0,
-      "note": "AI Parsed (Import)",
-      "name": "中鋼"
-    },
-    {
       "id": "f5304915-0a6d-4407-a11c-c846c6e92c23",
       "date": "2009-10-19",
       "symbol": "2009",
@@ -2506,12 +2456,6 @@
     "1504": {
       "price": 84.9,
       "updatedAt": "2025-12-30T17:21:56.264Z"
-    },
-    "2002": {
-      "price": 19.25,
-      "updatedAt": "2025-12-30T17:40:14.507Z",
-      "stockType": "個股",
-      "dividendFreq": "年配"
     },
     "2201": {
       "price": 33.65,
