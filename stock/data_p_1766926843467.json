@@ -1675,6 +1675,39 @@
       "qty": 4000,
       "fee": 34,
       "note": "AI Table Import"
+    },
+    {
+      "id": "cbc192ee-79dc-4190-a4d2-9260b2b8356e",
+      "date": "2020/8/20",
+      "name": "",
+      "symbol": "0056",
+      "type": "buy",
+      "price": 29.75,
+      "qty": 1000,
+      "fee": 25,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "d3ba2886-bd0b-4644-b831-4f45c45de500",
+      "date": "2023/7/7",
+      "name": "",
+      "symbol": "0056",
+      "type": "buy",
+      "price": 33,
+      "qty": 1000,
+      "fee": 28,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "938da696-1d6c-4ef4-86e8-e59f07a4fa77",
+      "date": "2025/1/13",
+      "name": "",
+      "symbol": "0056",
+      "type": "buy",
+      "price": 36,
+      "qty": 1000,
+      "fee": 31,
+      "note": "AI Table Import"
     }
   ],
   "prices": {
