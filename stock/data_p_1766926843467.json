@@ -2414,6 +2414,18 @@
       "fee": 62,
       "note": "AI Parsed (Import)",
       "name": "中鋼"
+    },
+    {
+      "id": "a5fb3ae4-02b8-495e-96d5-0a8a338bac97",
+      "date": "2009-10-19",
+      "symbol": "2002",
+      "type": "sell",
+      "price": 30.35,
+      "qty": 2086,
+      "fee": 90,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "880c2683-c74e-420a-a64a-10b9509c222d",
+      "tax": 189
     }
   ],
   "prices": {
