@@ -2297,7 +2297,8 @@
       "price": 46,
       "qty": 54046,
       "fee": 0,
-      "note": "AI Parsed (Import)"
+      "note": "AI Parsed (Import)",
+      "name": "中鋼"
     },
     {
       "id": "13ff5626-6359-495e-9b6e-27b6c7647491",
@@ -2307,7 +2308,8 @@
       "price": 62,
       "qty": 44162,
       "fee": 0,
-      "note": "AI Parsed (Import)"
+      "note": "AI Parsed (Import)",
+      "name": "中鋼"
     },
     {
       "id": "0a164b0e-88d3-4fb3-a419-b5e3d0ab9f90",
@@ -2487,7 +2489,8 @@
       "price": 22.05,
       "qty": 2000,
       "fee": 62,
-      "note": "AI Parsed (Import)"
+      "note": "AI Parsed (Import)",
+      "name": "中鋼"
     },
     {
       "id": "e878e684-4a8a-4918-ba7c-f3631361ef12",
@@ -2497,7 +2500,8 @@
       "price": 27,
       "qty": 2000,
       "fee": 46,
-      "note": "AI Parsed (Import)"
+      "note": "AI Parsed (Import)",
+      "name": "中鋼"
     }
   ],
   "prices": {
@@ -2541,7 +2545,7 @@
     },
     "2002": {
       "price": 19.25,
-      "updatedAt": "2025-12-30T17:21:56.488Z",
+      "updatedAt": "2025-12-30T17:27:28.199Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
