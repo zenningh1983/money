@@ -2732,6 +2732,19 @@
       "computedPL": 2439,
       "computedROI": 0.08580776808330988,
       "isGrouped": true
+    },
+    {
+      "id": "4c4d91f9-ae19-4996-ac95-503e0f0c1033",
+      "date": "2009-09-21",
+      "name": "連展",
+      "symbol": "5491",
+      "type": "buy",
+      "price": 22.4,
+      "qty": 1000,
+      "fee": 31,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
@@ -2789,7 +2802,7 @@
     },
     "2313": {
       "price": 98,
-      "updatedAt": "2025-12-30T18:15:51.691Z",
+      "updatedAt": "2025-12-30T18:15:53.204Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
