@@ -2670,6 +2670,19 @@
       "computedROI": 0.13427561837455831,
       "isGrouped": true,
       "realizedDividend": 510
+    },
+    {
+      "id": "f8d4c9f0-e5c3-40d9-ab0b-9a471f31b8eb",
+      "date": "2016-01-21",
+      "name": "2419",
+      "symbol": "2419",
+      "type": "sell",
+      "price": 20.25,
+      "qty": 1000,
+      "fee": 28,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "50e81960-7a2e-469d-bb73-88bfb5df5548",
+      "tax": 60
     }
   ],
   "prices": {
