@@ -2422,12 +2422,12 @@
       "type": "sell",
       "price": 30.35,
       "qty": 2086,
-      "fee": 267,
+      "fee": 279,
       "note": "股票股利 86",
       "relatedBuyId": "a8563327-85f5-42cf-b659-8477bdc186ee",
       "tax": null,
-      "computedPL": 16270,
-      "computedROI": 0.3684162854943164,
+      "computedPL": 19572.134000000005,
+      "computedROI": 0.42491800975255284,
       "isGrouped": true,
       "realizedDividend": 2590
     }
