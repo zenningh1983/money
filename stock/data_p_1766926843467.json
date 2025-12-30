@@ -2342,16 +2342,6 @@
       "qty": 44162,
       "fee": 0,
       "note": "AI Parsed (Import)"
-    },
-    {
-      "id": "43a3ce31-56be-45c8-9b4f-660dea69458e",
-      "date": "2011-11-21",
-      "symbol": "2002",
-      "type": "buy",
-      "price": 46,
-      "qty": 54046,
-      "fee": 0,
-      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
