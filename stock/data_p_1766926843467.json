@@ -2421,11 +2421,15 @@
       "symbol": "2002",
       "type": "sell",
       "price": 30.35,
-      "qty": 2000,
-      "fee": 86,
-      "note": "AI Parsed (Batch Sell)",
+      "qty": 2086,
+      "fee": 267,
+      "note": "股票股利 86",
       "relatedBuyId": "a8563327-85f5-42cf-b659-8477bdc186ee",
-      "tax": 182
+      "tax": null,
+      "computedPL": 16270,
+      "computedROI": 0.3684162854943164,
+      "isGrouped": true,
+      "realizedDividend": 2590
     }
   ],
   "prices": {
