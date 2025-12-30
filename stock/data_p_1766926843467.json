@@ -2385,6 +2385,50 @@
       "qty": 2000,
       "fee": 46,
       "note": "AI Table (Import)"
+    },
+    {
+      "id": "982ccc7e-9ed1-4d3f-b4c2-2c33640d3c07",
+      "date": "2009/7/23",
+      "name": "國泰金控",
+      "symbol": "2882",
+      "type": "buy",
+      "price": 50.8,
+      "qty": 2000,
+      "fee": 142,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "e289582b-894d-4006-8adc-17f7d295b374",
+      "date": "2011/5/23",
+      "name": "國泰金控",
+      "symbol": "2882",
+      "type": "buy",
+      "price": 44.9,
+      "qty": 1000,
+      "fee": 38,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "c4d5a495-43ad-4568-b399-50f72919aff4",
+      "date": "2011/5/23",
+      "name": "國泰金控",
+      "symbol": "2882",
+      "type": "buy",
+      "price": 44.9,
+      "qty": 1000,
+      "fee": 38,
+      "note": "AI Table Import"
+    },
+    {
+      "id": "87d21ae6-a76e-4542-88ec-abfc5e9ea20b",
+      "date": "2011/5/23",
+      "name": "國泰金控",
+      "symbol": "2882",
+      "type": "buy",
+      "price": 0,
+      "qty": 0,
+      "fee": 0,
+      "note": "AI Table Import"
     }
   ],
   "prices": {
