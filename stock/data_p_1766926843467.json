@@ -2444,6 +2444,17 @@
       "computedROI": 0.42681490874507494,
       "isGrouped": true,
       "realizedDividend": 2590
+    },
+    {
+      "id": "fc0c8c99-01c2-4ae0-b112-676def6a7c59",
+      "date": "2011-11-21",
+      "name": "中鋼",
+      "symbol": "2002",
+      "type": "buy",
+      "price": 27,
+      "qty": 2000,
+      "fee": 46,
+      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
