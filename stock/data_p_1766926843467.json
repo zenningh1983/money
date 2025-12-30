@@ -3011,6 +3011,20 @@
       "tax": 0,
       "realizedDividend": 0,
       "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "10c97010-7e9c-497e-8abe-df26ac18f91b",
+      "date": "2010-02-01",
+      "name": "2404",
+      "symbol": "2404",
+      "type": "sell",
+      "price": 30,
+      "qty": 1000,
+      "fee": 116,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "fa9a7336-23c3-4a01-ad73-1d733b3d7790"
     }
   ],
   "prices": {
