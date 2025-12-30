@@ -3140,23 +3140,6 @@
       "computedPL": 1202.0499999999993,
       "computedROI": 0.07040051070459073,
       "isGrouped": true
-    },
-    {
-      "id": "0351db84-f210-496f-a966-030a96fb6a5f",
-      "date": "2023-02-16",
-      "name": "2201",
-      "symbol": "2201",
-      "type": "sell",
-      "price": 82,
-      "qty": 1000,
-      "fee": 70,
-      "tax": 246,
-      "realizedDividend": 0,
-      "note": "AI Parsed (Batch Sell)",
-      "relatedBuyId": "57d94976-a244-46f3-872f-b531f307fe0b",
-      "computedPL": 18976,
-      "computedROI": 0.30142643835181243,
-      "isGrouped": true
     }
   ],
   "prices": {
