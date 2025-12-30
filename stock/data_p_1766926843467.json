@@ -1908,17 +1908,6 @@
       "note": "AI Table Import"
     },
     {
-      "id": "f6b41f14-17af-4d75-ba85-86d623255352",
-      "date": "2009/11/26",
-      "name": "中石化",
-      "symbol": "1314",
-      "type": "buy",
-      "price": 12.45,
-      "qty": 3000,
-      "fee": 32,
-      "note": "AI Table Import"
-    },
-    {
       "id": "c013396d-dd6c-458b-a7c5-f623ec364b78",
       "date": "2009/12/11",
       "name": "漢唐",
@@ -2956,6 +2945,20 @@
       "tax": 0,
       "realizedDividend": 0,
       "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "e1cf0bb0-9ef5-4e9e-b0c5-4bc223822607",
+      "date": "2017-11-30",
+      "name": "1314",
+      "symbol": "1314",
+      "type": "sell",
+      "price": 16,
+      "qty": 2000,
+      "fee": 45,
+      "tax": 96,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "a16aa02a-6a33-470b-8e78-206cfa30e710"
     }
   ],
   "prices": {
