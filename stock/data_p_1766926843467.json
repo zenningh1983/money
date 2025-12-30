@@ -2416,6 +2416,17 @@
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "9ffc311c-8708-4600-ac37-c7b278acb949",
       "tax": 7
+    },
+    {
+      "id": "8787f3e2-8228-4916-889d-057498245d0b",
+      "date": "2009-07-22",
+      "name": "富邦金控",
+      "symbol": "2881",
+      "type": "buy",
+      "price": 34.05,
+      "qty": 2000,
+      "fee": 95,
+      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
