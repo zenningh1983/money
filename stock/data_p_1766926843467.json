@@ -2203,8 +2203,8 @@
       "name": "茂迪",
       "symbol": "6244",
       "type": "buy",
-      "price": 180,
-      "qty": 0,
+      "price": 137.5,
+      "qty": 180,
       "fee": 0,
       "note": "AI Table Import"
     },
