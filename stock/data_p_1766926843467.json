@@ -2494,12 +2494,15 @@
       "name": "6282",
       "symbol": "6282",
       "type": "sell",
-      "price": 1000,
-      "qty": 23,
-      "fee": 32,
+      "price": 23,
+      "qty": 1000,
+      "fee": 101,
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "4b2ac7c1-6db9-458b-b80e-e17a7a816780",
-      "tax": 69
+      "tax": null,
+      "computedPL": 22384.237,
+      "computedROI": 43.4845492003116,
+      "isGrouped": true
     }
   ],
   "prices": {
