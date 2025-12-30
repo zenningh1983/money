@@ -2452,6 +2452,17 @@
       "note": "賣出 2011/5/23 持倉",
       "relatedBuyId": "5cc7ea95-446d-470e-8533-5f5690c273f4",
       "id": "71fb603e-8a90-4bb0-9ad5-4dda644ea6bc"
+    },
+    {
+      "id": "4acff501-b7eb-47fe-abae-772f7214c414",
+      "date": "2011/5/23",
+      "name": "國泰金控",
+      "symbol": "2882",
+      "type": "buy",
+      "price": 0,
+      "qty": 0,
+      "fee": 0,
+      "note": "AI Table Import"
     }
   ],
   "prices": {
