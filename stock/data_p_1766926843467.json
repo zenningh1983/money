@@ -3249,6 +3249,20 @@
       "computedPL": 1762.9999999999998,
       "computedROI": 0,
       "isGrouped": true
+    },
+    {
+      "id": "7b6eb717-ff82-40c8-91dd-f332a9f1470f",
+      "date": "2010-08-16",
+      "name": "4106",
+      "symbol": "4106",
+      "type": "sell",
+      "price": 35.3,
+      "qty": 49,
+      "fee": 2,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "dc63e369-8989-4a61-b881-d7c3895fefdc"
     }
   ],
   "prices": {
