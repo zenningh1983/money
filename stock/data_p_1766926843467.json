@@ -1974,28 +1974,6 @@
       "note": "AI Table Import"
     },
     {
-      "id": "ffe2647b-758c-42db-a41c-7f53379a6ac6",
-      "date": "2008/2/15",
-      "name": "台塑",
-      "symbol": "1301",
-      "type": "buy",
-      "price": 79.93,
-      "qty": 2000,
-      "fee": 224,
-      "note": "AI Table Import"
-    },
-    {
-      "id": "bffaf26c-1553-4807-af4d-810c7ec8a099",
-      "date": "2008/2/15",
-      "name": "台塑",
-      "symbol": "1301",
-      "type": "buy",
-      "price": 0,
-      "qty": 280,
-      "fee": 0,
-      "note": "AI Table Import"
-    },
-    {
       "symbol": "6244",
       "name": "茂迪",
       "type": "sell",
