@@ -2430,6 +2430,16 @@
       "computedROI": 0.42681490874507494,
       "isGrouped": true,
       "realizedDividend": 2590
+    },
+    {
+      "id": "9ffc311c-8708-4600-ac37-c7b278acb949",
+      "date": "2008-12-9",
+      "symbol": "2002",
+      "type": "buy",
+      "price": 0,
+      "qty": 86,
+      "fee": 0,
+      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
