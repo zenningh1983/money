@@ -2996,6 +2996,32 @@
       "computedPL": 1563,
       "computedROI": 0.06271818947875286,
       "isGrouped": true
+    },
+    {
+      "id": "fa9a7336-23c3-4a01-ad73-1d733b3d7790",
+      "date": "2009-12-11",
+      "name": "漢唐",
+      "symbol": "2404",
+      "type": "buy",
+      "price": 26.7,
+      "qty": 1000,
+      "fee": 23,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "a4699921-3c26-4096-972e-8ee266f1fc7c",
+      "date": "2012-04-23",
+      "name": "漢唐",
+      "symbol": "2404",
+      "type": "buy",
+      "price": 26.84,
+      "qty": 5000,
+      "fee": 115,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
