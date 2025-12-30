@@ -3258,12 +3258,12 @@
       "type": "sell",
       "price": 35.3,
       "qty": 49,
-      "fee": 0,
+      "fee": 7,
       "tax": 0,
       "realizedDividend": 0,
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "dc63e369-8989-4a61-b881-d7c3895fefdc",
-      "computedPL": 1727.6999999999998,
+      "computedPL": 1729.6999999999998,
       "computedROI": 0,
       "isGrouped": true
     }
