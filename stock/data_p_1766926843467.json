@@ -3067,6 +3067,20 @@
       "realizedDividend": 0,
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "c4761e54-86cf-404b-be55-9134552835fb"
+    },
+    {
+      "id": "ebcab6fb-0d27-44b7-a6ce-8900826b9aab",
+      "date": "2010-04-08",
+      "name": "1409",
+      "symbol": "1409",
+      "type": "sell",
+      "price": 12.25,
+      "qty": 3000,
+      "fee": 142,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "0995f1a4-b21c-4563-856f-bc575260b6d0"
     }
   ],
   "prices": {
