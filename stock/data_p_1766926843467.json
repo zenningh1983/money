@@ -2170,6 +2170,21 @@
       "qty": 280,
       "fee": 0,
       "note": "AI Table Import"
+    },
+    {
+      "symbol": "6244",
+      "name": "茂迪",
+      "type": "sell",
+      "date": "2009-11-24",
+      "qty": 1000,
+      "price": 117,
+      "fee": 451,
+      "tax": 0,
+      "totalAmount": 116549,
+      "realizedDividend": 93335,
+      "note": "賣出 2007/7/31 持倉",
+      "relatedBuyId": "ce54d247-5edf-4987-aa79-d341861e6805",
+      "id": "a1cb7a19-acc9-44d5-8239-bc024424bc3f"
     }
   ],
   "prices": {
