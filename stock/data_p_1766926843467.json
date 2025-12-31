@@ -3757,6 +3757,20 @@
       "computedPL": 64520,
       "computedROI": 0.4172486936727198,
       "isGrouped": true
+    },
+    {
+      "id": "95306eef-4340-42c6-81b3-e4cf240e077a",
+      "date": "2017-10-17",
+      "name": "2317",
+      "symbol": "2317",
+      "type": "sell",
+      "price": 110,
+      "qty": 1000,
+      "fee": 94,
+      "tax": 330,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "a00bd67a-7587-4cae-815d-c702a77e3316"
     }
   ],
   "prices": {
