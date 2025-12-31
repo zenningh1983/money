@@ -4222,10 +4222,10 @@
       "type": "buy",
       "price": 116.5,
       "qty": 1800,
-      "fee": null,
+      "fee": 11500,
       "tax": 221200,
       "realizedDividend": 169205,
-      "note": "AI Parsed (Import)"
+      "note": "減資"
     },
     {
       "id": "d2676596-c675-4595-be1c-b8fb460bb1e1",
