@@ -3445,6 +3445,20 @@
       "computedPL": 18626,
       "computedROI": 0.27367833318639984,
       "isGrouped": true
+    },
+    {
+      "id": "bd4bcd7a-23c3-4d79-a559-72d0f0e6158b",
+      "date": "2023-03-03",
+      "name": "4938",
+      "symbol": "4938",
+      "type": "sell",
+      "price": 68.3,
+      "qty": 2000,
+      "fee": 117,
+      "tax": 410,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "5a9d8c3a-0410-42a7-aaff-dc20dd6fca92"
     }
   ],
   "prices": {
