@@ -3407,169 +3407,169 @@
   "prices": {
     "1101": {
       "price": 23.2,
-      "updatedAt": "2025-12-31T06:59:11.287Z",
+      "updatedAt": "2025-12-31T06:59:46.653Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "1216": {
       "price": 77.1,
-      "updatedAt": "2025-12-31T06:59:10.108Z",
+      "updatedAt": "2025-12-31T06:59:44.667Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "1217": {
       "price": 10.4,
-      "updatedAt": "2025-12-31T06:59:07.748Z",
+      "updatedAt": "2025-12-31T06:59:41.987Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "1301": {
-      "price": 39.1,
-      "updatedAt": "2025-12-30T19:29:40.314Z",
+      "price": 39,
+      "updatedAt": "2025-12-31T07:00:44.727Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "1314": {
-      "price": 7.86,
-      "updatedAt": "2025-12-30T19:29:37.851Z",
+      "price": 7.77,
+      "updatedAt": "2025-12-31T07:00:41.008Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "1409": {
       "price": 15,
-      "updatedAt": "2025-12-31T06:59:44.592Z",
+      "updatedAt": "2025-12-31T07:00:32.683Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "1447": {
-      "price": 5.43,
-      "updatedAt": "2025-12-30T19:29:36.681Z",
+      "price": 5.4,
+      "updatedAt": "2025-12-31T07:00:39.709Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "1504": {
-      "price": 84.9,
-      "updatedAt": "2025-12-30T19:29:31.973Z",
+      "price": 84,
+      "updatedAt": "2025-12-31T07:00:34.042Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "2002": {
-      "price": 19.25,
-      "updatedAt": "2025-12-30T19:29:33.771Z",
+      "price": 19,
+      "updatedAt": "2025-12-31T07:00:36.214Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "2201": {
-      "price": 33.65,
-      "updatedAt": "2025-12-30T19:29:39.188Z",
+      "price": 33.15,
+      "updatedAt": "2025-12-31T07:00:42.524Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "2301": {
-      "price": 162,
-      "updatedAt": "2025-12-30T19:29:36.057Z",
+      "price": 163.5,
+      "updatedAt": "2025-12-31T07:00:38.843Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "2313": {
-      "price": 98,
-      "updatedAt": "2025-12-30T19:29:34.889Z",
+      "price": 93.1,
+      "updatedAt": "2025-12-31T07:00:37.536Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "2317": {
       "price": 230.5,
-      "updatedAt": "2025-12-31T06:59:05.912Z",
+      "updatedAt": "2025-12-31T06:59:40.005Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "2324": {
       "price": 30.4,
-      "updatedAt": "2025-12-31T06:59:05.270Z",
+      "updatedAt": "2025-12-31T06:59:39.297Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "2404": {
-      "price": 908,
-      "updatedAt": "2025-12-30T19:29:38.626Z",
+      "price": 949,
+      "updatedAt": "2025-12-31T07:00:41.871Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "2419": {
-      "price": 23.8,
-      "updatedAt": "2025-12-30T19:29:34.326Z",
+      "price": 24.15,
+      "updatedAt": "2025-12-31T07:00:36.878Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "2457": {
       "price": 28.5,
-      "updatedAt": "2025-12-31T06:59:39.611Z",
+      "updatedAt": "2025-12-31T07:00:27.649Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "2881": {
-      "price": 97,
-      "updatedAt": "2025-12-30T19:29:33.102Z",
+      "price": 96.1,
+      "updatedAt": "2025-12-31T07:00:35.417Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "2882": {
-      "price": 76.2,
-      "updatedAt": "2025-12-30T19:29:32.538Z",
+      "price": 75.8,
+      "updatedAt": "2025-12-31T07:00:34.745Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "2883": {
       "price": 17.25,
-      "updatedAt": "2025-12-31T06:59:08.913Z",
+      "updatedAt": "2025-12-31T06:59:43.371Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "2889": {
       "price": 16.55,
-      "updatedAt": "2025-12-31T06:59:36.788Z",
+      "updatedAt": "2025-12-31T07:00:24.704Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "2890": {
       "price": 28.6,
-      "updatedAt": "2025-12-31T06:59:10.712Z",
+      "updatedAt": "2025-12-31T06:59:45.308Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "2891": {
       "price": 50.2,
-      "updatedAt": "2025-12-31T06:59:08.332Z",
+      "updatedAt": "2025-12-31T06:59:42.643Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "2905": {
-      "price": 15.75,
-      "updatedAt": "2025-12-30T19:29:37.251Z",
+      "price": 15.85,
+      "updatedAt": "2025-12-31T07:00:40.357Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "3049": {
       "price": 6.16,
-      "updatedAt": "2025-12-31T06:59:45.557Z",
+      "updatedAt": "2025-12-31T07:00:33.378Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "3057": {
       "price": 20.95,
-      "updatedAt": "2025-12-31T06:59:06.490Z",
+      "updatedAt": "2025-12-31T06:59:40.653Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "3705": {
       "price": 57,
-      "updatedAt": "2025-12-31T06:59:09.520Z",
+      "updatedAt": "2025-12-31T06:59:44.025Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "4106": {
-      "price": 22.2,
-      "updatedAt": "2025-12-30T19:29:39.753Z",
+      "price": 22.05,
+      "updatedAt": "2025-12-31T07:00:43.185Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
@@ -3581,13 +3581,13 @@
     },
     "4938": {
       "price": 68.6,
-      "updatedAt": "2025-12-31T06:59:07.073Z",
+      "updatedAt": "2025-12-31T06:59:41.322Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "5203": {
       "price": 89.3,
-      "updatedAt": "2025-12-31T06:59:34.969Z",
+      "updatedAt": "2025-12-31T07:00:22.637Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
@@ -3615,7 +3615,7 @@
     },
     "6282": {
       "price": 42.3,
-      "updatedAt": "2025-12-31T06:59:35.546Z",
+      "updatedAt": "2025-12-31T07:00:23.647Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
@@ -3627,127 +3627,127 @@
     },
     "8103": {
       "price": 85.8,
-      "updatedAt": "2025-12-31T06:59:40.572Z",
+      "updatedAt": "2025-12-31T07:00:28.871Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "9904": {
       "price": 30.15,
-      "updatedAt": "2025-12-31T06:59:37.579Z",
+      "updatedAt": "2025-12-31T07:00:25.649Z",
       "stockType": "個股",
       "dividendFreq": "年配"
     },
     "00905": {
       "price": 17.4,
-      "updatedAt": "2025-12-31T06:59:14.888Z",
+      "updatedAt": "2025-12-31T06:59:52.627Z",
       "stockType": "ETF",
       "dividendFreq": "季配"
     },
     "00713": {
       "price": 50.55,
-      "updatedAt": "2025-12-31T06:59:12.086Z",
+      "updatedAt": "2025-12-31T06:59:47.664Z",
       "stockType": "ETF",
       "dividendFreq": "季配"
     },
     "00922": {
       "price": 25.9,
-      "updatedAt": "2025-12-31T06:59:12.661Z",
+      "updatedAt": "2025-12-31T06:59:48.670Z",
       "stockType": "ETF",
       "dividendFreq": "半配"
     },
     "00918": {
       "price": 22.61,
-      "updatedAt": "2025-12-31T06:59:13.207Z",
+      "updatedAt": "2025-12-31T06:59:49.612Z",
       "stockType": "ETF",
       "dividendFreq": "季配"
     },
     "00936": {
       "price": 16.19,
-      "updatedAt": "2025-12-31T06:59:13.760Z",
+      "updatedAt": "2025-12-31T06:59:50.615Z",
       "stockType": "ETF",
       "dividendFreq": "月配"
     },
     "00881": {
       "price": 32.62,
-      "updatedAt": "2025-12-31T06:59:14.312Z",
+      "updatedAt": "2025-12-31T06:59:51.684Z",
       "stockType": "ETF",
       "dividendFreq": "半配"
     },
     "00981A": {
       "price": 16.91,
-      "updatedAt": "2025-12-31T06:59:15.458Z",
+      "updatedAt": "2025-12-31T06:59:53.683Z",
       "stockType": "ETF",
       "dividendFreq": "無"
     },
     "00982A": {
       "price": 14.61,
-      "updatedAt": "2025-12-31T06:59:16.035Z",
+      "updatedAt": "2025-12-31T06:59:54.645Z",
       "stockType": "ETF",
       "dividendFreq": "季配"
     },
     "00984A": {
       "price": 11.08,
-      "updatedAt": "2025-12-31T06:59:16.596Z",
+      "updatedAt": "2025-12-31T06:59:55.302Z",
       "stockType": "ETF",
       "dividendFreq": "季配"
     },
     "00980A": {
       "price": 15.29,
-      "updatedAt": "2025-12-31T06:59:17.142Z",
+      "updatedAt": "2025-12-31T06:59:55.917Z",
       "stockType": "ETF",
       "dividendFreq": "季配"
     },
     "00982T": {
       "price": 10.25,
-      "updatedAt": "2025-12-31T06:59:18.004Z",
+      "updatedAt": "2025-12-31T06:59:56.662Z",
       "stockType": "ETF",
       "dividendFreq": "半配"
     },
     "00915": {
       "price": 22.81,
-      "updatedAt": "2025-12-31T06:59:18.560Z",
+      "updatedAt": "2025-12-31T06:59:57.622Z",
       "stockType": "ETF",
       "dividendFreq": "季配"
     },
     "00712": {
       "price": 9.12,
-      "updatedAt": "2025-12-31T06:59:19.133Z",
+      "updatedAt": "2025-12-31T06:59:58.684Z",
       "stockType": "ETF",
       "dividendFreq": "季配"
     },
     "009802": {
       "price": 11.26,
-      "updatedAt": "2025-12-31T06:59:19.847Z",
+      "updatedAt": "2025-12-31T06:59:59.625Z",
       "stockType": "ETF",
       "dividendFreq": "季配"
     },
     "0050": {
       "price": 65.6,
-      "updatedAt": "2025-12-31T06:59:20.612Z",
+      "updatedAt": "2025-12-31T07:00:00.651Z",
       "stockType": "ETF",
       "dividendFreq": "半配"
     },
     "009804": {
       "price": 14.69,
-      "updatedAt": "2025-12-31T06:59:21.762Z",
+      "updatedAt": "2025-12-31T07:00:01.624Z",
       "stockType": "ETF",
       "dividendFreq": "半配"
     },
     "009811": {
       "price": 11.77,
-      "updatedAt": "2025-12-31T06:59:22.550Z",
+      "updatedAt": "2025-12-31T07:00:02.711Z",
       "stockType": "ETF",
       "dividendFreq": "半配"
     },
     "009813": {
       "price": 10.58,
-      "updatedAt": "2025-12-31T06:59:23.550Z",
+      "updatedAt": "2025-12-31T07:00:03.739Z",
       "stockType": "ETF",
       "dividendFreq": "半配"
     },
     "00953B": {
       "price": 9.74,
-      "updatedAt": "2025-12-31T06:59:29.077Z",
+      "updatedAt": "2025-12-31T07:00:13.807Z",
       "stockType": "債",
       "dividendFreq": "月配"
     },
@@ -3825,19 +3825,19 @@
     },
     "00945B": {
       "price": 14.5,
-      "updatedAt": "2025-12-31T06:59:31.749Z",
+      "updatedAt": "2025-12-31T07:00:17.612Z",
       "stockType": "債",
       "dividendFreq": "月配"
     },
     "00983D": {
       "price": 10.26,
-      "updatedAt": "2025-12-31T06:59:32.567Z",
+      "updatedAt": "2025-12-31T07:00:18.613Z",
       "stockType": "債",
       "dividendFreq": "月配"
     },
     "00982D": {
       "price": 10.17,
-      "updatedAt": "2025-12-31T06:59:33.176Z",
+      "updatedAt": "2025-12-31T07:00:19.822Z",
       "stockType": "債",
       "dividendFreq": "月配"
     },
@@ -3845,13 +3845,13 @@
       "stockType": "ETF",
       "dividendFreq": "季配",
       "price": 36.73,
-      "updatedAt": "2025-12-31T06:59:33.774Z"
+      "updatedAt": "2025-12-31T07:00:20.630Z"
     },
     "00878": {
       "stockType": "ETF",
       "dividendFreq": "季配",
       "price": 21.71,
-      "updatedAt": "2025-12-31T06:59:34.358Z"
+      "updatedAt": "2025-12-31T07:00:21.648Z"
     }
   }
 }
