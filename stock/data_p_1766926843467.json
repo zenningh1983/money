@@ -3512,9 +3512,9 @@
       "name": "中信金",
       "symbol": "2891",
       "type": "buy",
-      "price": 20.85,
-      "qty": 2195,
-      "fee": 64,
+      "price": 0,
+      "qty": 63,
+      "fee": 0,
       "tax": 41758,
       "realizedDividend": 0,
       "note": "AI Parsed (Import)"
