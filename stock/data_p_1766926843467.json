@@ -3532,6 +3532,20 @@
       "tax": 0,
       "realizedDividend": 0,
       "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "27f7a6e6-177b-41b3-a92e-8a8a772f6df2",
+      "date": "2009-12-11",
+      "name": "1216",
+      "symbol": "1216",
+      "type": "sell",
+      "price": 38.95,
+      "qty": 1000,
+      "fee": 150,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "d63b6a98-e9dc-481a-b7c3-e99014511a5c"
     }
   ],
   "prices": {
