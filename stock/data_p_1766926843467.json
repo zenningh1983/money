@@ -3985,8 +3985,11 @@
       "fee": 134,
       "tax": 0,
       "realizedDividend": 0,
-      "note": "AI Parsed (Batch Sell)",
-      "relatedBuyId": "94c0cce2-0510-44c0-a2f7-4e47c38a73cd"
+      "note": "",
+      "relatedBuyId": "94c0cce2-0510-44c0-a2f7-4e47c38a73cd",
+      "computedPL": null,
+      "computedROI": 0,
+      "isGrouped": true
     },
     {
       "id": "2b415b69-8b38-4163-b50a-5e339c9cc1a6",
