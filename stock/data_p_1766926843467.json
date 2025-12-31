@@ -3505,6 +3505,19 @@
       "computedPL": 12724,
       "computedROI": 0.6171306625278883,
       "isGrouped": true
+    },
+    {
+      "id": "556f7dff-6778-428c-aecf-05af26c115bf",
+      "date": "2009-07-23",
+      "name": "中信金",
+      "symbol": "2891",
+      "type": "buy",
+      "price": 20.85,
+      "qty": 2195,
+      "fee": 64,
+      "tax": 41758,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
