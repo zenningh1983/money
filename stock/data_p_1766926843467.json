@@ -3959,6 +3959,34 @@
       "realizedDividend": 0,
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "d766c4fa-eae8-4102-9833-63d5308967ab"
+    },
+    {
+      "id": "b91401e3-19df-450b-90e1-9b70ab74d14a",
+      "date": "2014-07-14",
+      "name": "2317",
+      "symbol": "2317",
+      "type": "sell",
+      "price": 112,
+      "qty": 1000,
+      "fee": 432,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "9e85229a-02ac-491e-982f-ad0a5ef98db4"
+    },
+    {
+      "id": "f932d12f-8faa-4e6a-80ac-100ae4731efc",
+      "date": "2014-11-03",
+      "name": "2317",
+      "symbol": "2317",
+      "type": "sell",
+      "price": 98.5,
+      "qty": 1000,
+      "fee": 380,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "9e85229a-02ac-491e-982f-ad0a5ef98db4"
     }
   ],
   "prices": {
