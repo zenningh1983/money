@@ -3402,6 +3402,32 @@
       "realizedDividend": 0,
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "c9105bab-12e8-4610-ae3f-8af8988a14e3"
+    },
+    {
+      "id": "9915942c-48e5-42f6-91a0-4267754ce969",
+      "date": "2016-07-06",
+      "name": "和碩",
+      "symbol": "4938",
+      "type": "buy",
+      "price": 68,
+      "qty": 1000,
+      "fee": 58,
+      "tax": 68058,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "5a9d8c3a-0410-42a7-aaff-dc20dd6fca92",
+      "date": "2017-11-10",
+      "name": "和碩",
+      "symbol": "4938",
+      "type": "buy",
+      "price": 74,
+      "qty": 2000,
+      "fee": 127,
+      "tax": 148127,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
