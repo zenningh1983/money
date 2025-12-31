@@ -4260,6 +4260,20 @@
       "computedPL": 170343.11111111112,
       "computedROI": 1.3861555153707052,
       "isGrouped": true
+    },
+    {
+      "id": "17195ab5-5365-4686-b4dc-6a460de64a18",
+      "date": "2012-11-26",
+      "name": "2317",
+      "symbol": "2317",
+      "type": "sell",
+      "price": 93.5,
+      "qty": 1000,
+      "fee": 360,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "6140e3c7-4098-405a-8d49-a262f512c2bf"
     }
   ],
   "prices": {
