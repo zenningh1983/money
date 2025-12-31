@@ -3866,6 +3866,20 @@
       "tax": 0,
       "realizedDividend": 0,
       "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "cd38bcdd-db46-407f-b1e4-f7add7926069",
+      "date": "2011-10-26",
+      "name": "2317",
+      "symbol": "2317",
+      "type": "sell",
+      "price": 81,
+      "qty": 1000,
+      "fee": 312,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "a1f71a97-3f15-4194-82df-547d8591b04c"
     }
   ],
   "prices": {
