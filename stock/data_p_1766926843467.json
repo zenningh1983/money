@@ -4222,7 +4222,7 @@
       "type": "buy",
       "price": 116.5,
       "qty": 1800,
-      "fee": -11140,
+      "fee": 11140,
       "tax": 221200,
       "realizedDividend": 169205,
       "note": "AI Parsed (Import)"
