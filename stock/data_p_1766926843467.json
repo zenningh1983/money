@@ -4239,6 +4239,19 @@
       "computedPL": 13007,
       "computedROI": 0.06498041645018185,
       "isGrouped": true
+    },
+    {
+      "id": "ef38f1c7-342f-4efc-ba38-41af77d0ca68",
+      "date": "2017-06-30",
+      "name": "鴻海",
+      "symbol": "2317",
+      "type": "buy",
+      "price": 116.5,
+      "qty": 1800,
+      "fee": 180,
+      "tax": 221200,
+      "realizedDividend": 169205,
+      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
