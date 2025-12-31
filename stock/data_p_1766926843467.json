@@ -4114,6 +4114,20 @@
       "realizedDividend": 0,
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "bf1e5a81-ffcd-445d-b1b2-902ed59a43c0"
+    },
+    {
+      "id": "7ee442e3-3711-43c9-a2da-9af5c96bf73a",
+      "date": "2018-06-06",
+      "name": "2317",
+      "symbol": "2317",
+      "type": "sell",
+      "price": 89,
+      "qty": 1000,
+      "fee": 76,
+      "tax": 267,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "0193d07e-e2f0-4e5b-9c3d-4342e9e6ac42"
     }
   ],
   "prices": {
