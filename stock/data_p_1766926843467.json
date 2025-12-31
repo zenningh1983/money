@@ -3704,9 +3704,9 @@
       "name": "鴻海",
       "symbol": "2317",
       "type": "buy",
-      "price": 2012,
-      "qty": 12,
-      "fee": 17,
+      "price": null,
+      "qty": 360,
+      "fee": null,
       "tax": 360,
       "realizedDividend": 0,
       "note": "AI Parsed (Import)"
