@@ -3428,6 +3428,20 @@
       "tax": 148127,
       "realizedDividend": 0,
       "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "92674206-9baa-4faf-94c9-0e9fc9a9fb43",
+      "date": "2016-09-19",
+      "name": "4938",
+      "symbol": "4938",
+      "type": "sell",
+      "price": 82,
+      "qty": 1000,
+      "fee": 70,
+      "tax": 246,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "9915942c-48e5-42f6-91a0-4267754ce969"
     }
   ],
   "prices": {
