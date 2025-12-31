@@ -4035,9 +4035,12 @@
       "qty": 1000,
       "fee": 104,
       "tax": 366,
-      "realizedDividend": 0,
-      "note": "AI Parsed (Batch Sell)",
-      "relatedBuyId": "435b0ae1-a1e8-480e-b0df-d197c64e1573"
+      "realizedDividend": 11000,
+      "note": "",
+      "relatedBuyId": "435b0ae1-a1e8-480e-b0df-d197c64e1573",
+      "computedPL": 33655,
+      "computedROI": 0.38298719772403983,
+      "isGrouped": true
     }
   ],
   "prices": {
