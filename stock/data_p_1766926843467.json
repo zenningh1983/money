@@ -3505,6 +3505,20 @@
       "computedPL": 12724,
       "computedROI": 0.6171306625278883,
       "isGrouped": true
+    },
+    {
+      "id": "a48ce6a5-62fe-428a-86b6-eb54915ab623",
+      "date": "2011-01-13",
+      "name": "2891",
+      "symbol": "2891",
+      "type": "sell",
+      "price": 23,
+      "qty": 2195,
+      "fee": 195,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "c2f93db1-0857-4526-af60-86d31dfd4c01"
     }
   ],
   "prices": {
