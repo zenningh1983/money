@@ -94,13 +94,13 @@
     },
     {
       "id": "f44c1896-26e0-4ba0-8e40-79a72e67d419",
-      "date": "2017/12/5",
+      "date": "2017-12-05",
       "name": "鴻海",
       "symbol": "2317",
       "type": "buy",
       "price": 95.6,
       "qty": 1000,
-      "fee": 80,
+      "fee": 17400,
       "note": "AI Table Import"
     },
     {
