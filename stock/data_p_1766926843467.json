@@ -3842,19 +3842,6 @@
       "note": "AI Parsed (Import)"
     },
     {
-      "id": "5504be18-b1ec-443c-81a9-a714457c53b3",
-      "date": "2017-06-30",
-      "name": "鴻海",
-      "symbol": "2317",
-      "type": "buy",
-      "price": 116.5,
-      "qty": 1000,
-      "fee": -5900,
-      "tax": 0,
-      "realizedDividend": 0,
-      "note": "減資 6000"
-    },
-    {
       "id": "cd38bcdd-db46-407f-b1e4-f7add7926069",
       "date": "2011-10-26",
       "name": "2317",
