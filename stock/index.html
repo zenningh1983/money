@@ -385,6 +385,7 @@
                 });
                 return { holdings, globalStats };
             },
+            
             smartParse: (text, defaultSymbol = null, defaultType = null) => {
                 const lines = text.split('\n');
                 const results = [];
@@ -403,7 +404,7 @@
                         date = Utils.formatDate(date);
                         results.push({
                             id: crypto.randomUUID(), date: date, symbol: dividendMatch[1]?.match(/\d{4}/) ? dividendMatch[2] : (dividendMatch[1] || "UNKNOWN"),
-                            type: 'dividend', amount: parseFloat(dividendMatch[dividendMatch.length-1]), price: 0, qty: 0, fee: 0, note: 'AI Auto-Import'
+                            type: 'dividend', amount: parseFloat(dividendMatch[dividendMatch.length-1]), price: 0, qty: 0, fee: 0, note: '' 
                         });
                         return;
                     }
@@ -477,7 +478,7 @@
                             fee: fee,
                             tax: tax,
                             realizedDividend: realizedDividend,
-                            note: `AI Parsed (${type === 'sell' ? 'Batch Sell' : 'Import'})`
+                            note: ''
                         });
                     }
                 });
@@ -518,15 +519,8 @@
                     setLoading(true); setSyncStatus(`正在讀取 ${currentPortfolioId} 資料...`);
                     try {
                         const data = await Utils.githubRequest(`data_${currentPortfolioId}.json`);
-                        if (data) { 
-                            setTransactions(data.transactions || []); 
-                            setPrices(data.prices || {}); 
-                        } else {
-                            setTransactions([]);
-                            setPrices({});
-                        }
-                        localStorage.setItem('tm_last_pid', currentPortfolioId);
-                        setSyncStatus("同步完成");
+                        if (data) { setTransactions(data.transactions || []); setPrices(data.prices || {}); } else { setTransactions([]); setPrices({}); }
+                        localStorage.setItem('tm_last_pid', currentPortfolioId); setSyncStatus("同步完成");
                     } catch (e) { setSyncStatus("讀取失敗: " + e.message); } finally { setLoading(false); }
                 };
                 loadData();
@@ -556,70 +550,19 @@
                 setPrices(newPrices); autoSave(newTx, newPrices);
             };
             const removeStock = (symbol) => { const newTx = transactions.filter(t => t.symbol !== symbol); setTransactions(newTx); const newPrices = { ...prices }; delete newPrices[symbol]; setPrices(newPrices); autoSave(newTx, newPrices); showToast(`已刪除股票 ${symbol} 及其所有交易紀錄`); };
-            
-            const performUpdate = async (txs, currentP) => {
+            const updateAllPrices = async () => {
                 setLoading(true); setSyncStatus("正在更新股價與名稱...");
-                const symbols = [...new Set(txs.map(t => t.symbol))];
-                const newPrices = { ...currentP };
-                let updatedTransactions = [...txs];
-                let hasNameChange = false;
-                let count = 0;
-
+                const symbols = [...new Set(transactions.map(t => t.symbol))]; const newPrices = { ...prices }; let updatedTransactions = [...transactions]; let hasNameChange = false; let count = 0;
                 for (const sym of symbols) {
-                    await new Promise(r => setTimeout(r, 100)); 
-                    const result = await Utils.fetchYahooPrice(sym);
+                    await new Promise(r => setTimeout(r, 100)); const result = await Utils.fetchYahooPrice(sym);
                     if (result) {
-                        const oldData = newPrices[sym] || {};
-                        newPrices[sym] = { ...oldData, price: parseFloat(result.price), updatedAt: new Date().toISOString() };
-                        if (result.name) {
-                            const txsToUpdate = updatedTransactions.filter(t => t.symbol === sym && t.name !== result.name);
-                            if (txsToUpdate.length > 0) {
-                                hasNameChange = true;
-                                updatedTransactions = updatedTransactions.map(t => t.symbol === sym ? { ...t, name: result.name } : t);
-                            }
-                        }
-                        count++;
+                        const oldData = newPrices[sym] || {}; newPrices[sym] = { ...oldData, price: parseFloat(result.price), updatedAt: new Date().toISOString() };
+                        if (result.name) { const txsToUpdate = updatedTransactions.filter(t => t.symbol === sym && t.name !== result.name); if (txsToUpdate.length > 0) { hasNameChange = true; updatedTransactions = updatedTransactions.map(t => t.symbol === sym ? { ...t, name: result.name } : t); } } count++;
                     }
                 }
-                
-                setPrices(newPrices);
-                if (hasNameChange) {
-                    setTransactions(updatedTransactions);
-                    autoSave(updatedTransactions, newPrices);
-                } else {
-                    autoSave(txs, newPrices);
-                }
-                setLoading(false); setSyncStatus(`更新完成`); showToast(`成功更新 ${count} 檔股票資訊`);
+                setPrices(newPrices); if (hasNameChange) { setTransactions(updatedTransactions); autoSave(updatedTransactions, newPrices); } else { autoSave(transactions, newPrices); } setLoading(false); setSyncStatus(`更新完成`); showToast(`成功更新 ${count} 檔股票資訊`);
             };
-
-            const updateAllPrices = () => performUpdate(transactions, prices);
-
-            useEffect(() => {
-                if (transactions.length > 0 && !window.hasInitialUpdate) {
-                     window.hasInitialUpdate = true;
-                     setTimeout(() => performUpdate(transactions, prices), 500);
-                }
-            }, [transactions.length]);
-
-            const updateSinglePrice = async (sym) => { 
-                setLoading(true); 
-                const result = await Utils.fetchYahooPrice(sym); 
-                if (result) { 
-                    updatePrice(sym, result.price);
-                    if (result.name) {
-                         const newTx = transactions.map(t => t.symbol === sym ? { ...t, name: result.name } : t);
-                         setTransactions(newTx);
-                         const newPrices = { ...prices, [sym]: { ...prices[sym], price: parseFloat(result.price), updatedAt: new Date().toISOString() } };
-                         setPrices(newPrices);
-                         autoSave(newTx, newPrices);
-                    }
-                    showToast(`更新成功: ${result.name || sym} 現價 ${result.price}`); 
-                } else { 
-                    showToast(`更新失敗: 無法取得 ${sym} 股價`); 
-                } 
-                setLoading(false); 
-            };
-            
+            const updateSinglePrice = async (sym) => { setLoading(true); const result = await Utils.fetchYahooPrice(sym); if (result) { updatePrice(sym, result.price); if (result.name) { const newTx = transactions.map(t => t.symbol === sym ? { ...t, name: result.name } : t); setTransactions(newTx); const newPrices = { ...prices, [sym]: { ...prices[sym], price: parseFloat(result.price), updatedAt: new Date().toISOString() } }; setPrices(newPrices); autoSave(newTx, newPrices); } showToast(`更新成功: ${result.name || sym} 現價 ${result.price}`); } else { showToast(`更新失敗: 無法取得 ${sym} 股價`); } setLoading(false); };
             const createPortfolio = async (name) => {
                 const newId = 'p_' + Date.now(); const newList = [...portfolios, { id: newId, name }];
                 setPortfolios(newList); setLoading(true);
@@ -635,7 +578,7 @@
             return (
                 <AppContext.Provider value={{
                     portfolios, currentPortfolioId, setCurrentPortfolioId, transactions, addTransaction, addBatchTransactions, updateTransaction, removeTransaction, removeStock,
-                    prices, updatePrice, updateStockInfo, updateAllPrices, updateSinglePrice, createPortfolio, deletePortfolio, renamePortfolio, portfolioStats, loading, syncStatus, toast
+                    prices, updatePrice, updateStockInfo, updateAllPrices, updateSinglePrice, createPortfolio, deletePortfolio, renamePortfolio, portfolioStats, loading, syncStatus, toast, showToast, updateAllPrices
                 }}>
                     {children}
                 </AppContext.Provider>
@@ -720,8 +663,41 @@
         };
 
         const ImportModal = ({ onClose, onImport, title="匯入交易資料", defaultSymbol=null, defaultType=null, relatedBuyId=null, confirmText="確認匯入", confirmColor="bg-stone-600" }) => {
+            const [mode, setMode] = useState('manual');
             const [inputText, setInputText] = useState("");
             const [parsedData, setParsedData] = useState([]);
+            
+            const today = new Date().toISOString().split('T')[0];
+            const [manualForm, setManualForm] = useState({ date: today, symbol: defaultSymbol || '', type: defaultType || 'buy', price: '', qty: '', fee: '', tax: '', dividend: '', note: '' });
+
+            useEffect(() => {
+                const price = parseFloat(manualForm.price);
+                const qty = parseFloat(manualForm.qty);
+                if (!isNaN(price) && !isNaN(qty)) {
+                    const amount = price * qty;
+                    if (manualForm.fee === '') {
+                        const fee = Math.floor(amount * 0.001425);
+                        setManualForm(prev => ({ ...prev, fee: fee }));
+                    }
+                    if (manualForm.tax === '' && manualForm.type === 'sell') {
+                        const tax = Math.floor(amount * 0.003);
+                        setManualForm(prev => ({ ...prev, tax: tax }));
+                    }
+                }
+            }, [manualForm.price, manualForm.qty, manualForm.type]);
+
+            const handleManualAdd = () => {
+                const { date, symbol, type, price, qty, fee, tax, dividend, note } = manualForm;
+                if (!symbol || !price || !qty) return alert("請填寫必要欄位 (代號、價格、股數)");
+                const newItem = {
+                    id: crypto.randomUUID(), date: Utils.formatDate(date), symbol: symbol, name: symbol, type: type,
+                    price: parseFloat(price), qty: parseFloat(qty), fee: parseFloat(fee) || 0, tax: parseFloat(tax) || 0,
+                    realizedDividend: parseFloat(dividend) || 0, relatedBuyId: relatedBuyId || null, note: note || ''
+                };
+                setParsedData([...parsedData, newItem]);
+                setManualForm({ ...manualForm, price: '', qty: '', fee: '', tax: '', dividend: '', note: '' });
+            };
+
             const handleParse = () => { 
                 let results = Utils.smartParse(inputText, defaultSymbol, defaultType); 
                 if (relatedBuyId) {
@@ -733,48 +709,38 @@
                         return { ...r, relatedBuyId, type: 'sell', fee, tax, realizedDividend };
                     });
                 }
-                setParsedData(results); 
+                setParsedData([...parsedData, ...results]); 
+                setInputText("");
             };
-            const confirmImport = () => { onImport(parsedData); setParsedData([]); setInputText(""); onClose(); };
+            
+            const confirmImport = () => { onImport(parsedData); setParsedData([]); onClose(); };
             const removeParsedItem = (id) => { setParsedData(prev => prev.filter(item => item.id !== id)); };
 
             return (
                 <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-2xl w-[800px] h-[600px] shadow-xl flex flex-col border border-stone-100">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="font-bold text-lg text-stone-800">{title}</h3>
-                            <button onClick={onClose}><Icon name="x" size={24} className="text-stone-400 hover:text-stone-600"/></button>
-                        </div>
-                        <div className="flex-1 grid grid-cols-2 gap-4 min-h-0">
-                            <div className="flex flex-col gap-2 h-full">
-                                <textarea className="flex-1 p-4 font-mono text-sm text-stone-800 leading-relaxed resize-none border rounded-xl focus:shadow-inner bg-stone-50" placeholder={`格式範例:\n2023-12-31 1000 20.5 (日期 股數 股價)\n(批次賣出支援: 股價 股數 手續費 證交稅 現金股利)`} value={inputText} onChange={e => setInputText(e.target.value)}></textarea>
-                                <button onClick={handleParse} className="bg-morandi-dark hover-bg-morandi-dark text-white py-2 rounded-xl font-bold transition-colors">開始解析</button>
+                    <div className="bg-white p-6 rounded-2xl w-[900px] h-[600px] shadow-xl flex flex-col border border-stone-100">
+                        <div className="flex justify-between items-center mb-4"><h3 className="font-bold text-lg text-stone-800">{title}</h3><button onClick={onClose}><Icon name="x" size={24} className="text-stone-400 hover:text-stone-600"/></button></div>
+                        <div className="flex-1 grid grid-cols-5 gap-6 min-h-0">
+                            <div className="col-span-2 flex flex-col gap-4 border-r border-stone-100 pr-4">
+                                <div className="flex bg-stone-100 p-1 rounded-xl"><button onClick={() => setMode('manual')} className={`flex-1 py-1.5 rounded-lg text-sm font-bold transition-all ${mode === 'manual' ? 'bg-white text-stone-800 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}>單筆輸入</button><button onClick={() => setMode('paste')} className={`flex-1 py-1.5 rounded-lg text-sm font-bold transition-all ${mode === 'paste' ? 'bg-white text-stone-800 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}>批次貼上</button></div>
+                                {mode === 'manual' ? (
+                                    <div className="flex-1 overflow-y-auto space-y-3">
+                                        <div><label className="text-xs text-stone-400 block mb-1">日期</label><input className="w-full p-2 border rounded" value={manualForm.date} onChange={e => setManualForm({...manualForm, date: e.target.value})} /></div>
+                                        <div className="grid grid-cols-2 gap-2"><div><label className="text-xs text-stone-400 block mb-1">代號</label><input className="w-full p-2 border rounded" value={manualForm.symbol} onChange={e => setManualForm({...manualForm, symbol: e.target.value})} disabled={!!defaultSymbol} /></div><div><label className="text-xs text-stone-400 block mb-1">類型</label><select className="w-full p-2 border rounded" value={manualForm.type} onChange={e => setManualForm({...manualForm, type: e.target.value})} disabled={!!defaultType || !!relatedBuyId}><option value="buy">買進</option><option value="sell">賣出</option><option value="dividend">股利</option></select></div></div>
+                                        <div className="grid grid-cols-2 gap-2"><div><label className="text-xs text-stone-400 block mb-1">價格</label><input type="number" className="w-full p-2 border rounded" value={manualForm.price} onChange={e => setManualForm({...manualForm, price: e.target.value})} /></div><div><label className="text-xs text-stone-400 block mb-1">股數</label><input type="number" className="w-full p-2 border rounded" value={manualForm.qty} onChange={e => setManualForm({...manualForm, qty: e.target.value})} /></div></div>
+                                        <div className="grid grid-cols-2 gap-2"><div><label className="text-xs text-stone-400 block mb-1">手續費</label><input type="number" className="w-full p-2 border rounded" value={manualForm.fee} onChange={e => setManualForm({...manualForm, fee: e.target.value})} /></div>{(manualForm.type === 'sell' || defaultType === 'sell') && (<div><label className="text-xs text-stone-400 block mb-1">證交稅</label><input type="number" className="w-full p-2 border rounded" value={manualForm.tax} onChange={e => setManualForm({...manualForm, tax: e.target.value})} /></div>)}</div>
+                                        {(manualForm.type === 'sell' || defaultType === 'sell') && (<div><label className="text-xs text-stone-400 block mb-1">現金股利 (已實現)</label><input type="number" className="w-full p-2 border rounded" value={manualForm.dividend} onChange={e => setManualForm({...manualForm, dividend: e.target.value})} /></div>)}
+                                        <div><label className="text-xs text-stone-400 block mb-1">備註</label><input className="w-full p-2 border rounded" value={manualForm.note} onChange={e => setManualForm({...manualForm, note: e.target.value})} /></div>
+                                        <button onClick={handleManualAdd} className="w-full py-2 bg-stone-800 text-white rounded-xl font-bold mt-4 hover:bg-stone-700">加入清單</button>
+                                    </div>
+                                ) : (
+                                    <div className="flex-1 flex flex-col gap-2"><textarea className="flex-1 p-4 font-mono text-sm text-stone-800 leading-relaxed resize-none border rounded-xl focus:shadow-inner bg-stone-50" placeholder={`支援格式 (空格分隔):\n日期 價格 股數 手續費 證交稅 股利\n2023-12-31 20.5 1000\n20.5 1000 50`} value={inputText} onChange={e => setInputText(e.target.value)}></textarea><button onClick={handleParse} className="bg-morandi-dark hover-bg-morandi-dark text-white py-2 rounded-xl font-bold transition-colors">解析貼上內容</button></div>
+                                )}
                             </div>
-                            <div className="flex flex-col gap-2 h-full min-h-0">
-                                <div className="flex justify-between items-center p-2 bg-stone-100 rounded-t-xl border-b border-stone-200">
-                                    <span className="text-xs font-bold text-stone-500">預覽 ({parsedData.length})</span>
-                                    {parsedData.length > 0 && <button onClick={confirmImport} className={`text-xs text-white px-3 py-1 rounded-lg font-bold ${defaultType==='sell' ? 'bg-[#728A7A] hover:bg-[#607466]' : 'bg-stone-600 hover:bg-stone-700'}`}>{confirmText}</button>}
-                                </div>
-                                <div className="flex-1 overflow-y-auto border border-t-0 rounded-b-xl p-2 space-y-2 border-stone-200">
-                                     {parsedData.length === 0 && <div className="h-full flex items-center justify-center text-stone-400 text-sm">等待輸入...</div>}
-                                     {parsedData.map(item => (
-                                        <div key={item.id} className="p-3 border-b border-stone-100 flex justify-between items-center group hover:bg-stone-50 rounded-lg">
-                                            <div className="flex items-center gap-3">
-                                                <span className={`text-[10px] w-8 text-center py-0.5 border rounded-md ${item.type==='buy'?'bg-morandi-red-light text-morandi-red':'bg-morandi-green-light text-morandi-green'}`}>{item.type.substr(0,1).toUpperCase()}</span>
-                                                <div><div className="font-mono text-sm text-stone-800 font-bold">{item.name || item.symbol}</div><div className="text-[10px] text-stone-500 font-mono">{item.date} • {item.symbol}</div></div>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="text-xs text-stone-600 font-mono">{item.type==='dividend'?`$${Utils.formatCurrency(item.amount)}`:`${item.qty} x ${Utils.formatPrice(item.price)}`}</div>
-                                                {item.type === 'sell' && (
-                                                    <div className="text-[10px] text-stone-400">
-                                                        F:{item.fee} T:{item.tax} {item.realizedDividend > 0 ? `D:${item.realizedDividend}` : ''}
-                                                    </div>
-                                                )}
-                                                <button onClick={() => removeParsedItem(item.id)} className="text-stone-400 hover:text-rose-600 mt-1"><Icon name="x" size={14}/></button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+                            <div className="col-span-3 flex flex-col gap-2 h-full min-h-0">
+                                <div className="flex justify-between items-center p-2 bg-stone-100 rounded-t-xl border-b border-stone-200"><span className="text-xs font-bold text-stone-500">預覽清單 ({parsedData.length})</span></div>
+                                <div className="flex-1 overflow-y-auto border border-t-0 rounded-b-xl p-2 space-y-2 border-stone-200">{parsedData.length === 0 && <div className="h-full flex items-center justify-center text-stone-400 text-sm">尚未加入任何資料...</div>}{parsedData.map(item => (<div key={item.id} className="p-3 border-b border-stone-100 flex justify-between items-center group hover:bg-stone-50 rounded-lg"><div className="flex items-center gap-3"><span className={`text-[10px] w-8 text-center py-0.5 border rounded-md ${item.type==='buy'?'bg-morandi-red-light text-morandi-red':'bg-morandi-green-light text-morandi-green'}`}>{item.type.substr(0,1).toUpperCase()}</span><div><div className="font-mono text-sm text-stone-800 font-bold">{item.name || item.symbol}</div><div className="text-[10px] text-stone-500 font-mono">{item.date} • {item.symbol}</div></div></div><div className="text-right"><div className="text-xs text-stone-600 font-mono">{item.type==='dividend'?`$${Utils.formatCurrency(item.amount)}`:`${item.qty} x ${Utils.formatPrice(item.price)}`}</div>{item.type === 'sell' && (<div className="text-[10px] text-stone-400">F:{item.fee} T:{item.tax} {item.realizedDividend > 0 ? `D:${item.realizedDividend}` : ''}</div>)}<button onClick={() => removeParsedItem(item.id)} className="text-stone-400 hover:text-rose-600 mt-1"><Icon name="x" size={14}/></button></div></div>))}</div>
+                                {parsedData.length > 0 && (<button onClick={confirmImport} className={`w-full py-3 rounded-xl font-bold text-white transition-colors shadow-md mt-2 ${defaultType==='sell' ? 'bg-[#728A7A] hover:bg-[#607466]' : 'bg-stone-800 hover:bg-stone-700'}`}>{confirmText}</button>)}
                             </div>
                         </div>
                     </div>
@@ -933,7 +899,20 @@
                             <button onClick={onClose} className="flex-1 py-2.5 bg-stone-100 rounded-xl text-stone-600 font-bold hover:bg-stone-200 transition-colors">取消</button>
                             <button onClick={() => { 
                                 const note = document.getElementById('sell-note').value;
-                                onSave({ symbol: buyTx.symbol, name: buyTx.name, type: 'sell', date: date, qty: Number(qty), price: Number(price), fee: Number(fee), tax: Number(tax), totalAmount: Number(totalAmount), realizedDividend: Number(realizedDividend), note: note || `賣出 ${buyTx.date} 持倉`, relatedBuyId: buyTx.id }); 
+                                onSave({ 
+                                    symbol: buyTx.symbol, 
+                                    name: buyTx.name, 
+                                    type: 'sell', 
+                                    date: date, 
+                                    qty: Number(qty), 
+                                    price: Number(price), 
+                                    fee: Number(fee), 
+                                    tax: Number(tax), 
+                                    totalAmount: Number(totalAmount), 
+                                    realizedDividend: Number(realizedDividend), 
+                                    note: note || `賣出 ${buyTx.date} 持倉`,
+                                    relatedBuyId: buyTx.id 
+                                }); 
                                 onClose(); 
                             }} className="flex-1 py-2.5 bg-morandi-dark hover-bg-morandi-dark text-white rounded-xl font-bold transition-colors">確認賣出</button>
                         </div>
@@ -943,17 +922,19 @@
         };
 
         const Sidebar = ({ setView, currentView, isCollapsed, toggleSidebar, setShowPortfolioModal }) => {
-            const { portfolios, currentPortfolioId, syncStatus, updateAllPrices } = useContext(AppContext); // [FIX] Added updateAllPrices
+            const { portfolios, currentPortfolioId, syncStatus, updateAllPrices } = useContext(AppContext);
             const currentPortfolio = portfolios.find(p => p.id === currentPortfolioId) || { name: '我的主帳本' };
             const widthClass = isCollapsed ? 'w-20' : 'w-64';
             const alignClass = isCollapsed ? 'justify-center' : '';
 
             return (
                 <div className={`${widthClass} bg-stone-100/60 border-r border-stone-200 h-screen flex flex-col p-4 backdrop-blur-sm transition-all duration-300 relative`}>
+                    {/* Toggle Sidebar Button */}
                     <button onClick={toggleSidebar} className="absolute -right-3 top-9 bg-white border border-stone-200 rounded-full p-1.5 text-stone-500 hover:text-stone-800 shadow-sm z-50 flex items-center justify-center transition-transform hover:scale-105">
                         {isCollapsed ? <Icon name="chevrons-right" size={14}/> : <Icon name="chevrons-left" size={14}/>}
                     </button>
                     
+                    {/* Header: Current Portfolio Display & Switcher */}
                     <div className={`flex items-center gap-3 mb-6 h-12 ${alignClass} ${isCollapsed ? '' : 'px-3'}`}>
                          <button onClick={() => setShowPortfolioModal(true)} className={`flex-shrink-0 flex items-center justify-center rounded-xl transition-all shadow-sm ${isCollapsed ? 'w-10 h-10 bg-stone-800 text-white' : 'w-auto h-auto p-0 bg-transparent text-stone-800 hover:text-stone-600'}`} title="切換帳本">
                              {isCollapsed ? <span className="font-bold text-sm">{currentPortfolio.name.charAt(0)}</span> : <Icon name="arrow-right-left" size={18} />}
@@ -1023,6 +1004,7 @@
             const [deleteItemConfirmation, setDeleteItemConfirmation] = useState({ show: false, id: null });
             const [batchSellLotId, setBatchSellLotId] = useState(null); 
             const [activeTab, setActiveTab] = useState('inventory');
+            const [searchQuery, setSearchQuery] = useState("");
             const allTypes = ['個股', 'ETF', '債', '基金'];
             const allFreqs = ['月配', '季配', '半配', '年配', '無'];
             const [filterTypes, setFilterTypes] = useState(allTypes);
@@ -1039,6 +1021,18 @@
             const sortedHoldings = useMemo(() => {
                 let result = [...holdings];
                 if (activeTab === 'inventory') { result = result.filter(h => h.qty > 0); } else { result = result.filter(h => h.qty === 0); }
+                
+                // [NEW] Search Filtering
+                if (searchQuery) {
+                    const q = searchQuery.toLowerCase();
+                    result = result.filter(h => 
+                        (h.name && h.name.toLowerCase().includes(q)) || 
+                        h.symbol.toLowerCase().includes(q) ||
+                        h.marketValue.toString().includes(q) || 
+                        h.totalCost.toString().includes(q)
+                    );
+                }
+
                 if (filterTypes.length > 0) { result = result.filter(h => filterTypes.includes(h.stockType)); }
                 if (filterFreqs.length > 0) { result = result.filter(h => filterFreqs.includes(h.dividendFreq)); }
                 result.sort((a, b) => {
@@ -1049,7 +1043,7 @@
                     return 0;
                 });
                 return result;
-            }, [holdings, holdingsSort, filterTypes, filterFreqs, activeTab]);
+            }, [holdings, holdingsSort, filterTypes, filterFreqs, activeTab, searchQuery]);
 
             const groupedTransactions = useMemo(() => {
                 if (!activeStock) return [];
@@ -1084,6 +1078,7 @@
                             <div className="flex items-center justify-between mb-4 absolute top-0 w-full">
                                 <button onClick={() => setSelectedStock(null)} className="flex items-center gap-2 text-stone-400 hover:text-stone-800 text-sm font-bold transition-colors"><Icon name="arrow-left" size={18}/> 返回列表</button>
                             </div>
+
                             <div className="flex flex-col items-center justify-center gap-3 pt-10">
                                 <div className="flex items-center gap-3 cursor-pointer hover:opacity-70 transition-opacity" onClick={() => setEditingStock(activeStock)}>
                                     <h2 className={`text-4xl font-medium font-mono ${getStockColor(activeStock.stockType)}`}>{activeStock.name || activeStock.symbol}</h2>
@@ -1098,6 +1093,7 @@
                                     <span className="text-3xl font-mono text-stone-700 font-bold tracking-tight">{Utils.formatPrice(activeStock.currentPrice)}</span>
                                     <button onClick={() => updateSinglePrice(activeStock.symbol)} className="text-stone-400 hover:text-stone-600 transition-colors p-1 rounded-full hover:bg-stone-100" title="更新現價"><Icon name="refresh-cw" size={18}/></button>
                                 </div>
+                                
                                 <div className="flex flex-col items-center gap-2 mt-2">
                                     {activeStock.priceUpdatedAt && (<div className="text-[10px] text-stone-400">更新於: {Utils.formatDate(activeStock.priceUpdatedAt)}</div>)}
                                     {/* [MOD] Buttons centered below date */}
@@ -1108,6 +1104,7 @@
                                 </div>
                             </div>
                         </div>
+                        
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                             <div className="muji-card p-5 text-center flex flex-col justify-between"><div className="text-stone-400 text-xs font-bold mb-2">庫存股數</div><div className="text-xl font-mono text-stone-700">{activeStock.qty}</div></div>
                             <div className="muji-card p-5 text-center flex flex-col justify-between"><div className="text-stone-400 text-xs font-bold mb-2">均價</div><div className="text-xl font-mono text-stone-700">{Utils.formatPrice(activeStock.avgCost)}</div></div>
@@ -1115,6 +1112,7 @@
                             <div className="muji-card p-5 text-center flex flex-col justify-between"><div className="text-stone-400 text-xs font-bold mb-2">未實現損益 / 報酬率</div><div className="flex flex-col items-center"><div className={`text-xl font-mono leading-none mb-1 ${getPnLColor(activeStock.unrealizedPL)}`}>{Utils.formatCurrency(activeStock.unrealizedPL)}</div><div className={`text-sm font-mono ${getPnLColor(activeStock.unrealizedPL)}`}>({Utils.formatPercent(activeStock.unrealizedROI)})</div></div></div>
                             <div className="muji-card p-5 text-center flex flex-col justify-between"><div className="text-stone-400 text-xs font-bold mb-2">已實現損益 / 報酬率</div><div className="flex flex-col items-center"><div className={`text-xl font-mono leading-none mb-1 ${getPnLColor(activeStock.realizedPL)}`}>{Utils.formatCurrency(activeStock.realizedPL)}</div><div className={`text-sm font-mono ${getPnLColor(activeStock.realizedPL)}`}>({Utils.formatPercent(activeStock.realizedROI)})</div></div></div>
                         </div>
+
                         <div className="muji-card mt-8 overflow-hidden flex flex-col h-[600px]">
                             <div className="p-4 border-b border-stone-200 text-stone-400 text-xs font-bold uppercase tracking-widest bg-stone-50">交易紀錄</div>
                             <div className="overflow-y-auto flex-1">
@@ -1129,7 +1127,10 @@
                                             const rowClass = tx.isGrouped ? "bg-stone-50/50" : "border-b border-stone-100 hover:bg-stone-100 transition-colors duration-150";
                                             const typeCellContent = (<div className={`flex items-center ${tx.isGrouped ? 'pl-8' : 'justify-center'}`}>{tx.isGrouped && (<React.Fragment><Icon name="corner-down-right" size={14} className="mr-2 text-stone-300"/><span className={`text-xs font-bold px-2 py-1 rounded ${tx.type==='buy'?'bg-morandi-red-light text-morandi-red':tx.type==='sell'?'bg-morandi-green-light text-morandi-green':'bg-amber-50 text-amber-600'}`}>{tx.type==='buy'?'買進':tx.type==='sell'?'賣出':'股利'}</span></React.Fragment>)} {!tx.isGrouped && (<span className={`text-xs font-bold px-2 py-1 rounded ${tx.type==='buy'?'bg-morandi-red-light text-morandi-red':tx.type==='sell'?'bg-morandi-green-light text-morandi-green':'bg-amber-50 text-amber-600'}`}>{tx.type==='buy'?'買進':tx.type==='sell'?'賣出':'股利'}</span>)}</div>);
                                             return (<tr key={tx.id} className={rowClass}><td className="py-4">{typeCellContent}</td><td className="font-mono text-stone-600 text-center">{tx.date}</td><td className="font-mono text-stone-600 text-center">{tx.type === 'dividend' ? '-' : tx.qty}</td><td className="font-mono text-stone-600 text-center">{tx.type === 'dividend' ? '-' : Utils.formatPrice(tx.price)}</td><td className="font-mono text-stone-600 text-center text-xs">{tx.fee ? Utils.formatCurrency(tx.fee) : '-'}</td><td className="font-mono text-stone-600 font-bold text-center">{tx.type === 'dividend' ? <span className="text-amber-600">+{Utils.formatCurrency(amount)}</span> : Utils.formatCurrency(tx.type === 'buy' ? costBasis : amount)}</td><td className="font-mono font-bold text-center">{tx.type === 'sell' && tx.computedPL !== undefined && (<div className={getPnLColor(tx.computedPL)}>{Utils.formatCurrency(tx.computedPL)}<div className="text-[10px] opacity-70">{Utils.formatPercent(tx.computedROI)}</div></div>)}{tx.type === 'dividend' && <span className="text-amber-600">+{Utils.formatCurrency(amount)}</span>}{tx.type === 'buy' && <span className="text-stone-300">-</span>}</td><td className="text-xs text-stone-600 text-center truncate px-2" title={tx.note}>{tx.note}</td>
-                                            <td className="flex justify-center gap-2"><button onClick={() => setEditingTx(tx)} className="p-1 hover:bg-stone-200 rounded text-stone-500"><Icon name="edit" size={14}/></button><button onClick={() => setDeleteItemConfirmation({ show: true, id: tx.id })} className="p-1 hover:bg-rose-100 text-rose-400 rounded"><Icon name="trash" size={14}/></button>{tx.type === 'buy' && (() => { const linkedSells = activeStock.history.filter(s => s.relatedBuyId === tx.id); const soldFromThis = linkedSells.reduce((sum, s) => sum + s.qty, 0); const rem = tx.qty - soldFromThis; if (rem > 0) return <button onClick={() => setBatchSellLotId(tx.id)} className="p-1 hover:bg-[#728A7A]/10 text-[#728A7A] rounded text-xs font-bold px-2 ml-1">賣出</button>; return null; })()}</td></tr>); 
+                                            <td className="flex justify-center gap-2"><button onClick={() => setEditingTx(tx)} className="p-1 hover:bg-stone-200 rounded text-stone-500"><Icon name="edit" size={14}/></button><button onClick={() => setDeleteItemConfirmation({ show: true, id: tx.id })} className="p-1 hover:bg-rose-100 text-rose-400 rounded"><Icon name="trash" size={14}/></button>
+                                                {/* [MOD] Copy Button Added Here */}
+                                                <button onClick={() => { const newTx = { ...tx, id: crypto.randomUUID() }; addTransaction(newTx); }} className="p-1 hover:bg-amber-100 text-amber-500 rounded"><Icon name="copy" size={14}/></button>
+                                                {tx.type === 'buy' && (() => { const linkedSells = activeStock.history.filter(s => s.relatedBuyId === tx.id); const soldFromThis = linkedSells.reduce((sum, s) => sum + s.qty, 0); const rem = tx.qty - soldFromThis; if (rem > 0) return <button onClick={() => setBatchSellLotId(tx.id)} className="p-1 hover:bg-[#728A7A]/10 text-[#728A7A] rounded text-xs font-bold px-2 ml-1">賣出</button>; return null; })()}</td></tr>); 
                                         })}
                                     </tbody>
                                 </table>
@@ -1152,6 +1153,21 @@
                              <div className="flex items-center gap-6"><h2 className="text-3xl font-medium text-stone-800">庫存明細</h2><div className="flex bg-stone-100 p-1 rounded-xl"><button onClick={() => setActiveTab('inventory')} className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'inventory' ? 'bg-white text-stone-800 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}>庫存股</button><button onClick={() => setActiveTab('history')} className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'history' ? 'bg-white text-stone-800 shadow-sm' : 'text-stone-400 hover:text-stone-600'}`}>歷史股</button></div></div>
                              <div className="flex gap-2"><button onClick={updateAllPrices} className="flex items-center gap-2 text-stone-500 hover:text-stone-800 text-sm font-bold bg-white border border-stone-200 px-3 py-2 rounded-xl shadow-sm"><Icon name="refresh-cw" size={16}/> 更新現價</button><button onClick={openImport} className="flex items-center gap-2 text-stone-500 hover:text-stone-800 text-sm font-bold bg-white border border-stone-200 px-3 py-2 rounded-xl shadow-sm"><Icon name="arrow-down-to-line" size={16}/> 匯入資料</button></div>
                         </div>
+                        
+                        {/* [MOD] Search Bar Above Filters */}
+                        <div className="relative">
+                            <input 
+                                type="text" 
+                                placeholder="搜尋股票名稱、代號或金額..." 
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-10 pr-4 py-3 rounded-2xl border border-stone-200 shadow-sm focus:border-stone-400 focus:ring-0 bg-white text-stone-700 placeholder-stone-400 transition-all"
+                            />
+                            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-400">
+                                <Icon name="search" size={20} />
+                            </div>
+                        </div>
+
                         <div className="flex flex-wrap items-center gap-2 p-3 bg-white rounded-2xl border border-stone-200 shadow-sm">{allTypes.map(type => (<FilterTag key={type} label={type} active={filterTypes.includes(type)} onClick={() => handleFilterChange(filterTypes, setFilterTypes, type)} />))}<div className="w-px h-4 bg-stone-200 mx-1"></div>{allFreqs.map(freq => (<FilterTag key={freq} label={freq} active={filterFreqs.includes(freq)} onClick={() => handleFilterChange(filterFreqs, setFilterFreqs, freq)} />))}</div>
                     </header>
                     <div className="muji-card overflow-hidden flex flex-col h-[calc(100vh-280px)]"><div className="overflow-y-auto flex-1"><table className="w-full text-sm text-left text-stone-600 relative table-fixed"><thead className="text-[10px] text-stone-400 uppercase bg-white border-b border-stone-200 sticky top-0 z-20"><tr><th className="w-[15%]" onClick={() => handleSort('symbol', holdingsSort, setHoldingsSort)}>名稱/代號 <SortIcon colKey="symbol" config={holdingsSort}/></th><th className="w-[12%]" onClick={() => handleSort('qty', holdingsSort, setHoldingsSort)}>庫存股數 <SortIcon colKey="qty" config={holdingsSort}/></th><th className="w-[12%]" onClick={() => handleSort('avgCost', holdingsSort, setHoldingsSort)}>均價 <SortIcon colKey="avgCost" config={holdingsSort}/></th><th className="w-[12%]" onClick={() => handleSort('currentPrice', holdingsSort, setHoldingsSort)}>現價 <SortIcon colKey="currentPrice" config={holdingsSort}/></th><th className="w-[12%]" onClick={() => handleSort('marketValue', holdingsSort, setHoldingsSort)}>市值 <SortIcon colKey="marketValue" config={holdingsSort}/></th><th className="w-[15%]" onClick={() => handleSort('unrealizedPL', holdingsSort, setHoldingsSort)}>未實現損益/報酬率 <SortIcon colKey="unrealizedPL" config={holdingsSort}/></th><th className="w-[15%]" onClick={() => handleSort('realizedPL', holdingsSort, setHoldingsSort)}>已實現損益/報酬率 <SortIcon colKey="realizedPL" config={holdingsSort}/></th><th className="w-[7%]"></th></tr></thead><tbody>{sortedHoldings.map(h => (<tr key={h.symbol} className="border-b border-stone-100 hover:bg-stone-50 cursor-pointer group transition-colors" onClick={() => setSelectedStock(h)}><td className="text-center"><div className={`font-bold text-base truncate px-2 ${getStockColor(h.stockType)}`}>{h.name || h.symbol}</div><div className="text-xs text-stone-400 font-mono">{h.symbol}</div><div className="mt-1"><span className="text-[10px] bg-stone-100 text-stone-500 px-1.5 py-0.5 rounded">{h.dividendFreq}</span></div></td><td className="font-mono text-stone-700 text-center">{h.qty}</td><td className="font-mono text-stone-700 text-center">{Utils.formatPrice(h.avgCost)}</td><td className="font-mono text-stone-700 text-center" onClick={(e) => { e.stopPropagation(); setEditingStock(h); }}>{Utils.formatPrice(h.currentPrice)}</td><td className="font-mono text-stone-700 text-center">{Utils.formatCurrency(h.marketValue)}</td><td className={`font-mono text-center ${getPnLColor(h.unrealizedPL)}`}><div className="font-bold">{Utils.formatCurrency(h.unrealizedPL)}</div><div className="text-xs font-bold opacity-80">({Utils.formatPercent(h.unrealizedROI)})</div></td><td className={`font-mono text-center ${getPnLColor(h.realizedPL)}`}><div className="font-bold">{Utils.formatCurrency(h.realizedPL)}</div><div className="text-xs font-bold opacity-80">({Utils.formatPercent(h.realizedROI)})</div></td><td className="text-center"><Icon name="chevron-right" size={16} className="mx-auto text-stone-300 group-hover:text-stone-600"/></td></tr>))}</tbody></table></div></div></div>
@@ -1160,6 +1176,7 @@
 
         const SettingsView = () => {
             const { portfolios, createPortfolio, deletePortfolio, renamePortfolio } = useContext(AppContext);
+            const [newName, setNewName] = useState("");
             const [promptAction, setPromptAction] = useState({ show: false, title: "", placeholder: "", onConfirm: null });
             const [confirmAction, setConfirmAction] = useState({ show: false, title: "", message: "", onConfirm: null, isDangerous: false });
 
