@@ -3774,7 +3774,7 @@
       "fee": 65,
       "tax": 0,
       "realizedDividend": 0,
-      "note": "AI Parsed (Import)"
+      "note": ""
     },
     {
       "id": "187b9674-01ed-40ba-82d8-8bf7fb3cb67c",
@@ -4208,10 +4208,10 @@
       "fee": 183,
       "tax": 642,
       "realizedDividend": 316970,
-      "note": "AI Parsed (Batch Sell)",
+      "note": "",
       "relatedBuyId": "16508604-5e23-41a3-9441-3a33c97666d7",
-      "computedPL": 13007,
-      "computedROI": 0.06498041645018185,
+      "computedPL": 329977,
+      "computedROI": 1.6485002597817833,
       "isGrouped": true
     },
     {
