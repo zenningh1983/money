@@ -3559,6 +3559,20 @@
       "tax": 0,
       "realizedDividend": 0,
       "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "fe82ffa4-3cf4-4b23-b1fd-b411d944bf46",
+      "date": "2023-09-20",
+      "name": "3057",
+      "symbol": "3057",
+      "type": "sell",
+      "price": 11.85,
+      "qty": 43,
+      "fee": 0,
+      "tax": 2,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "6d919698-d1f2-4ac8-99ed-5b1d3596c0db"
     }
   ],
   "prices": {
