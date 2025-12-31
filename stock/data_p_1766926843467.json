@@ -3470,8 +3470,8 @@
       "symbol": "2891",
       "type": "buy",
       "price": 20.85,
-      "qty": 2132,
-      "fee": -2694,
+      "qty": 2195,
+      "fee": -4008,
       "tax": 41758,
       "realizedDividend": 0,
       "note": "AI Parsed (Import)"
