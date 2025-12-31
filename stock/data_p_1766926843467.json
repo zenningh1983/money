@@ -3546,6 +3546,19 @@
       "realizedDividend": 0,
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "d63b6a98-e9dc-481a-b7c3-e99014511a5c"
+    },
+    {
+      "id": "6d919698-d1f2-4ac8-99ed-5b1d3596c0db",
+      "date": "2015-07-13",
+      "name": "喬鼎",
+      "symbol": "3057",
+      "type": "buy",
+      "price": 20.85,
+      "qty": 1000,
+      "fee": 18,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
