@@ -3519,6 +3519,19 @@
       "realizedDividend": 0,
       "note": "AI Parsed (Batch Sell)",
       "relatedBuyId": "c2f93db1-0857-4526-af60-86d31dfd4c01"
+    },
+    {
+      "id": "d63b6a98-e9dc-481a-b7c3-e99014511a5c",
+      "date": "2009-09-07",
+      "name": "統一",
+      "symbol": "1216",
+      "type": "buy",
+      "price": 36.05,
+      "qty": 1000,
+      "fee": 50,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Import)"
     }
   ],
   "prices": {
