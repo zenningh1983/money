@@ -3862,7 +3862,7 @@
       "type": "buy",
       "price": 116.5,
       "qty": 1000,
-      "fee": 100,
+      "fee": -5900,
       "tax": 0,
       "realizedDividend": 0,
       "note": "AI Parsed (Import)"
