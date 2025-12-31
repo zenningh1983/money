@@ -4292,6 +4292,32 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "6140e3c7-4098-405a-8d49-a262f512c2bf"
+    },
+    {
+      "id": "ddf20402-6fbf-4b35-bef1-32e84dce7f6a",
+      "date": "2017-12-05",
+      "name": "鴻海",
+      "symbol": "2317",
+      "type": "buy",
+      "price": 95.6,
+      "qty": 1000,
+      "fee": 80,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": ""
+    },
+    {
+      "id": "036cb091-3044-4e9d-b473-75e6813c18e9",
+      "date": "2020-03-13",
+      "name": "鴻海",
+      "symbol": "2317",
+      "type": "buy",
+      "price": 76,
+      "qty": 1000,
+      "fee": 64,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": ""
     }
   ],
   "prices": {
