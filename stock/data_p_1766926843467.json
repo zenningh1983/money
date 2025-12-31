@@ -4252,6 +4252,34 @@
       "tax": 221200,
       "realizedDividend": 169205,
       "note": "AI Parsed (Import)"
+    },
+    {
+      "id": "d2676596-c675-4595-be1c-b8fb460bb1e1",
+      "date": "2023-06-26",
+      "name": "2317",
+      "symbol": "2317",
+      "type": "sell",
+      "price": 113,
+      "qty": 800,
+      "fee": 77,
+      "tax": 271,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "ef38f1c7-342f-4efc-ba38-41af77d0ca68"
+    },
+    {
+      "id": "79102b1b-11f4-43b3-bc7c-ecc9916928d5",
+      "date": "2024-06-18",
+      "name": "2317",
+      "symbol": "2317",
+      "type": "sell",
+      "price": 200,
+      "qty": 1000,
+      "fee": 171,
+      "tax": 600,
+      "realizedDividend": 0,
+      "note": "AI Parsed (Batch Sell)",
+      "relatedBuyId": "ef38f1c7-342f-4efc-ba38-41af77d0ca68"
     }
   ],
   "prices": {
