@@ -3911,6 +3911,17 @@
       "computedPL": -4445,
       "computedROI": -0.04486047333097845,
       "isGrouped": true
+    },
+    {
+      "id": "7702fa57-de92-4d48-9bed-16327eb0f352",
+      "date": "2025/8/26",
+      "name": "第一金優選非投債",
+      "symbol": "00981B",
+      "type": "buy",
+      "price": 9.16,
+      "qty": 3000,
+      "fee": 23,
+      "note": "AI Table Import"
     }
   ],
   "prices": {
