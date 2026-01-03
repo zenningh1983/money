@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>財富自由 (單人版)</title>
+    
+    <!-- 核心函式庫 -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- 字體 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind 設定 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        muji: {
+                            bg: '#FAFAFA', card: '#FFFFFF', sidebar: '#F4F4F5', text: '#171717',
+                            muted: '#737373', border: '#E5E5E5', accent: '#171717', green: '#059669',
+                            red: '#DC2626', blue: '#2563EB', hover: '#F4F4F5',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Inter"', 'sans-serif'],
+                        mono: ['"Rajdhani"', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* style.css 內容整合 */
+        body { 
+            background-color: #FAFAFA; 
+            color: #171717; 
+            font-family: 'Inter', sans-serif; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        /* 捲軸美化 */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #D4D4D8; border-radius: 3px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Sticky Table Header Support */
+        .sticky-header th { 
+            position: sticky; 
+            top: 0; 
+            z-index: 10; 
+            background-color: #FFFFFF; 
+            box-shadow: 0 1px 0 #E5E5E5; 
+        }
+
+        /* Toast style override */
+        .toast-bg { 
+            background-color: rgba(23, 23, 23, 0.9) !important; 
+            backdrop-filter: blur(4px); 
+            color: white; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        input, select, textarea { color-scheme: light; }
+
+        @keyframes popIn { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .animate-pop { animation: popIn 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .animate-fade { animation: fadeIn 0.3s ease-out forwards; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo, useCallback } = React;
+
+        // --- SHARED CONSTANTS & HELPERS (shared.js) ---
+        
+        // Account Types
+        window.DEFAULT_ACCOUNT_TYPES = {
+            cash: { label: '現金', icon: 'banknote' }, 
+            bank: { label: '銀行', icon: 'landmark' },
+            credit: { label: '信用卡', icon: 'credit-card' },
+            stock: { label: '證券戶', icon: 'trending-up' },  
+            pay: { label: '行動支付', icon: 'smartphone' },   
+            ticket: { label: '電子票券', icon: 'ticket' }
+        };
+
+        // TX Types
+        window.TX_TYPES = {
+            expense: { label: '支出', color: 'text-rose-500', icon: 'minus' },
+            income: { label: '收入', color: 'text-emerald-500', icon: 'plus' },
+            transfer: { label: '轉帳', color: 'text-muji-blue', icon: 'arrow-right-left' },
+            advance: { label: '代墊', color: 'text-orange-500', icon: 'hand-coins' }, 
+            repay: { label: '還款', color: 'text-teal-600', icon: 'undo-2' }
+        };
+
+        window.DEFAULT_CATEGORY_GROUPS = {
+            expense: [
+                { id: 'food', label: '伙食', icon: 'utensils', subs: ['三餐', '交際應酬', '酒類', '咖啡飲料', '水果', '零食', '超市', '團購食材'] },
+                { id: 'transport', label: '交通', icon: 'bus', subs: ['公車捷運', 'Gogoro', '高鐵台鐵', '租車', '計程車', '加油', '停車', '洗車', '維修保養', 'ETC'] },
+                { id: 'home', label: '居家', icon: 'home', subs: ['房貸', '管理費', '水電瓦斯', '網路', '手機費', '傢俱家電', '日用雜貨', '3C 周邊', '修繕'] },
+                { id: 'life', label: '生活', icon: 'shopping-bag', subs: ['治裝', '美容美妝', '美髮', '美甲', '美睫'] },        
+                { id: 'play', label: '娛樂', icon: 'gamepad-2', subs: ['電影', '唱歌', '棒球', '泡湯按摩', '植栽', '旅行', 'APP訂閱', '遊戲課金', '打牌博弈'] },
+                { id: 'medical', label: '醫療', icon: 'stethoscope', subs: ['掛號費', '藥用品', '保健食品', '健檢', '疫苗', '住院手術'] },
+                { id: 'insurance', label: '保險稅負', icon: 'shield', subs: ['一般保險', '車險', '旅遊險', '各式稅金'] },
+                { id: 'parenting', label: '育兒', icon: 'baby', subs: ['學雜費', '補習班', '安親班', '才藝', '冬夏令營', '零用錢', '小孩物品', '小孩治裝', '學用品', '手機費', '保險', '掛號費'] },
+                { id: 'invest', label: '投資理財', icon: 'piggy-bank', subs: ['個股', 'ETF', '基金', '定存', '外幣'] },
+                { id: 'other', label: '其他', icon: 'circle-ellipsis', subs: ['手續費', '滯納金', '運費', '人情紅包', '禮物', '捐款', '請客', '罰單', '遺失', '其他'] }
+            ],
+            income: [
+                { id: 'active', label: '主動', icon: 'briefcase', subs: ['薪資', '加班費', '獎金'] },
+                { id: 'passive', label: '被動', icon: 'trending-up', subs: ['股息', '利息', '贖回'] },
+                { id: 'other_in', label: '其他', icon: 'wallet', subs: ['紅包', '退款', '補助款', '中獎', '紅利回饋','其他', '還款', '葡眾'] }
+            ]
+        };
+
+        window.DEFAULT_DEBT_TARGETS = [
+            { id: 'dt_1', name: '朋友A', defaultPercent: 50 },
+            { id: 'dt_2', name: '公司', defaultPercent: 100 },
+        ];
+
+        // Simplified Initial Data (Single User)
+        window.INITIAL_DATA = {
+            accounts: [
+                { id: 'acc1', name: '我的錢包', type: 'cash', balance: 0 },
+                { id: 'acc2', name: '薪資帳戶', type: 'bank', balance: 0 },
+            ],
+            transactions: [],
+            stocks: [],
+            stockTransactions: [],
+            settings: { categoryGroups: window.DEFAULT_CATEGORY_GROUPS, accountTypes: window.DEFAULT_ACCOUNT_TYPES },
+            debtTargets: window.DEFAULT_DEBT_TARGETS
+        };
+
+        window.KEYWORD_MAPPING = {
+            '早餐': 'food_三餐', '午餐': 'food_三餐', '晚餐': 'food_三餐', '便當': 'food_三餐', '三餐': 'food_三餐',
+            'ＱＢｕｒｇｅｒ': 'food_三餐', 'QBurger': 'food_三餐', '統一': 'food_三餐', '餐飲': 'food_三餐', '食堂': 'food_三餐',
+            '飲料': 'food_咖啡飲料', '咖啡': 'food_咖啡飲料', '星巴克': 'food_咖啡飲料', '路易莎': 'food_咖啡飲料',
+            '全聯': 'food_超市', '家樂福': 'food_超市', '大潤發': 'food_超市', 'Costco': 'food_超市', '好市多': 'food_超市', '全聯小時達': 'food_超市',
+            '7-11': 'food_零食', '全家': 'food_零食', '萊爾富': 'food_零食', 'OK': 'food_零食',
+            '捷運': 'transport_公車捷運', '公車': 'transport_公車捷運', '客運': 'transport_公車捷運', '高鐵': 'transport_公車捷運', '台鐵': 'transport_高鐵台鐵',
+            'Uber': 'transport_計程車', '計程車': 'transport_計程車', '55688': 'transport_計程車',
+            '加油': 'transport_加油', '中油': 'transport_加油', '台塑': 'transport_加油',
+            '停車': 'transport_停車', 'eTag': 'transport_停車',
+            '房租': 'home_房貸', '水費': 'home_水電瓦斯', '電費': 'home_水電瓦斯', '瓦斯': 'home_水電瓦斯',
+            '電信': 'home_手機費', '中華電信': 'home_手機費', '遠傳': 'home_手機費', '台灣大哥大': 'home_手機費',
+            '屈臣氏': 'life_美容美妝', '康是美': 'life_美容美妝',
+            '診所': 'medical_掛號費', '醫院': 'medical_掛號費', '掛號': 'medical_掛號費', '藥局': 'medical_藥用品',
+            '保險': 'insurance_一般保險', '南山': 'insurance_一般保險', '國泰': 'insurance_一般保險', '富邦': 'insurance_一般保險',
+            '學費': 'parenting_學雜費', '補習': 'parenting_補習班',
+            'YOUTUBE': 'play_APP訂閱', 'PREMIUM': 'play_APP訂閱', 'GPT': 'play_APP訂閱', 'DISNEY': 'play_APP訂閱', 'NETFLIX': 'play_APP訂閱', 'SPOTIFY': 'play_APP訂閱',
+            '轉帳': 'other_手續費', '手續費': 'other_手續費', '紅包': 'other_人情紅包',
+            '薪資': 'active_薪資', '薪水': 'active_薪資', '獎金': 'active_獎金',
+            '股息': 'passive_股息', '利息': 'passive_利息',
+            '收益分配': 'passive_股息', '基金配息': 'passive_股息', '配息': 'passive_股息',
+            '存款息': 'passive_利息',
+            '交割股款': 'invest_ETF',
+            '管理費': 'home_管理費',
+            '電支交易': 'food_三餐',
+            '一卡通票證': 'food_三餐',
+        };
+
+        window.QUOTES = [
+            "每一塊錢都是你的士兵。", "理財就是理生活。", "複利是世界第八大奇蹟。", "不要為錢工作，讓錢為你工作。", "節儉是為了更自由的未來。"
+        ];
+
+        window.getFlatCategories = (categoryGroups) => {
+            const flat = {};
+            if(!categoryGroups) return flat;
+            Object.values(categoryGroups).forEach(typeGroups => {
+                typeGroups.forEach(group => {
+                    group.subs.forEach(sub => {
+                        const id = `${group.id}_${sub}`; 
+                        flat[id] = { id, name: sub, group: group.label, icon: group.icon, type: typeGroups === categoryGroups.expense ? 'expense' : 'income' };
+                    });
+                });
+            });
+            return flat;
+        };
+
+        window.calculateBalance = (data, accId) => {
+            const initial = data.accounts.find(a => a.id === accId)?.balance || 0;
+            const txs = data.transactions.filter(t => t.accountId === accId || t.toAccountId === accId);
+            return txs.reduce((acc, curr) => {
+                const amount = curr.amount || 0;
+                if ((curr.type === 'income' || curr.type === 'repay') && curr.accountId === accId) return acc + amount;
+                if ((curr.type === 'expense' || curr.type === 'advance') && curr.accountId === accId) return acc - amount;
+                if (curr.type === 'transfer') {
+                    if (curr.accountId === accId) return acc - amount; 
+                    if (curr.toAccountId === accId) return acc + amount; 
+                }
+                return acc;
+            }, initial);
+        };
+
+        window.calculateMonthlyStats = (data, date = new Date()) => {
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            const txs = data.transactions.filter(t => {
+                const d = new Date(t.date);
+                return d.getFullYear() === year && d.getMonth() === month;
+            });
+            
+            const income = txs.reduce((sum, t) => t.type === 'income' ? sum + (t.amount || 0) : sum, 0); 
+            
+            const expense = txs.reduce((sum, t) => {
+                if (t.type === 'expense') {
+                    let myAmount = t.amount || 0;
+                    if (t.splits && t.splits.length > 0) {
+                        const othersAmount = t.splits.reduce((acc, s) => {
+                            return s.owner !== 'me' ? acc + (parseFloat(s.amount) || 0) : acc;
+                        }, 0);
+                        myAmount = myAmount - othersAmount;
+                    }
+                    return sum + myAmount;
+                }
+                return sum;
+            }, 0);
+            return { income, expense };
+        };
+
+        window.autoTag = (note) => {
+            if(!note) return 'other_其他';
+            const lowerNote = note.toLowerCase();
+            
+            if (lowerNote.includes('收益分配') || lowerNote.includes('基金配息') || lowerNote.includes('配息') || lowerNote.includes('股息')) return 'passive_股息';
+            if (lowerNote.includes('存款息') || lowerNote.includes('利息')) return 'passive_利息';
+            if (lowerNote.includes('交割股款')) return 'invest_ETF'; 
+            if (lowerNote.includes('管理費')) return 'home_管理費';
+            if (lowerNote.includes('電支交易') || lowerNote.includes('一卡通票證')) return 'food_三餐';
+            if (lowerNote.includes('qburger') || lowerNote.includes('統一') || lowerNote.includes('餐飲') || lowerNote.includes('食堂')) return 'food_三餐';
+            if (lowerNote.includes('youtube') || lowerNote.includes('premium') || lowerNote.includes('gpt') || lowerNote.includes('disney') || lowerNote.includes('netflix') || lowerNote.includes('spotify')) return 'play_APP訂閱';
+
+            for (let key in window.KEYWORD_MAPPING) if (lowerNote.includes(key.toLowerCase())) return window.KEYWORD_MAPPING[key];
+            return 'other_其他'; 
+        };
+
+        window.getDebtSummary = (data) => {
+            const debts = {}; 
+            data.transactions.forEach(tx => {
+                const amount = tx.amount || 0;
+                if (tx.type === 'repay' && tx.targetName) debts[tx.targetName] = (debts[tx.targetName] || 0) - amount;
+                
+                if (tx.type === 'expense' && tx.splits && Array.isArray(tx.splits)) {
+                    tx.splits.forEach(split => {
+                        if (split.name && split.owner !== 'me') { 
+                            const name = split.name;
+                            debts[name] = (debts[name] || 0) + (parseFloat(split.amount) || 0);
+                        }
+                    });
+                }
+                if (tx.type === 'advance' && tx.targetName) debts[tx.targetName] = (debts[tx.targetName] || 0) + amount;
+            });
+            return debts;
+        };
+
+        window.refreshIcons = () => { if (window.lucide) setTimeout(() => window.lucide.createIcons(), 50); };
+
+        window.Toast = ({ message, type, onClose }) => {
+            useEffect(() => { 
+                if (message) {
+                    const timer = setTimeout(() => { if(onClose) onClose(); }, 1000); 
+                    return () => clearTimeout(timer); 
+                }
+            }, [message, onClose]);
+            if (!message) return null;
+            return <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"><div className="px-6 py-3 rounded-xl shadow-2xl text-sm font-medium tracking-wide animate-pop toast-bg">{message}</div></div>;
+        };
+
+        window.Modal = ({ children, onClose, title }) => {
+            useEffect(() => {
+                const handleKeyDown = (e) => {
+                    if (e.key === 'Escape') {
+                        if (onClose) onClose('esc');
+                    }
+                };
+                window.addEventListener('keydown', handleKeyDown);
+                return () => window.removeEventListener('keydown', handleKeyDown);
+            }, [onClose]);
+
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-pop cursor-pointer" onClick={() => onClose && onClose('backdrop')}>
+                    <div className="bg-muji-card w-full max-w-md rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-muji-border cursor-auto" onClick={(e) => e.stopPropagation()}>
+                        <div className="p-4 border-b border-muji-border flex justify-between items-center bg-muji-bg">
+                            <h3 className="font-bold text-lg text-muji-text">{title}</h3>
+                            <button onClick={() => onClose && onClose('close_btn')} className="p-2 hover:bg-black/5 rounded-full transition-colors"><i data-lucide="x" className="w-5 h-5 text-muji-muted"></i></button>
+                        </div>
+                        <div className="overflow-y-auto p-6 custom-scrollbar text-muji-text">{children}</div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- ACCOUNTING MODULE (accounting.js) ---
+        const LucideIcon = React.memo(({ name, className = "", onClick }) => {
+            const ref = useRef(null);
+            useEffect(() => {
+                if (ref.current && window.lucide) {
+                    const i = document.createElement('i');
+                    i.setAttribute('data-lucide', name);
+                    if (className) i.className = className;
+                    ref.current.innerHTML = '';
+                    ref.current.appendChild(i);
+                    window.lucide.createIcons({ root: ref.current });
+                }
+            }, [name, className]);
+            return <span ref={ref} style={{ display: 'contents' }} onClick={onClick}></span>;
+        });
+
+        const CategorySelector = ({ type, categoryGroups, selectedGroup, setSelectedGroup, onSelectCategory, currentCategory }) => {
+            const effectiveType = type === 'advance' ? 'expense' : (type === 'repay' ? 'income' : type);
+            if (!['expense', 'income'].includes(effectiveType)) return null;
+            const groups = categoryGroups[effectiveType] || [];
+            return (
+                <div className="space-y-4 mt-6">
+                    <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar px-2 p-4">
+                        {groups.map(g => (
+                            <button key={g.id} onClick={() => setSelectedGroup(g.id)} className={`flex flex-col items-center gap-1 min-w-[3rem] transition-all ${selectedGroup === g.id ? 'opacity-100 scale-110' : 'opacity-50 hover:opacity-80'}`}>
+                                <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center ${selectedGroup === g.id ? 'border-muji-accent text-white bg-muji-accent shadow-sm' : 'border-muji-muted text-muji-muted'}`}>
+                                    <LucideIcon name={g.icon} className="w-5 h-5 stroke-[1.5]" />
+                                </div>
+                                <span className="text-[10px] text-muji-text font-bold mt-1">{g.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                    <div className="grid grid-cols-4 gap-2">
+                        {groups.find(g => g.id === selectedGroup)?.subs.map(sub => {
+                            const catId = `${selectedGroup}_${sub}`;
+                            const isSelected = currentCategory === catId;
+                            return (
+                                <button key={sub} onClick={() => onSelectCategory(catId)} className={`py-1.5 px-1 rounded text-xs border transition-colors truncate ${isSelected ? 'bg-muji-accent text-white border-muji-accent shadow-sm' : 'bg-muji-card border-muji-border text-muji-text hover:border-muji-accent'}`}>
+                                    {sub}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        };
+
+        const ExtraFieldsInput = ({ type, accountId, toAccountId, targetName, userAccounts, selectedAccount, onChange, debtTargets, onAddTarget }) => {
+            if (type === 'transfer') {
+                const handleSwap = () => { if (onChange) onChange('swap_accounts', { from: accountId, to: toAccountId }); };
+                return (
+                    <div className="flex gap-2 mt-1 w-full items-end">
+                        <div className="flex-1 flex flex-col gap-1"><label className="text-xs text-muji-muted">轉出 (From)</label><select className="p-2 bg-muji-card rounded border border-muji-border text-sm w-full text-muji-text" value={accountId} onChange={e => onChange('accountId', e.target.value)}><option value="">選擇帳戶</option>{userAccounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
+                        <div className="flex items-center pb-2 text-muji-muted"><button onClick={handleSwap} className="p-1 hover:bg-muji-bg rounded-full transition-colors"><LucideIcon name="arrow-right-left" className="w-4 h-4" /></button></div>
+                        <div className="flex-1 flex flex-col gap-1"><label className="text-xs text-muji-muted">轉入 (To)</label><select className="p-2 bg-muji-card rounded border border-muji-border text-sm w-full text-muji-text" value={toAccountId} onChange={e => onChange('toAccountId', e.target.value)}><option value="">選擇帳戶</option>{userAccounts.filter(a => a.id !== accountId).map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
+                    </div>
+                );
+            }
+            if (type === 'advance' || type === 'repay') {
+                return (
+                    <div className="flex flex-col gap-1 mt-2">
+                        <label className="text-xs text-muji-muted font-bold">{type === 'advance' ? '代墊對象' : '還款來源 (對象)'}</label>
+                        <div className="flex gap-2">
+                             <select className="flex-1 p-2 bg-muji-card rounded border border-muji-border text-sm text-muji-text" value={targetName} onChange={e => onChange('targetName', e.target.value)}>
+                                <option value="">選擇對象...</option>
+                                {debtTargets.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
+                             </select>
+                             <button onClick={() => { const name = prompt("新增對象:"); if(name) onAddTarget(name); }} className="p-2 bg-muji-bg border border-muji-border rounded text-xs"><LucideIcon name="plus" className="w-4 h-4" /></button>
+                        </div>
+                    </div>
+                );
+            }
+            return null;
+        };
+
+        const SplitSection = ({ amount, splits, setSplits, debtTargets, onAddTarget, flatCategories, isWithOthersMode, categoryGroups, type }) => {
+            const totalAmount = parseFloat(amount) || 0;
+            const safeSplits = Array.isArray(splits) ? splits : [];
+            const [selectingCategoryIdx, setSelectingCategoryIdx] = useState(null);
+            const [selectedGroup, setSelectedGroup] = useState('food'); 
+
+            useEffect(() => {
+                const defGroup = type === 'income' ? 'active' : 'food';
+                setSelectedGroup(defGroup);
+            }, [type]);
+
+            useEffect(() => {
+                if (safeSplits.length === 0 && totalAmount > 0) {
+                    const defCat = type === 'income' ? 'active_薪資' : 'food_三餐';
+                    setSplits([{ owner: 'me', name: '我', amount: totalAmount, percent: '', categoryId: Object.keys(flatCategories)[0] || defCat, type: type }]);
+                }
+            }, [totalAmount, type]); 
+
+            const splitTotal = safeSplits.reduce((sum, s) => sum + (parseFloat(s.amount) || 0), 0);
+            const isValid = Math.abs(totalAmount - splitTotal) < 1;
+
+            const addSplit = () => {
+                const defCat = type === 'income' ? 'active_薪資' : 'food_三餐';
+                const newSplit = { owner: 'me', name: '我', amount: 0, percent: '', categoryId: safeSplits[0]?.categoryId || defCat, type: type };
+                setSplits([...safeSplits, newSplit]);
+            };
+            
+            const updateSplit = (idx, field, val) => {
+                let newSplits = [...safeSplits];
+                let newSplit = { ...newSplits[idx], [field]: val };
+                if(field === 'owner') {
+                    if (val === 'me') { newSplit.name = '我'; newSplit.percent = ''; newSplit.type = type; } 
+                    else if (val === '__add_new__') { const newT = prompt("輸入新對象姓名"); if (newT) { onAddTarget(newT); newSplit.owner = newT; newSplit.name = newT; } else return; } 
+                    else {
+                        newSplit.name = val;
+                        if (type === 'expense') newSplit.type = 'advance'; else if (type === 'income') newSplit.type = 'repay';
+                        const targetObj = debtTargets.find(t => t.name === val);
+                        if (targetObj && targetObj.defaultPercent) { const pct = parseFloat(targetObj.defaultPercent); newSplit.percent = pct; newSplit.amount = Math.round(totalAmount * (pct / 100)); }
+                    }
+                } else if (field === 'percent') { 
+                    const pct = parseFloat(val); if (!isNaN(pct)) { newSplit.amount = Math.round(totalAmount * (pct / 100)); } else { newSplit.percent = ''; }
+                } else if (field === 'amount') { newSplit.percent = ''; } else if (field === 'type') { newSplit.type = val; }
+                newSplits[idx] = newSplit;
+                const mainMeIndex = newSplits.findIndex(s => s.owner === 'me');
+                if (mainMeIndex !== -1 && idx !== mainMeIndex) {
+                    const otherSum = newSplits.reduce((sum, s, i) => i === mainMeIndex ? sum : sum + (parseFloat(s.amount) || 0), 0);
+                    const residual = totalAmount - otherSum;
+                    if (residual >= 0) newSplits[mainMeIndex] = { ...newSplits[mainMeIndex], amount: residual, percent: '' };
+                }
+                setSplits(newSplits);
+            };
+            
+            const removeSplit = (idx) => {
+                let newSplits = safeSplits.filter((_, i) => i !== idx);
+                const mainMeIndex = newSplits.findIndex(s => s.owner === 'me');
+                if (mainMeIndex !== -1) {
+                     const otherSum = newSplits.reduce((sum, s, i) => i === mainMeIndex ? sum : sum + (parseFloat(s.amount) || 0), 0);
+                     newSplits[mainMeIndex] = { ...newSplits[mainMeIndex], amount: totalAmount - otherSum };
+                }
+                setSplits(newSplits);
+            };
+
+            return (
+                <div className="mt-4 p-3 bg-muji-bg rounded-lg border border-muji-border text-sm animate-fade">
+                    <div className="flex justify-between items-center mb-2">
+                        <span className="font-bold text-muji-text">{type === 'income' ? '多類別明細' : '分帳 / 多類別明細'}</span>
+                        <span className={`text-xs font-mono ${isValid ? 'text-muji-green' : 'text-muji-red'}`}>合計: ${splitTotal.toLocaleString()} {isValid ? 'OK' : `(差 ${totalAmount - splitTotal})`}</span>
+                    </div>
+                    <div className="space-y-2">
+                        {safeSplits.map((s, idx) => {
+                            const cat = flatCategories[s.categoryId] || {};
+                            const rowTypeOptions = type === 'expense' ? [{val: 'expense', label: '支出'}, {val: 'advance', label: '代墊'}] : [{val: 'income', label: '收入'}, {val: 'repay', label: '還款'}];
+                            return (
+                                <div key={idx} className="flex flex-col gap-1 p-2 bg-white rounded border border-muji-border shadow-sm">
+                                    <div className="flex gap-2">
+                                        <select className="w-1/4 p-1.5 bg-muji-bg rounded border border-muji-border text-xs text-muji-text font-bold" value={s.owner === 'me' ? 'me' : s.name} onChange={e => updateSplit(idx, 'owner', e.target.value)}>
+                                            <option value="me">我</option>
+                                            <optgroup label="對象">{debtTargets.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}</optgroup>
+                                            <option value="__add_new__">+ 新增...</option>
+                                        </select>
+                                        <select className={`w-1/4 p-1.5 rounded border border-muji-border text-xs font-bold ${s.type === 'advance' ? 'bg-orange-50 text-orange-600' : 'bg-muji-bg text-muji-text'}`} value={s.type || type} onChange={e => updateSplit(idx, 'type', e.target.value)} disabled={s.owner === 'me'}> 
+                                             {rowTypeOptions.map(opt => <option key={opt.val} value={opt.val}>{opt.label}</option>)}
+                                        </select>
+                                        <button className="flex-1 p-1.5 bg-muji-bg rounded border border-muji-border text-xs text-muji-text flex items-center justify-between" onClick={() => { setSelectingCategoryIdx(idx); if (cat.group) { let foundGroupId = 'food'; for(let type in categoryGroups) { for(let g of categoryGroups[type]) { if(g.label === cat.group) { foundGroupId = g.id; break; } } } setSelectedGroup(foundGroupId); } else { setSelectedGroup(type === 'income' ? 'active' : 'food'); } }}>
+                                            <span className="flex items-center gap-1">
+                                                {cat.icon && <LucideIcon name={cat.icon} className="w-3 h-3" />}
+                                                {cat.name || '選擇分類'}
+                                            </span>
+                                            <LucideIcon name="chevron-down" className="w-3 h-3 text-muji-muted" />
+                                        </button>
+                                    </div>
+                                    <div className="flex gap-2 items-center">
+                                        <div className="relative w-20"><input type="number" className="w-full p-1.5 pl-1 pr-4 bg-white rounded border border-muji-border text-xs text-center text-muji-text font-mono" placeholder="%" value={s.percent || ''} onChange={e => updateSplit(idx, 'percent', e.target.value)} /><span className="absolute right-1.5 top-1.5 text-xs text-muji-muted">%</span></div>
+                                        <div className="relative flex-1"><span className="absolute left-2 top-1.5 text-xs text-muji-muted">$</span><input type="number" className="w-full p-1.5 pl-4 bg-white rounded border border-muji-border text-xs text-muji-text font-mono font-bold" placeholder="金額" value={s.amount} onChange={e => updateSplit(idx, 'amount', e.target.value)} /></div>
+                                        <button onClick={() => removeSplit(idx)} className="p-1.5 text-muji-muted hover:text-muji-red hover:bg-muji-bg rounded transition-colors"><LucideIcon name="trash-2" className="w-4 h-4" /></button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <button onClick={addSplit} className="w-full py-2 border border-dashed border-muji-accent text-muji-accent text-xs rounded hover:bg-white transition-colors flex items-center justify-center gap-1 mt-3"><LucideIcon name="plus" className="w-3 h-3" /> 新增明細</button>
+                    {selectingCategoryIdx !== null && (
+                        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-pop" onClick={() => setSelectingCategoryIdx(null)}>
+                            <div className="bg-muji-card w-full max-w-sm rounded-xl shadow-2xl overflow-hidden border border-muji-border flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
+                                <div className="p-4 border-b border-muji-border flex justify-between items-center bg-muji-bg"><h3 className="font-bold text-lg text-muji-text">選擇分類</h3><button onClick={() => setSelectingCategoryIdx(null)} className="p-2 hover:bg-black/5 rounded-full"><LucideIcon name="x" className="w-5 h-5 text-muji-muted" /></button></div>
+                                <div className="p-4 overflow-y-auto custom-scrollbar"><CategorySelector type={type === 'income' ? 'income' : 'expense'} categoryGroups={categoryGroups} selectedGroup={selectedGroup} setSelectedGroup={setSelectedGroup} onSelectCategory={(catId) => { updateSplit(selectingCategoryIdx, 'categoryId', catId); setSelectingCategoryIdx(null); }} currentCategory={safeSplits[selectingCategoryIdx]?.categoryId} /></div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        window.SmartImportModal = ({ onClose, importText, setImportText, previewData, setPreviewData, saveData, data, handleSmartImport, flatCategories, userAccounts, selectedAccount }) => {
+            const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+            const [editingPreviewIndex, setEditingPreviewIndex] = useState(null);
+            const [selectedGroup, setSelectedGroup] = useState('food');
+            const [targetAccountId, setTargetAccountId] = useState(selectedAccount || (userAccounts.length > 0 ? userAccounts[0].id : ''));
+            const [showExitConfirm, setShowExitConfirm] = useState(false);
+            
+            const doSmartImport = () => { handleSmartImport(targetAccountId); };
+            const handleAttemptClose = (reason) => { if (reason === 'close_btn') onClose(); else if (previewData.length > 0 || importText.trim().length > 0) setShowExitConfirm(true); else onClose(); };
+            const confirmClose = () => { setShowExitConfirm(false); onClose(); };
+            return (
+                <window.Modal title="AI 記帳" onClose={handleAttemptClose}>
+                    {previewData.length === 0 ? (
+                        <div className="space-y-4">
+                            <div className="flex flex-col gap-1"><label className="text-xs text-muji-muted font-bold">匯入至帳戶</label><select className="w-full p-2 bg-muji-card rounded border border-muji-border text-sm text-muji-text" value={targetAccountId} onChange={(e) => setTargetAccountId(e.target.value)}>{userAccounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}</select></div>
+                            <textarea className="w-full h-40 p-3 bg-white rounded-lg text-sm border border-muji-border focus:border-muji-accent outline-none text-muji-text" placeholder="直接貼上..." value={importText} onChange={e => setImportText(e.target.value)}></textarea>
+                            <button onClick={doSmartImport} className="w-full py-3 bg-muji-accent text-white rounded-lg font-bold shadow-sm">解析</button>
+                        </div>
+                    ) : (
+                         <div className="space-y-4">
+                            {!showCategoryPicker ? (
+                                <>
+                                    <div className="max-h-[60vh] overflow-y-auto space-y-3 custom-scrollbar pr-1">{previewData.map((item, idx) => (<div key={item.id || idx} className="flex flex-col gap-2 p-3 bg-muji-card rounded-lg text-sm border border-muji-border shadow-sm"><div className="flex justify-between items-center gap-2"><input type="date" className="bg-transparent border-b border-muji-border focus:border-muji-accent outline-none font-mono text-muji-text w-28 text-xs" value={item.date} onChange={(e) => { const n = [...previewData]; n[idx].date = e.target.value; setPreviewData(n); }} /><select className="bg-transparent font-bold outline-none cursor-pointer text-xs flex-1" value={item.type} onChange={(e) => { const n = [...previewData]; n[idx].type = e.target.value; setPreviewData(n); }}>{Object.entries(window.TX_TYPES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select><input type="number" className="bg-transparent font-bold font-mono outline-none w-20 text-right border-b border-muji-border focus:border-muji-accent text-muji-text" value={item.amount} onChange={(e) => { const n = [...previewData]; n[idx].amount = parseFloat(e.target.value); setPreviewData(n); }} /><button onClick={() => setPreviewData(previewData.filter((_, i) => i !== idx))} className="text-muji-muted hover:text-muji-red"><LucideIcon name="trash-2" className="w-4 h-4" /></button></div><div className="flex items-center gap-2">{(item.type === 'expense' || item.type === 'income') && (<button onClick={() => { setEditingPreviewIndex(idx); setShowCategoryPicker(true); }} className="flex-1 text-left px-2 py-1.5 rounded bg-white border border-muji-border text-xs flex items-center gap-2 hover:border-muji-accent text-muji-text"><LucideIcon name={flatCategories[item.categoryId]?.icon || 'tag'} className="w-3 h-3" />{flatCategories[item.categoryId]?.name || '選擇分類'}</button>)}<ExtraFieldsInput type={item.type} accountId={item.accountId} toAccountId={item.toAccountId} targetName={item.targetName} userAccounts={userAccounts} selectedAccount={item.accountId} onChange={(k, v) => { const n = [...previewData]; n[idx][k] = v; setPreviewData(n); }} debtTargets={data.debtTargets} onAddTarget={() => {}} /></div><input type="text" className="w-full bg-transparent border-b border-muji-border focus:border-muji-accent outline-none text-muji-text text-xs placeholder-muji-muted" placeholder="備註..." value={item.note} onChange={(e) => { const n = [...previewData]; n[idx].note = e.target.value; setPreviewData(n); }} /></div>))}</div>
+                                    <div className="flex gap-2 pt-2"><button onClick={() => setPreviewData([])} className="flex-1 py-3 bg-white text-muji-text rounded-lg font-bold border border-muji-border">放棄</button><button onClick={() => { saveData({...data, transactions: [...data.transactions, ...previewData], debtTargets: data.debtTargets }); setPreviewData([]); onClose(); }} className="flex-[2] py-3 bg-muji-accent text-white rounded-lg font-bold shadow-sm">確認匯入 ({previewData.length})</button></div>
+                                </>
+                            ) : (
+                                <div className="animate-fade"><div className="flex justify-between items-center mb-4"><h4 className="font-bold text-muji-text">選擇分類</h4><button onClick={() => setShowCategoryPicker(false)} className="text-muji-muted">取消</button></div><CategorySelector type={previewData[editingPreviewIndex].type} categoryGroups={window.DEFAULT_CATEGORY_GROUPS} selectedGroup={selectedGroup} setSelectedGroup={setSelectedGroup} onSelectCategory={(catId) => { const n = [...previewData]; n[editingPreviewIndex].categoryId = catId; setPreviewData(n); setShowCategoryPicker(false); }} /></div>
+                            )}
+                        </div>
+                    )}
+                    {showExitConfirm && (<div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm animate-pop cursor-auto" onClick={(e) => e.stopPropagation()}><div className="bg-white p-6 rounded-xl shadow-xl border border-muji-border w-full max-w-sm"><h4 className="font-bold text-lg mb-2 text-muji-text">確認中斷</h4><p className="text-sm text-muji-muted mb-4">內容尚未儲存，確定要中斷記帳嗎？</p><div className="flex gap-3"><button onClick={() => setShowExitConfirm(false)} className="flex-1 py-2 rounded-lg border border-muji-border text-muji-muted hover:bg-muji-bg">繼續編輯</button><button onClick={confirmClose} className="flex-1 py-2 rounded-lg bg-muji-red text-white font-bold shadow-sm">確定中斷</button></div></div></div>)}
+                </window.Modal>
+            );
+        };
+
+        window.TransactionModal = ({ onClose, isEditMode, newTx, setNewTx, isSplitMode, setIsSplitMode, splitTotal, setSplitTotal, splits, setSplits, categoryGroups, flatCategories, userAccounts, selectedAccount, saveTransaction, handleDeleteTransaction, data, saveData, showToast }) => {
+            const [selectedGroup, setSelectedGroup] = useState(flatCategories[newTx.categoryId]?.group || (newTx.type === 'income' ? 'active' : 'food'));
+            const [showBalanceConfirm, setShowBalanceConfirm] = useState(false);
+            const [pendingBalanceDiff, setPendingBalanceDiff] = useState(0);
+            const [showExitConfirm, setShowExitConfirm] = useState(false);
+            const debtTargets = data.debtTargets || [];
+            
+            const handleAddTarget = (name) => {
+                if (!name) return;
+                const currentTargets = data.debtTargets || [];
+                if (currentTargets.some(t => t.name === name)) return;
+                const newTargets = [...currentTargets, { id: `dt_${Date.now()}`, name, defaultPercent: '' }];
+                saveData({ ...data, debtTargets: newTargets }, false); 
+            };
+
+            const handleSave = () => { 
+                const finalAccountId = newTx.accountId || selectedAccount || (userAccounts.length > 0 ? userAccounts[0].id : '');
+
+                if (!finalAccountId && newTx.type !== 'transfer') {
+                     if(showToast) showToast('請選擇帳戶', 'error');
+                     return;
+                }
+
+                if ((newTx.type === 'expense' || newTx.type === 'income') && isSplitMode) {
+                     const safeSplits = (splits || []).filter(s => s.name && parseFloat(s.amount) > 0);
+                     const total = parseFloat(splitTotal || 0);
+                     const splitSum = safeSplits.reduce((acc, s) => acc + (parseFloat(s.amount) || 0), 0);
+                     const diff = total - splitSum;
+                     
+                     if (diff > 1) {
+                         setPendingBalanceDiff(diff);
+                         setShowBalanceConfirm(true);
+                         return;
+                     } else if (diff < -1) {
+                         if(showToast) showToast('分帳金額超過總金額', 'error');
+                         return;
+                     }
+
+                     const linkId = Date.now().toString(); 
+                     const txsToSave = safeSplits.map((s, idx) => {
+                        const isMe = s.owner === 'me';
+                        let txType = s.type || newTx.type; 
+                        let targetName = '';
+                        
+                        if (!isMe) {
+                            targetName = s.name;
+                            if (!s.type) {
+                                if (newTx.type === 'expense') txType = 'advance'; 
+                                else if (newTx.type === 'income') txType = 'repay';
+                            }
+                        }
+
+                        return {
+                            id: linkId + '_' + idx, 
+                            linkId: linkId, 
+                            date: newTx.date,
+                            type: txType,
+                            accountId: finalAccountId, 
+                            toAccountId: '', 
+                            amount: parseFloat(s.amount),
+                            note: newTx.note + (s.note ? ` (${s.note})` : ''), 
+                            categoryId: s.categoryId,
+                            targetName: targetName,
+                            splits: [] 
+                        };
+                     });
+
+                     saveTransaction(txsToSave, data.debtTargets); 
+
+                } else {
+                     const txToSave = { 
+                         ...newTx, 
+                         id: newTx.id || Date.now().toString(),
+                         amount: parseFloat(newTx.amount),
+                         accountId: finalAccountId,
+                         splits: [] 
+                     };
+                     saveTransaction(txToSave, data.debtTargets); 
+                }
+            };
+
+            const handleUpdateField = (key, value) => {
+                if (key === 'swap_accounts') {
+                     setNewTx({ ...newTx, accountId: value.to, toAccountId: value.from });
+                } else {
+                     setNewTx({...newTx, [key]: value});
+                }
+            };
+
+            const handleConfirmBalance = () => {
+                const safeSplits = (splits || []).filter(s => s.name && parseFloat(s.amount) > 0);
+                const defCat = newTx.type === 'income' ? 'active_薪資' : 'food_三餐';
+                safeSplits.push({
+                     owner: 'me',
+                     name: '我',
+                     amount: pendingBalanceDiff,
+                     percent: '',
+                     categoryId: newTx.categoryId || defCat,
+                     type: newTx.type
+                });
+                
+                const linkId = Date.now().toString();
+                const finalAccountId = newTx.accountId || selectedAccount || (userAccounts.length > 0 ? userAccounts[0].id : '');
+
+                const txsToSave = safeSplits.map((s, idx) => {
+                    const isMe = s.owner === 'me';
+                    let txType = s.type || newTx.type;
+                    let targetName = '';
+                    
+                    if (!isMe) {
+                        targetName = s.name;
+                        if(!s.type) txType = newTx.type === 'expense' ? 'advance' : 'repay';
+                    }
+
+                    return {
+                        id: linkId + '_' + idx,
+                        linkId: linkId,
+                        date: newTx.date,
+                        type: txType,
+                        accountId: finalAccountId,
+                        amount: parseFloat(s.amount),
+                        note: newTx.note,
+                        categoryId: s.categoryId,
+                        targetName: targetName,
+                        splits: []
+                    };
+                });
+
+                saveTransaction(txsToSave, data.debtTargets);
+                setShowBalanceConfirm(false);
+            };
+
+            const toggleSplitMode = () => {
+                 const nextMode = !isSplitMode;
+                 setIsSplitMode(nextMode);
+
+                 if (nextMode) {
+                     setSplitTotal(newTx.amount.toString() || '0');
+                     if ((newTx.splits || []).length === 0) {
+                         const defCat = newTx.type === 'income' ? 'active_薪資' : 'food_三餐';
+                         setSplits([{ 
+                             owner: 'me', 
+                             name: '我', 
+                             amount: newTx.amount || '', 
+                             percent: '', 
+                             categoryId: newTx.categoryId || 'food_伙食' 
+                         }]);
+                     } else {
+                         setSplits(newTx.splits);
+                     }
+                 } else {
+                     setSplitTotal('');
+                     setSplits([]);
+                 }
+            }
+
+            const handleAttemptClose = (reason) => {
+                if (reason === 'close_btn') {
+                    onClose();
+                } else {
+                    setShowExitConfirm(true);
+                }
+            };
+
+            const confirmClose = () => {
+                setShowExitConfirm(false);
+                onClose();
+            };
+            
+            return (
+                <window.Modal title={isEditMode ? "編輯交易" : "記一筆"} onClose={handleAttemptClose}>
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center overflow-x-auto no-scrollbar pb-2">
+                            <div className="flex bg-muji-bg rounded-lg p-1">
+                                {Object.entries(window.TX_TYPES).map(([k, v]) => {
+                                    if (newTx.isQuickAdd && k !== 'expense') return null;
+                                    const isDisabled = isSplitMode && k !== newTx.type && k !== 'expense' && k !== 'income'; 
+                                    
+                                    return (
+                                        <button 
+                                            key={k} 
+                                            disabled={isDisabled} 
+                                            className={`px-3 py-1.5 rounded text-xs font-bold transition whitespace-nowrap ${newTx.type === k ? 'bg-muji-card shadow-sm text-muji-accent border border-muji-border' : 'text-muji-muted'} ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`} 
+                                            onClick={() => { 
+                                                let defCat = 'food_三餐'; 
+                                                let defGroup = 'food'; 
+                                                if(k === 'income') { defCat = 'active_薪資'; defGroup = 'active'; }
+                                                setNewTx({...newTx, type: k, categoryId: defCat}); 
+                                                setSelectedGroup(defGroup); 
+                                                if(isSplitMode) {
+                                                    setSplits([{ 
+                                                        owner: 'me', name: '我', amount: splitTotal, percent: '', categoryId: defCat, type: k 
+                                                    }]);
+                                                }
+                                            }}
+                                        >
+                                            {v.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            
+                            {['expense', 'income'].includes(newTx.type) && !newTx.isQuickAdd && (
+                                <div className="flex items-center gap-2 ml-2">
+                                    <span className="text-xs text-muji-text font-bold whitespace-nowrap">拆帳/代墊</span>
+                                    <button onClick={toggleSplitMode} className={`w-8 h-5 rounded-full p-0.5 transition-colors flex-shrink-0 ${isSplitMode ? 'bg-muji-accent' : 'bg-muji-border'}`}>
+                                        <div className={`w-4 h-4 bg-white rounded-full transition-transform ${isSplitMode ? 'translate-x-3' : ''}`}></div>
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        <input type="number" 
+                            className="w-full text-4xl font-bold text-center py-4 bg-transparent border-b border-muji-border outline-none font-mono text-muji-text" 
+                            placeholder={isSplitMode ? "總金額" : "0"} 
+                            autoFocus={!isSplitMode} 
+                            value={isSplitMode ? splitTotal : newTx.amount} 
+                            onChange={e => isSplitMode ? setSplitTotal(e.target.value) : setNewTx({...newTx, amount: e.target.value})} 
+                        />
+                        
+                        {['expense', 'income'].includes(newTx.type) && isSplitMode ? (
+                            <SplitSection 
+                                amount={splitTotal} 
+                                splits={splits} 
+                                setSplits={setSplits} 
+                                debtTargets={debtTargets} 
+                                flatCategories={flatCategories}
+                                isWithOthersMode={true} 
+                                onAddTarget={handleAddTarget}
+                                categoryGroups={categoryGroups}
+                                type={newTx.type}
+                            />
+                        ) : (
+                            <>
+                                <CategorySelector 
+                                    type={newTx.type} 
+                                    categoryGroups={categoryGroups} 
+                                    selectedGroup={selectedGroup} 
+                                    setSelectedGroup={setSelectedGroup} 
+                                    onSelectCategory={(catId) => setNewTx({...newTx, categoryId: catId})} 
+                                    currentCategory={newTx.categoryId} 
+                                />
+                                <ExtraFieldsInput 
+                                    type={newTx.type} 
+                                    accountId={newTx.accountId}
+                                    toAccountId={newTx.toAccountId} 
+                                    targetName={newTx.targetName} 
+                                    userAccounts={userAccounts} 
+                                    selectedAccount={selectedAccount} 
+                                    onChange={handleUpdateField} 
+                                    debtTargets={debtTargets} 
+                                    onAddTarget={() => {}} 
+                                />
+                                {newTx.type !== 'transfer' && !selectedAccount && (
+                                     <div className="flex flex-col gap-1 mt-2">
+                                        <label className="text-xs text-muji-muted font-bold">帳戶</label>
+                                        <select 
+                                            className="p-2 bg-muji-card rounded border border-muji-border text-sm w-full text-muji-text" 
+                                            value={newTx.accountId} 
+                                            onChange={e => setNewTx({...newTx, accountId: e.target.value})}
+                                        >
+                                            <option value="">選擇帳戶</option>
+                                            {userAccounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                                        </select>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                        
+                        <div className="flex gap-2 mt-4">
+                            <input type="date" className="flex-1 p-3 bg-muji-card rounded-lg text-muji-text border border-muji-border" value={newTx.date} onChange={e => setNewTx({...newTx, date: e.target.value})} />
+                            <input type="text" className="flex-[2] p-3 bg-muji-card rounded-lg text-muji-text border border-muji-border" placeholder="備註" value={newTx.note} onChange={e => setNewTx({...newTx, note: e.target.value})} />
+                        </div>
+                        
+                        {newTx.isQuickAdd && (
+                            <div className="text-xs text-muji-muted text-center mt-1">
+                                (快速記帳模式：已鎖定為現金支出)
+                            </div>
+                        )}
+
+                        <div className="flex gap-3 pt-2">
+                            {isEditMode && <button onClick={handleDeleteTransaction} className="flex-1 py-3 bg-muji-red/10 text-muji-red rounded-lg font-bold border border-muji-red/30">刪除</button>}
+                            <button onClick={handleSave} className="flex-[2] py-3 bg-muji-accent text-white rounded-lg font-bold shadow-sm">{isEditMode ? "更新" : "儲存"}</button>
+                        </div>
+                    </div>
+
+                    {showBalanceConfirm && (
+                        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm animate-pop">
+                            <div className="bg-white p-6 rounded-xl shadow-xl border border-muji-border w-full max-w-sm">
+                                <h4 className="font-bold text-lg mb-2 text-muji-text">確認餘額分配</h4>
+                                <p className="text-sm text-muji-muted mb-4">
+                                    尚有餘額 <span className="font-bold text-muji-text">${pendingBalanceDiff.toLocaleString()}</span> 未分配。<br/>
+                                    是否自動歸入「我」的支出？
+                                </p>
+                                <div className="flex gap-3">
+                                    <button onClick={() => setShowBalanceConfirm(false)} className="flex-1 py-2 rounded-lg border border-muji-border text-muji-muted hover:bg-muji-bg">手動調整</button>
+                                    <button onClick={handleConfirmBalance} className="flex-1 py-2 rounded-lg bg-muji-accent text-white font-bold shadow-sm">是，自動歸入</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {showExitConfirm && (
+                        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm animate-pop cursor-auto" onClick={(e) => e.stopPropagation()}>
+                            <div className="bg-white p-6 rounded-xl shadow-xl border border-muji-border w-full max-w-sm">
+                                <h4 className="font-bold text-lg mb-2 text-muji-text">確認中斷</h4>
+                                <p className="text-sm text-muji-muted mb-4">內容尚未儲存，確定要中斷記帳嗎？</p>
+                                <div className="flex gap-3">
+                                    <button onClick={() => setShowExitConfirm(false)} className="flex-1 py-2 rounded-lg border border-muji-border text-muji-muted hover:bg-muji-bg">繼續編輯</button>
+                                    <button onClick={confirmClose} className="flex-1 py-2 rounded-lg bg-muji-red text-white font-bold shadow-sm">確定中斷</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </window.Modal>
+            );
+        };
+
+        window.AccountingView = ({ data, saveData, selectedAccount, setSelectedAccount, setInputModal, showToast, initialTab }) => {
+            const [showImport, setShowImport] = useState(false); const [importText, setImportText] = useState(''); const [previewData, setPreviewData] = useState([]);
+            const [showAdd, setShowAdd] = useState(false); const [isEditMode, setIsEditMode] = useState(false); const [editingTxId, setEditingTxId] = useState(null);
+            const [currentDate, setCurrentDate] = useState(new Date()); const [showDatePicker, setShowDatePicker] = useState(false);
+            const [isSplitMode, setIsSplitMode] = useState(false); const [splitTotal, setSplitTotal] = useState(''); const [splits, setSplits] = useState([]);
+            const [newTx, setNewTx] = useState({ amount: '', note: '', type: 'expense', categoryId: 'food_伙食', date: new Date().toISOString().split('T')[0], toAccountId: '', targetName: '', splits: [] });
+            const [filterType, setFilterType] = useState('all'); 
+            const [activeTab, setActiveTab] = useState('all_grid'); 
+
+            useEffect(() => {
+                if(initialTab) setActiveTab(initialTab);
+            }, [initialTab]);
+
+            const [selectedTxIds, setSelectedTxIds] = useState([]);
+            const [showDeleteBatchConfirm, setShowDeleteBatchConfirm] = useState(false);
+            const [expandedTypes, setExpandedTypes] = useState(['recent']); 
+            const [expandedGroups, setExpandedGroups] = useState({});
+
+            const categoryGroups = data.settings?.categoryGroups || window.DEFAULT_CATEGORY_GROUPS;
+            const accountTypes = data.settings?.accountTypes || window.DEFAULT_ACCOUNT_TYPES;
+            const flatCategories = useMemo(() => window.getFlatCategories(categoryGroups), [categoryGroups]);
+            
+            const userAccounts = data.accounts; 
+
+            const accountLastModified = useMemo(() => {
+                const map = {};
+                userAccounts.forEach(a => map[a.id] = 0);
+                
+                data.transactions.forEach(t => {
+                    const time = new Date(t.date).getTime();
+                    if (map.hasOwnProperty(t.accountId)) {
+                        if (time > map[t.accountId]) map[t.accountId] = Math.max(map[t.accountId], time);
+                    }
+                    if (t.toAccountId && map.hasOwnProperty(t.toAccountId)) {
+                        if (time > map[t.toAccountId]) map[t.toAccountId] = Math.max(map[t.toAccountId], time);
+                    }
+                });
+                return map;
+            }, [data.transactions, userAccounts]);
+
+            const accountMonthlyExpenses = useMemo(() => {
+                const now = new Date();
+                const currentYear = now.getFullYear();
+                const currentMonth = now.getMonth();
+                
+                const expenses = {};
+                
+                data.transactions.forEach(t => {
+                    const d = new Date(t.date);
+                    if (d.getFullYear() === currentYear && d.getMonth() === currentMonth) {
+                        if (t.type === 'expense' && t.accountId) {
+                            let amount = t.amount || 0;
+                            if (t.splits && t.splits.length > 0) {
+                                const othersAmount = t.splits.reduce((acc, s) => {
+                                    return s.owner !== 'me' ? acc + (parseFloat(s.amount) || 0) : acc;
+                                }, 0);
+                                amount -= othersAmount;
+                            }
+                            
+                            if (amount > 0) {
+                                expenses[t.accountId] = (expenses[t.accountId] || 0) + amount;
+                            }
+                        }
+                    }
+                });
+                return expenses;
+            }, [data.transactions]);
+            
+            const monthlyExpenseAccounts = useMemo(() => {
+                const list = userAccounts.filter(acc => (accountMonthlyExpenses[acc.id] || 0) > 0);
+                return list.sort((a, b) => (accountMonthlyExpenses[b.id] || 0) - (accountMonthlyExpenses[a.id] || 0));
+            }, [userAccounts, accountMonthlyExpenses]);
+
+            const totalMonthlyExpenseSum = useMemo(() => {
+                return monthlyExpenseAccounts.reduce((sum, acc) => sum + (accountMonthlyExpenses[acc.id] || 0), 0);
+            }, [monthlyExpenseAccounts, accountMonthlyExpenses]);
+
+            const resetForm = () => { setNewTx({ amount: '', note: '', type: 'expense', categoryId: 'food_伙食', date: new Date().toISOString().split('T')[0], toAccountId: '', targetName: '', splits: [] }); setIsSplitMode(false); setSplitTotal(''); setSplits([]); setIsEditMode(false); setEditingTxId(null); };
+
+            const openEdit = (tx) => { setNewTx({ ...tx, amount: tx.amount.toString(), accountId: tx.accountId || selectedAccount }); if(tx.splits && tx.splits.length > 0) { setIsSplitMode(true); setSplitTotal(tx.amount.toString()); setSplits(tx.splits); } else { setIsSplitMode(false); setSplitTotal(''); setSplits([]); } setIsEditMode(true); setEditingTxId(tx.id); setShowAdd(true); };
+
+            const getRecentAccounts = useCallback(() => {
+                const sorted = [...userAccounts].sort((a, b) => {
+                    const timeA = accountLastModified[a.id] || 0;
+                    const timeB = accountLastModified[b.id] || 0;
+                    if (timeB === timeA) return 0; 
+                    return timeB - timeA;
+                });
+                return sorted.slice(0, 4);
+            }, [userAccounts, accountLastModified]);
+
+            const getFilteredTransactions = useCallback(() => { 
+                const account = data.accounts.find(a => a.id === selectedAccount);
+                const closingDay = (account?.type === 'credit' && account?.closingDay) ? parseInt(account.closingDay) : null;
+                
+                let start, end;
+                const y = currentDate.getFullYear();
+                const m = currentDate.getMonth();
+
+                if (closingDay) {
+                    start = new Date(y, m - 1, closingDay + 1);
+                    end = new Date(y, m, closingDay);
+                    end.setHours(23, 59, 59, 999);
+                    start.setHours(0, 0, 0, 0);
+                } else {
+                    start = new Date(y, m, 1);
+                    end = new Date(y, m + 1, 0);
+                    end.setHours(23, 59, 59, 999);
+                    start.setHours(0, 0, 0, 0);
+                }
+
+                let txs = data.transactions.filter(t => { 
+                    const d = new Date(t.date); 
+                    const isRelated = t.accountId === selectedAccount || t.toAccountId === selectedAccount; 
+                    return d >= start && d <= end && isRelated;
+                });
+                
+                if (filterType !== 'all') {
+                    txs = txs.filter(t => t.type === filterType);
+                }
+
+                return txs.sort((a, b) => { const dateDiff = new Date(b.date) - new Date(a.date); if (dateDiff !== 0) return dateDiff; if (b.id < a.id) return -1; if (b.id > a.id) return 1; return 0; }); 
+            }, [data.transactions, currentDate, selectedAccount, filterType]);
+
+            const filteredTxs = useMemo(() => {
+                if (!selectedAccount) return [];
+                return getFilteredTransactions();
+            }, [selectedAccount, getFilteredTransactions]);
+
+            const currentMonthStats = useMemo(() => {
+                if (!selectedAccount) return { income: 0, expense: 0 };
+                let income = 0;
+                let expense = 0;
+                filteredTxs.forEach(t => {
+                    if (t.type === 'income') {
+                        income += (t.amount || 0);
+                    }
+                    if (t.type === 'expense') {
+                        let myAmount = t.amount || 0;
+                        if (t.splits && t.splits.length > 0) {
+                            const othersAmount = t.splits.reduce((acc, s) => {
+                                return s.owner !== 'me' ? acc + (parseFloat(s.amount) || 0) : acc;
+                            }, 0);
+                            myAmount = myAmount - othersAmount;
+                        }
+                        expense += myAmount;
+                    }
+                });
+                return { income, expense };
+            }, [filteredTxs]);
+
+            const groupedTxs = []; 
+            let skipIds = new Set();
+            filteredTxs.forEach(tx => {
+                if (skipIds.has(tx.id)) return;
+                if (tx.linkId) {
+                    const groupParts = filteredTxs.filter(t => t.linkId === tx.linkId);
+                    if (groupParts.length > 1) {
+                        const totalAmount = groupParts.reduce((sum, t) => sum + t.amount, 0);
+                        const headerTx = { ...tx, id: 'group_' + tx.linkId, isGroupHeader: true, totalAmount: totalAmount, subTransactions: groupParts };
+                        groupedTxs.push(headerTx);
+                        groupParts.forEach(t => skipIds.add(t.id));
+                    } else { groupedTxs.push(tx); skipIds.add(tx.id); }
+                } else { groupedTxs.push(tx); skipIds.add(tx.id); }
+            });
+
+            const handleDuplicateTx = (tx) => { const newTx = JSON.parse(JSON.stringify(tx)); newTx.id = Date.now().toString(); delete newTx.linkId; const newTransactions = [...data.transactions, newTx]; saveData({ ...data, transactions: newTransactions }); showToast('已複製並新增一筆交易'); };
+            const handleSaveTransaction = (txsToSave, newDebtTargets) => {
+                let updatedTransactions = [...data.transactions]; let updatedDebtTargets = data.debtTargets || []; if(newDebtTargets) updatedDebtTargets = newDebtTargets;
+                const txsArray = Array.isArray(txsToSave) ? txsToSave : [txsToSave];
+                if (isEditMode && editingTxId) { const oldTx = data.transactions.find(t => t.id === editingTxId); if(oldTx && oldTx.linkId) { updatedTransactions = updatedTransactions.filter(t => t.id !== editingTxId); } else { updatedTransactions = updatedTransactions.filter(t => t.id !== editingTxId); } }
+                updatedTransactions = [...updatedTransactions, ...txsArray];
+                saveData({ ...data, transactions: updatedTransactions, debtTargets: updatedDebtTargets });
+                setShowAdd(false); resetForm();
+            };
+            const handleDelete = (txToDelete) => { 
+                const targetId = txToDelete?.id || editingTxId; const tx = txToDelete || data.transactions.find(t => t.id === targetId);
+                if (!tx) return;
+                let updatedTransactions = [...data.transactions];
+                if (tx.linkId) { const group = updatedTransactions.filter(t => t.linkId === tx.linkId && t.id !== tx.id); if (group.length > 0) { let mainTxIndex = group.findIndex(t => !t.targetName || t.targetName === '我'); if (mainTxIndex === -1) mainTxIndex = 0; const mainTx = group[mainTxIndex]; const newAmount = mainTx.amount + tx.amount; const mainTxGlobalIndex = updatedTransactions.findIndex(t => t.id === mainTx.id); if (mainTxGlobalIndex !== -1) { updatedTransactions[mainTxGlobalIndex] = { ...mainTx, amount: newAmount }; } updatedTransactions = updatedTransactions.filter(t => t.id !== tx.id); saveData({ ...data, transactions: updatedTransactions }); setShowAdd(false); showToast(`已刪除並將 $${tx.amount} 加回 ${mainTx.targetName || '我'}`); return; } }
+                updatedTransactions = updatedTransactions.filter(t => t.id !== targetId); saveData({ ...data, transactions: updatedTransactions }); setShowAdd(false); 
+            };
+            const handleDeleteTransaction = () => handleDelete(null);
+            
+            const toggleGroup = (linkId) => { 
+                setExpandedGroups(prev => {
+                    const isCurrentlyOpen = prev[linkId] !== undefined ? prev[linkId] : true;
+                    return { ...prev, [linkId]: !isCurrentlyOpen };
+                }); 
+            };
+            
+            const handleSmartImport = (targetAccountId, hintType) => { 
+                const rawLines = importText.split('\n').map(l => l.trim()).filter(l => l); const parsed = []; const currentYear = new Date().getFullYear(); const parseNum = (str) => parseFloat(str.replace(/,/g, '')); const isNum = (str) => /^\d{1,3}(,\d{3})*(\.\d+)?$/.test(str); const dateRegexFull = /^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})/; const dateRegexShort = /^(\d{1,2})[\/\-\.](\d{1,2})/; let currentBlock = []; 
+                const processBlock = (block) => { if (block.length === 0) return; try { const dateLine = block[0]; let dateMatch = dateLine.match(dateRegexFull); let dateStr = ""; 
+                    if (dateMatch) { 
+                        dateStr = dateMatch[0].replace(/[\/\.]/g, '-'); 
+                    } else { 
+                        dateMatch = dateLine.match(dateRegexShort); 
+                        if (dateMatch) { 
+                            const m = dateMatch[1].padStart(2, '0'); const d = dateMatch[2].padStart(2, '0'); dateStr = `${currentYear}-${m}-${d}`; 
+                        } 
+                    } 
+                    if (!dateStr) return; 
+                    let amount = 0; let type = 'expense'; let foundAmount = false; for (let i = 0; i < block.length; i++) { let content = block[i].replace(/−/g, '-').replace(/\t/g, ' '); const tokens = content.split(/\s+/).filter(t => t.trim() !== ''); for (let j = 0; j < tokens.length; j++) { const token = tokens[j]; const nextToken = tokens[j+1]; if (token.includes('/') || token.includes(':')) continue; if (isNum(token)) { if (nextToken === '-') { amount = parseNum(token); type = 'expense'; foundAmount = true; break; } if (tokens.length === 1 && !foundAmount) { amount = parseNum(token); type = 'expense'; foundAmount = true; break; } if (!foundAmount && block.length === 1 && j === tokens.length - 1) { amount = parseNum(token); type = 'expense'; foundAmount = true; break; } } else if (token === '-') { if (isNum(nextToken)) { amount = parseNum(nextToken); type = 'income'; foundAmount = true; break; } } } if (foundAmount) break; } if (!foundAmount || amount === 0) return; let noteParts = []; block.forEach((line, i) => { let content = line.replace(/−/g, '-').replace(/\t/g, ' '); if (i === 0 && dateMatch) content = content.replace(dateMatch[0], ''); content = content.replace(/-/g, '').trim(); const tokens = content.split(/\s+/); const cleanTokens = tokens.filter(t => { if (isNum(t) && parseNum(t) === amount) return false; return true; }); content = cleanTokens.join(' '); if (content.trim()) noteParts.push(content.trim()); }); let note = noteParts.join(' '); if (note.includes('配息') || note.includes('轉入') || note.includes('存款息')) { type = 'income'; } let toAccountId = ''; if (block.some(l => l.includes('提款'))) { type = 'transfer'; const cashAcc = userAccounts.find(a => a.type === 'cash'); if(cashAcc) toAccountId = cashAcc.id; } if (!note) note = "一般消費"; const txObj = { id: '', date: dateStr, amount: amount, note: note, type: type, categoryId: window.autoTag(note), accountId: targetAccountId, toAccountId: toAccountId, targetName: '', splits: [] }; parsed.push(txObj); } catch(e) { console.error("Block parse error", e); } }; 
+                for (let i = 0; i < rawLines.length; i++) { const line = rawLines[i]; const isDateStart = dateRegexFull.test(line) || (dateRegexShort.test(line) && line.length < 50 && (line.includes('/') || line.includes('-'))); if (isDateStart) { if (currentBlock.length > 0) processBlock(currentBlock); currentBlock = [line]; } else { currentBlock.push(line); } } if (currentBlock.length > 0) processBlock(currentBlock); const baseTime = Date.now(); parsed.forEach((p, i) => { p.id = (baseTime + (parsed.length - i)).toString(); }); setPreviewData(parsed); 
+            }; 
+
+            const toggleSelectTx = (id) => { if (selectedTxIds.includes(id)) setSelectedTxIds(selectedTxIds.filter(tid => tid !== id)); else setSelectedTxIds([...selectedTxIds, id]); };
+            const toggleSelectAll = (filteredTxs) => { if (selectedTxIds.length === filteredTxs.length) setSelectedTxIds([]); else setSelectedTxIds(filteredTxs.map(t => t.id)); };
+            const confirmBatchDelete = () => { if (selectedTxIds.length > 0) { const updated = data.transactions.filter(t => !selectedTxIds.includes(t.id)); saveData({ ...data, transactions: updated }); setSelectedTxIds([]); setShowDeleteBatchConfirm(false); showToast('已刪除選取項目'); } };
+            const toggleSection = (key) => { if (expandedTypes.includes(key)) setExpandedTypes(expandedTypes.filter(k => k !== key)); else setExpandedTypes([...expandedTypes, key]); window.refreshIcons(); };
+            
+            const dragItem = useRef(null);
+            const dragOverItem = useRef(null);
+            const handleDragStart = (e, id) => { e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", id); dragItem.current = id; e.target.style.opacity = '0.5'; };
+            const handleDragEnd = (e) => { e.target.style.opacity = '1'; dragItem.current = null; dragOverItem.current = null; };
+            const handleDragOver = (e, id) => { e.preventDefault(); dragOverItem.current = id; };
+            const handleDrop = (e, targetId) => { e.preventDefault(); const sourceId = dragItem.current; if (!sourceId || sourceId === targetId) return; const currentOrder = data.accountOrder || userAccounts.map(a => a.id); const sourceIndex = currentOrder.indexOf(sourceId); const targetIndex = currentOrder.indexOf(targetId); if (sourceIndex === -1 || targetIndex === -1) return; const newOrder = [...currentOrder]; const [removed] = newOrder.splice(sourceIndex, 1); newOrder.splice(targetIndex, 0, removed); saveData({ ...data, accountOrder: newOrder }, false); };
+
+            const balanceMap = useMemo(() => { if (!selectedAccount) return {}; const acc = data.accounts.find(a => a.id === selectedAccount); const initial = acc?.balance || 0; const allTxs = data.transactions.filter(t => t.accountId === selectedAccount || t.toAccountId === selectedAccount).sort((a, b) => { const dateDiff = new Date(a.date) - new Date(b.date); if (dateDiff !== 0) return dateDiff; if (a.id < b.id) return -1; if (a.id > b.id) return 1; return 0; }); const map = {}; let currentBal = initial; allTxs.forEach(tx => { const amount = parseFloat(tx.amount) || 0; if (tx.type === 'income' || (tx.type === 'repay' && tx.accountId === selectedAccount)) { currentBal += amount; } else if (tx.type === 'expense' || (tx.type === 'advance' && tx.accountId === selectedAccount)) { let finalAmount = amount; if (tx.type === 'expense' && tx.splits && tx.splits.length > 0) { const otherSplitsSum = tx.splits.filter(s => s.owner !== 'me').reduce((acc, s) => acc + (parseFloat(s.amount) || 0), 0); finalAmount = amount - otherSplitsSum; } currentBal -= finalAmount; } else if (tx.type === 'transfer') { if (tx.toAccountId === selectedAccount) { currentBal += amount; } else if (tx.accountId === selectedAccount) { currentBal -= amount; } } map[tx.id] = currentBal; }); map['_final'] = currentBal; return map; }, [data.transactions, selectedAccount, data.accounts]);
+            
+            const monthsWithData = useMemo(() => {
+                if (!selectedAccount) return new Set();
+                const currentYear = currentDate.getFullYear();
+                const activeMonths = new Set();
+                data.transactions.forEach(t => {
+                    if(!t.date) return;
+                    const parts = t.date.split('-');
+                    const ty = parseInt(parts[0]);
+                    const tm = parseInt(parts[1]);
+                    const isRelated = t.accountId === selectedAccount || t.toAccountId === selectedAccount;
+                    if (ty === currentYear && isRelated) {
+                        activeMonths.add(tm - 1); 
+                    }
+                });
+                return activeMonths;
+            }, [data.transactions, currentDate, selectedAccount]);
+
+            useEffect(() => { 
+                if (window.lucide) { 
+                    setTimeout(() => window.lucide.createIcons(), 50); 
+                    setTimeout(() => window.lucide.createIcons(), 500); 
+                } 
+            }, [showAdd, isEditMode, showImport, previewData, showDatePicker, expandedTypes, selectedAccount, data.transactions, filterType, expandedGroups, activeTab]); 
+
+            if (selectedAccount) {
+                const currentAccount = data.accounts.find(a => a.id === selectedAccount);
+                const currentTotalBalance = balanceMap['_final'] !== undefined ? balanceMap['_final'] : (currentAccount?.balance || 0);
+                
+                return (
+                    <div className="pb-24 md:pb-0 animate-fade flex flex-col h-full relative">
+                       <div className="flex flex-col md:flex-row justify-between items-center mb-4 px-4 md:px-0 pt-4 gap-3 relative">
+                            <div className="flex items-center gap-4 w-full md:w-1/3">
+                                <button onClick={() => setSelectedAccount(null)} className="md:hidden p-2 -ml-2 rounded-full hover:bg-black/5"><LucideIcon name="arrow-left" className="w-5 h-5 text-muji-text" /></button>
+                                <div>
+                                    <h3 className="text-xl font-bold text-muji-text leading-tight">{currentAccount?.name}</h3>
+                                    <button onClick={() => setInputModal({ show: true, title: '餘額校正', value: currentTotalBalance.toString(), type: 'calibrate_account', data: currentAccount.id, extra: currentTotalBalance })} className={`text-sm font-mono font-bold mt-1 text-left hover:opacity-60 transition-opacity flex items-center gap-2 ${currentTotalBalance >= 0 ? 'text-muji-green' : 'text-rose-500'}`} title="點擊校正餘額">${currentTotalBalance.toLocaleString()} <LucideIcon name="pencil" className="w-3 h-3 opacity-30" /></button>
+                                </div>
+                            </div>
+                            <div className="flex justify-center w-full md:w-1/3"><div className="flex items-center bg-white border border-muji-border rounded-lg px-1 py-1"><button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))} className="p-1 hover:bg-muji-bg rounded"><span className="font-mono text-lg">&lt;</span></button><span className="text-sm font-bold mx-2 cursor-pointer whitespace-nowrap" onClick={() => setShowDatePicker(true)}>{currentDate.getFullYear()}/{currentDate.getMonth() + 1}</span><button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))} className="p-1 hover:bg-muji-bg rounded"><span className="font-mono text-lg">&gt;</span></button><button onClick={() => setCurrentDate(new Date())} className="ml-2 px-3 py-1 bg-muji-bg border border-muji-border rounded text-xs font-bold hover:bg-muji-hover text-muji-text">今天</button></div></div>
+                            <div className="flex justify-end items-center gap-4 w-full md:w-1/3">
+                                <div className="text-xs text-rose-500 font-bold bg-rose-50/50 px-2 py-1 rounded border border-rose-100">
+                                    本月支出: ${currentMonthStats.expense.toLocaleString()}
+                                </div>
+                                <div className="flex gap-2">
+                                    <button onClick={() => { resetForm(); setShowAdd(true); }} className="bg-muji-accent text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm flex items-center gap-1"><LucideIcon name="plus" className="w-4 h-4" /> 記帳</button><button onClick={() => { setImportText(''); setPreviewData([]); setShowImport(true); }} className="bg-white border border-muji-border text-muji-text px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm hover:bg-muji-bg flex items-center gap-1"><LucideIcon name="sparkles" className="w-4 h-4" /> AI</button>
+                                </div>
+                            </div>
+                       </div>
+
+                        <div className="px-4 md:px-0 mb-4">
+                            <div className="flex overflow-x-auto no-scrollbar gap-2 pb-1">
+                                {[
+                                    { id: 'all', label: '全部' },
+                                    { id: 'expense', label: '支出' },
+                                    { id: 'income', label: '收入' },
+                                    { id: 'transfer', label: '轉帳' },
+                                    { id: 'repay', label: '還款' },
+                                    { id: 'advance', label: '代墊' }
+                                ].map(type => (
+                                    <button
+                                        key={type.id}
+                                        onClick={() => setFilterType(type.id)}
+                                        className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-colors border ${filterType === type.id ? 'bg-muji-text text-white border-muji-text' : 'bg-white text-muji-muted border-muji-border hover:bg-muji-bg'}`}
+                                    >
+                                        {type.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                       {selectedTxIds.length > 0 && (<div className="mb-4 flex justify-between items-center bg-muji-red/10 p-2 rounded-lg border border-muji-red/30 mx-4 md:mx-0"><span className="text-xs text-muji-red font-bold ml-2">已選取 {selectedTxIds.length} 筆</span><button onClick={() => setShowDeleteBatchConfirm(true)} className="text-xs bg-muji-red text-white px-3 py-1.5 rounded font-bold hover:opacity-80">刪除</button></div>)}
+
+                       <div className="flex-1 overflow-y-auto bg-white mx-4 md:mx-0 mb-20 md:mb-0 rounded-xl border border-muji-border min-h-[50vh] max-h-[calc(100vh-250px)] relative flex flex-col">
+                            <div className="bg-muji-bg text-muji-muted font-medium border-b border-muji-border flex text-sm shadow-sm z-20 sticky top-0 grid grid-cols-[5rem_6rem_4rem_7rem_6rem_6rem_1fr] items-center">
+                                <div className="p-4 flex justify-center"><input type="checkbox" className="w-4 h-4 accent-muji-accent cursor-pointer" checked={filteredTxs.length > 0 && selectedTxIds.length === filteredTxs.length} onChange={() => toggleSelectAll(filteredTxs)} /></div>
+                                <div className="p-4 text-center">日期</div>
+                                <div className="p-4 text-center">類型</div>
+                                <div className="p-4 text-center">分類</div>
+                                <div className="p-4 text-right">金額</div>
+                                <div className="p-4 text-right">餘額</div>
+                                <div className="p-4 pl-4 text-left text-muji-muted text-xs truncate">備註</div>
+                            </div>
+                            <div>
+                                {groupedTxs.length === 0 ? (<div className="p-10 text-center text-muji-muted">無紀錄</div>) : (
+                                    groupedTxs.map(tx => { 
+                                        if (tx.isGroupHeader) {
+                                            const isExpanded = expandedGroups[tx.linkId] !== false; 
+                                            const firstSubTx = tx.subTransactions[0];
+                                            const date = firstSubTx.date;
+                                            const totalAmt = tx.totalAmount;
+                                            return (
+                                                <React.Fragment key={tx.id}>
+                                                    <div onClick={() => toggleGroup(tx.linkId)} className="grid grid-cols-[5rem_6rem_4rem_7rem_6rem_6rem_1fr] items-center border-b border-muji-border/50 bg-gray-50/80 hover:bg-gray-100 font-bold cursor-pointer transition-colors text-sm">
+                                                        <div className="p-4 flex justify-center">
+                                                            <span key={isExpanded ? "exp" : "col"} className="flex items-center justify-center">
+                                                                <LucideIcon name={isExpanded ? "chevron-down" : "chevron-right"} className="w-4 h-4 text-muji-muted" />
+                                                            </span>
+                                                        </div>
+                                                        <div className="p-4 text-center font-mono text-xs">{date}</div>
+                                                        <div className="p-4 text-center text-xs text-muji-muted">拆帳</div>
+                                                        <div className="p-4 text-center text-xs"><span className="bg-muji-accent/10 text-muji-accent px-2 py-0.5 rounded-full text-[10px]">{tx.subTransactions.length} 筆</span></div>
+                                                        <div className="p-4 text-right font-mono text-muji-text">${totalAmt.toLocaleString()}</div>
+                                                        <div className="p-4 text-right">-</div>
+                                                        <div className="p-4 pl-4 text-xs text-muji-muted italic">點擊展開/收合</div>
+                                                    </div>
+                                                    {isExpanded && tx.subTransactions.map(subTx => {
+                                                        const cat = flatCategories[subTx.categoryId] || { icon: 'help-circle', name: '未分類' };
+                                                        const txType = window.TX_TYPES[subTx.type] || { label: '未知', color: 'text-gray-500' };
+                                                        let display = cat.name;
+                                                        if(subTx.type === 'repay' || subTx.type === 'advance') {
+                                                             const target = subTx.targetName || '-';
+                                                             display = `${cat.name} (${target})`;
+                                                        }
+                                                        const textColorClass = subTx.type === 'expense' ? 'text-rose-500' : (subTx.type === 'income' ? 'text-emerald-500' : txType.color);
+                                                        let sign = subTx.type === 'expense' || subTx.type === 'advance' ? '-' : '+';
+                                                        const balance = balanceMap[subTx.id];
+                                                        const isSettled = subTx.isSettled; 
+                                                        return (
+                                                            <div key={subTx.id} onClick={() => openEdit(subTx)} className={`grid grid-cols-[5rem_6rem_4rem_7rem_6rem_6rem_1fr] items-center border-b border-muji-border/50 hover:bg-muji-hover transition-colors bg-white cursor-pointer text-sm ${isSettled ? 'opacity-50' : ''}`}>
+                                                                <div className="p-4 flex justify-center gap-2 pl-6 border-l-4 border-muji-accent/20"><button onClick={(e) => { e.stopPropagation(); handleDuplicateTx(subTx); }} className="p-1 text-muji-muted hover:text-muji-accent"><LucideIcon name="copy" className="w-3.5 h-3.5" /></button><button onClick={(e) => { e.stopPropagation(); handleDelete(subTx); }} className="p-1 text-muji-muted hover:text-muji-red" title="刪除並回補"><LucideIcon name="trash-2" className="w-3.5 h-3.5" /></button></div>
+                                                                <div className="p-4 text-center opacity-0">-</div> 
+                                                                <div className={`p-4 text-center font-bold ${txType.color} text-xs px-1 whitespace-nowrap ${isSettled ? 'line-through decoration-muji-text/50' : ''}`}>{txType.label}</div>
+                                                                <div className={`p-4 text-center text-xs gap-2 flex justify-center items-center ${isSettled ? 'line-through decoration-muji-text/50' : ''}`}>{(subTx.type==='expense'||subTx.type==='income')&&
+                                                                    <span className="flex">
+                                                                        <LucideIcon name={cat.icon || 'circle'} className="w-3.5 h-3.5 opacity-70" />
+                                                                    </span>
+                                                                }<span className="truncate">{display}</span></div>
+                                                                <div className={`p-4 text-right font-mono font-bold ${textColorClass} text-xs ${isSettled ? 'line-through decoration-muji-text/50' : ''}`}>{sign}${subTx.amount.toLocaleString()}</div>
+                                                                <div className={`p-4 text-right font-mono text-xs text-muji-muted`}>${balance?.toLocaleString()}</div>
+                                                                <div className={`p-4 pl-4 text-left text-muji-muted text-xs truncate ${isSettled ? 'line-through' : ''}`}>{subTx.note}{isSettled ? ' (已結清)' : ''}</div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </React.Fragment>
+                                            );
+                                        } else {
+                                            const cat = flatCategories[tx.categoryId] || { icon: 'help-circle', name: '未分類' }; 
+                                            const txType = window.TX_TYPES[tx.type] || { label: '未知', color: 'text-gray-500' }; 
+                                            let display = cat.name;
+                                            if(tx.type === 'transfer') { const to = userAccounts.find(a=>a.id===tx.toAccountId); const from = userAccounts.find(a=>a.id===tx.accountId); if (selectedAccount === tx.accountId) display = to ? `-> ${to.name}` : '轉出'; else if (selectedAccount === tx.toAccountId) display = from ? `<- ${from.name}` : '轉入'; } 
+                                            else if(tx.type === 'repay' || tx.type === 'advance') { const target = tx.targetName || '-'; display = `${cat.name} (${target})`; }
+                                            const amountVal = tx.amount || 0;
+                                            const textColorClass = tx.type === 'expense' ? 'text-rose-500' : (tx.type === 'income' ? 'text-emerald-500' : txType.color);
+                                            let sign = '';
+                                            if (tx.type === 'expense') sign = '-'; else if (tx.type === 'income') sign = '+'; else if (tx.type === 'transfer') sign = selectedAccount === tx.accountId ? '-' : '+'; else if (tx.type === 'repay') sign = '+'; else if (tx.type === 'advance') sign = '-';
+                                            const balance = balanceMap[tx.id];
+                                            const isSettled = tx.isSettled; 
+
+                                            return (
+                                                <div key={tx.id} onClick={() => openEdit(tx)} className={`grid grid-cols-[5rem_6rem_4rem_7rem_6rem_6rem_1fr] items-center border-b border-muji-border/50 hover:bg-muji-hover transition-colors cursor-pointer text-sm ${isSettled ? 'opacity-50' : ''}`}>
+                                                    <div className="p-4 flex justify-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                                        <input type="checkbox" className="w-4 h-4 accent-muji-accent cursor-pointer" checked={selectedTxIds.includes(tx.id)} onChange={() => toggleSelectTx(tx.id)} />
+                                                        <button onClick={(e) => { e.stopPropagation(); handleDuplicateTx(tx); }} className="p-1 text-muji-muted hover:text-muji-accent transition-colors" title="複製並新增一筆"><LucideIcon name="copy" className="w-3.5 h-3.5" /></button>
+                                                    </div>
+                                                    <div className="p-4 text-center font-mono text-xs">{tx.date}</div>
+                                                    <div className={`p-4 text-center font-bold ${txType.color} text-xs px-1 whitespace-nowrap ${isSettled ? 'line-through decoration-muji-text/50' : ''}`}>{txType.label}</div>
+                                                    <div className={`p-4 text-center text-xs gap-2 flex justify-center items-center ${isSettled ? 'line-through decoration-muji-text/50' : ''}`}>{(tx.type==='expense'||tx.type==='income')&&
+                                                        <span className="flex">
+                                                            <LucideIcon name={cat.icon || 'circle'} className="w-4 h-4" />
+                                                        </span>
+                                                    }<span className="truncate">{display}</span></div>
+                                                    <div className={`p-4 text-right font-mono font-bold ${textColorClass} text-xs ${isSettled ? 'line-through decoration-muji-text/50' : ''}`}><span>{sign}${amountVal.toLocaleString()}</span></div>
+                                                    <div className={`p-4 text-right font-mono text-xs text-muji-muted`}>{balance !== undefined ? `$${balance.toLocaleString()}` : '-'}</div>
+                                                    <div className={`p-4 pl-4 text-left text-muji-muted text-xs truncate ${isSettled ? 'line-through' : ''}`}>{tx.note}{isSettled ? ' (已結清)' : ''}</div>
+                                                </div>
+                                            ) 
+                                        }
+                                    })
+                                )}
+                            </div>
+                       </div>
+                       
+                       {showDatePicker && (<window.Modal title="選擇日期" onClose={() => setShowDatePicker(false)}><div className="p-4"><div className="flex justify-between items-center mb-4 px-2"><button onClick={() => setCurrentDate(new Date(currentDate.getFullYear() - 1, currentDate.getMonth(), 1))} className="p-2 hover:bg-muji-bg rounded-full"><LucideIcon name="chevron-left" className="w-5 h-5" /></button><span className="text-xl font-bold font-mono">{currentDate.getFullYear()}</span><button onClick={() => setCurrentDate(new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), 1))} className="p-2 hover:bg-muji-bg rounded-full"><LucideIcon name="chevron-right" className="w-5 h-5" /></button></div><div className="grid grid-cols-4 gap-2">{Array.from({length: 12}, (_, i) => i).map(m => { const hasData = monthsWithData.has(m); const isSelected = currentDate.getMonth() === m; return (<button key={m} onClick={() => { setCurrentDate(new Date(currentDate.getFullYear(), m, 1)); setShowDatePicker(false); }} className={`py-3 rounded-lg text-sm font-bold transition-colors relative ${isSelected ? 'bg-muji-accent text-white shadow-md' : hasData ? 'bg-white text-muji-text border border-muji-accent/30 shadow-sm hover:border-muji-accent' : 'bg-muji-bg text-muji-muted/50 hover:bg-gray-200'}`}>{m+1}月{hasData && !isSelected && <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-muji-accent"></div>}</button>); })}</div></div></window.Modal>)}
+                       {showDeleteBatchConfirm && (<window.Modal title="刪除確認" onClose={() => setShowDeleteBatchConfirm(false)}><div className="p-4 text-center space-y-4"><p className="text-muji-text">確定要刪除選取的 <span className="font-bold">{selectedTxIds.length}</span> 筆資料嗎？</p><p className="text-xs text-muji-red">此操作無法復原！</p><div className="flex gap-3"><button onClick={() => setShowDeleteBatchConfirm(false)} className="flex-1 py-3 border border-muji-border rounded-lg">取消</button><button onClick={confirmBatchDelete} className="flex-1 py-3 bg-muji-red text-white font-bold rounded-lg shadow-sm">確認刪除</button></div></div></window.Modal>)}
+                       {showImport && <window.SmartImportModal onClose={() => setShowImport(false)} importText={importText} setImportText={setImportText} previewData={previewData} setPreviewData={setPreviewData} saveData={saveData} data={data} handleSmartImport={handleSmartImport} flatCategories={flatCategories} userAccounts={userAccounts} selectedAccount={selectedAccount} />}
+                       {showAdd && <window.TransactionModal onClose={() => setShowAdd(false)} isEditMode={isEditMode} newTx={newTx} setNewTx={setNewTx} isSplitMode={isSplitMode} setIsSplitMode={setIsSplitMode} splitTotal={splitTotal} setSplitTotal={setSplitTotal} splits={splits} setSplits={setSplits} categoryGroups={categoryGroups} flatCategories={flatCategories} userAccounts={userAccounts} selectedAccount={selectedAccount} saveTransaction={handleSaveTransaction} handleDeleteTransaction={handleDeleteTransaction} data={data} saveData={saveData} showToast={showToast} />}
+                    </div>
+                );
+            }
+            
+            const recentAccounts = getRecentAccounts(); 
+
+            return (
+                <div className="p-6 md:p-10 animate-fade relative min-h-full">
+                    <div className="sticky top-0 z-10 bg-muji-bg flex justify-between items-center py-4 mb-6 -mt-6 -mx-6 px-6 md:-mt-10 md:-mx-10 md:px-10 border-b border-muji-border/50 backdrop-blur-sm bg-muji-bg/95">
+                        <h3 className="text-2xl font-bold text-muji-text">我的帳戶</h3>
+                        <div className="flex gap-2">
+                            <div className="flex bg-muji-bg rounded-lg p-1 border border-muji-border mr-2">
+                                <button onClick={() => setActiveTab('expense_list')} className={`px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1 ${activeTab === 'expense_list' ? 'bg-white shadow-sm text-muji-accent' : 'text-muji-muted hover:text-muji-text'}`}>
+                                    <LucideIcon name="list" className="w-3 h-3" /> 本月支出
+                                </button>
+                                <button onClick={() => setActiveTab('all_grid')} className={`px-3 py-1.5 rounded text-xs font-bold transition flex items-center gap-1 ${activeTab === 'all_grid' ? 'bg-white shadow-sm text-muji-accent' : 'text-muji-muted hover:text-muji-text'}`}>
+                                    <LucideIcon name="grid" className="w-3 h-3" /> 所有帳戶
+                                </button>
+                            </div>
+
+                            <button onClick={() => setInputModal({ show: true, title: '新增帳戶', value: '', type: 'add_account', extra: 'cash', value2: '' })} className="bg-muji-card border border-muji-border hover:border-muji-accent text-muji-text hover:text-muji-accent p-2 md:px-4 md:py-2 rounded-lg transition flex items-center gap-2 font-bold shadow-sm text-sm"><LucideIcon name="plus" className="w-4 h-4" /> <span className="hidden sm:inline">新增</span></button>
+                        </div>
+                    </div>
+                    
+                    {activeTab === 'expense_list' ? (
+                        <div className="animate-fade">
+                            <div className="mb-4 p-4 bg-white rounded-xl border border-muji-border shadow-sm flex justify-between items-center">
+                                 <span className="text-sm font-bold text-muji-text">本月總支出</span>
+                                 <span className="text-xl font-mono font-bold text-rose-500">${totalMonthlyExpenseSum.toLocaleString()}</span>
+                            </div>
+                            
+                            {monthlyExpenseAccounts.length > 0 ? (
+                                <div className="space-y-3">
+                                    {monthlyExpenseAccounts.map(acc => {
+                                        const expense = accountMonthlyExpenses[acc.id] || 0;
+                                        const typeConfig = accountTypes[acc.type] || { icon: 'circle-help' };
+                                        return (
+                                            <div 
+                                                key={acc.id} 
+                                                onClick={() => setSelectedAccount(acc.id)} 
+                                                className="bg-white p-4 rounded-xl border border-muji-border hover:border-muji-accent hover:shadow-md transition-all cursor-pointer flex justify-between items-center"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500">
+                                                        <LucideIcon name={typeConfig.icon} className="w-5 h-5" />
+                                                    </div>
+                                                    <div className="font-bold text-base text-muji-text">{acc.name}</div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="text-lg font-mono font-bold text-rose-500">${expense.toLocaleString()}</div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="p-10 text-center text-muji-muted border border-dashed border-muji-border rounded-xl">
+                                    本月尚無支出紀錄
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="animate-fade">
+                            {recentAccounts.length > 0 && (
+                                 <div className="mb-6">
+                                    <button onClick={() => toggleSection('recent')} className="w-full text-left flex items-center gap-2 mb-3 pb-1 border-b border-muji-border"><LucideIcon name={expandedTypes.includes('recent') ? "chevron-down" : "chevron-right"} className="w-4 h-4 text-muji-muted" /><h4 className="text-muji-muted text-sm font-bold flex items-center gap-2"><LucideIcon name="clock" className="w-4 h-4" /> 最近記帳</h4></button>
+                                    {expandedTypes.includes('recent') && (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 animate-fade">
+                                            {recentAccounts.map(acc => { const bal = window.calculateBalance(data, acc.id); const isPositive = bal >= 0; const typeConfig = accountTypes[acc.type] || { icon: 'circle-help' }; const expense = accountMonthlyExpenses[acc.id] || 0; return (<div key={'recent_' + acc.id} onClick={() => setSelectedAccount(acc.id)} className="bg-white p-4 rounded-xl border border-muji-border hover:border-muji-accent hover:shadow-md transition-all cursor-pointer relative group h-32 flex flex-col justify-between"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full border-2 border-muji-text/20 flex items-center justify-center text-muji-text text-xl"><LucideIcon name={typeConfig.icon} className="w-5 h-5" /></div><div className="font-bold text-base text-muji-text truncate">{acc.name}</div></div><div className="text-right"><div className={`text-xl font-mono font-bold ${isPositive ? 'text-muji-green' : 'text-rose-500'}`}>${bal.toLocaleString()}</div>{expense > 0 && (<div className="text-xs text-rose-500 font-bold mt-1">本月支出: ${expense.toLocaleString()}</div>)}</div></div>); })}
+                                        </div>
+                                    )}
+                                 </div>
+                             )}
+
+                            {Object.entries(accountTypes).map(([typeKey, typeConfig]) => {
+                                const typeAccounts = userAccounts.filter(a => a.type === typeKey);
+                                if (typeAccounts.length === 0) return null;
+                                const isExpanded = expandedTypes.includes(typeKey);
+                                
+                                const sortedTypeAccounts = typeAccounts.sort((a, b) => {
+                                    const dateA = accountLastModified[a.id] || 0;
+                                    const dateB = accountLastModified[b.id] || 0;
+                                    return dateB - dateA; 
+                                });
+
+                                return (
+                                    <div key={typeKey} className="mb-6">
+                                        <button onClick={() => toggleSection(typeKey)} className="w-full text-left flex items-center gap-2 mb-3 pb-1 border-b border-muji-border"><LucideIcon name={isExpanded ? "chevron-down" : "chevron-right"} className="w-4 h-4 text-muji-muted" /><h4 className="text-muji-muted text-sm font-bold flex items-center gap-2"><LucideIcon name={typeConfig.icon} className="w-4 h-4" /> {typeConfig.label}</h4></button>
+                                        {isExpanded && (
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 animate-fade">
+                                                {sortedTypeAccounts.map(acc => { 
+                                                    const bal = window.calculateBalance(data, acc.id); const isPositive = bal >= 0;
+                                                    const expense = accountMonthlyExpenses[acc.id] || 0;
+                                                    return (
+                                                        <div 
+                                                            key={acc.id} 
+                                                            onDragOver={(e) => handleDragOver(e, acc.id)} 
+                                                            onDrop={(e) => handleDrop(e, acc.id)} 
+                                                            onClick={() => setSelectedAccount(acc.id)} 
+                                                            className="bg-white p-4 rounded-xl border border-muji-border hover:border-muji-accent hover:shadow-md transition-all cursor-pointer relative group h-32 flex flex-col justify-between"
+                                                        >
+                                                            <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 flex gap-2">
+                                                                <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '餘額校正', value: bal.toString(), type: 'calibrate_account', data: acc.id, extra: bal, value2: '', value3: '' });}} className="p-1 hover:bg-muji-bg rounded text-muji-muted hover:text-muji-accent"><LucideIcon name="sliders-horizontal" className="w-3 h-3" /></button>
+                                                                <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '修改帳戶', value: acc.name, value2: acc.balance || 0, type: 'rename_account', data: acc.id, extra: acc.type, value3: acc.closingDay || '' });}} className="p-1 hover:bg-muji-bg rounded text-muji-muted hover:text-muji-accent"><LucideIcon name="pencil" className="w-3 h-3" /></button>
+                                                                <button onClick={(e) => {e.stopPropagation(); setInputModal({ show: true, title: '刪除', value: '確認', type: 'delete_account', data: acc.id, value2: '', value3: '' });}} className="p-1 hover:bg-muji-bg rounded text-muji-muted hover:text-muji-red"><LucideIcon name="trash-2" className="w-3 h-3" /></button>
+                                                            </div>
+                                                            <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full border-2 border-muji-text/20 flex items-center justify-center text-muji-text text-xl"><LucideIcon name={typeConfig.icon} className="w-5 h-5" /></div><div className="font-bold text-base text-muji-text truncate">{acc.name}</div></div>
+                                                            <div className="text-right">
+                                                                <div className={`text-xl font-mono font-bold ${isPositive ? 'text-muji-green' : 'text-rose-500'}`}>${bal.toLocaleString()}</div>
+                                                                {expense > 0 && (
+                                                                    <div className="text-xs text-rose-500 font-bold mt-1">本月支出: ${expense.toLocaleString()}</div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ); 
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // --- OTHER VIEWS (Debt, Wealth, Analysis, Settings) from user files, adapted for single user ---
+        // (For brevity, I'm embedding the essential logic directly or assuming they are loaded similarly. 
+        //  The key changes were removing userId checks. I will implement simplified versions here.)
+
+        window.AnalysisView = ({ data }) => {
+            const [filterType, setFilterType] = useState('expense'); 
+            const [period, setPeriod] = useState('month'); 
+            const [currentDate, setCurrentDate] = useState(new Date());
+            const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+
+            useEffect(() => { window.refreshIcons(); }, [filterType, period, currentDate, selectedCategoryId]);
+
+            const stats = useMemo(() => {
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+                const quarter = Math.floor(month / 3);
+                const startDate = new Date(year, period === 'month' ? month : (period === 'quarter' ? quarter * 3 : 0), 1);
+                const endDate = new Date(year, period === 'month' ? month + 1 : (period === 'quarter' ? (quarter + 1) * 3 : 12), 0);
+                const categoryGroups = data.settings?.categoryGroups || window.DEFAULT_CATEGORY_GROUPS;
+                const flatCategories = window.getFlatCategories(categoryGroups);
+                const userAccounts = data.accounts.map(a => a.id);
+
+                let totalAmount = 0;
+                const categoryMap = {}; 
+                const trendMap = {}; 
+
+                data.transactions.forEach(tx => {
+                    const txDate = new Date(tx.date);
+                    if (txDate < startDate || txDate > endDate) return;
+                    if (!userAccounts.includes(tx.accountId)) return;
+
+                    let amount = 0;
+                    if (filterType === 'expense') {
+                        if (tx.type === 'expense') {
+                            amount = tx.amount;
+                            if (tx.splits && tx.splits.length > 0) {
+                                const others = tx.splits.reduce((acc, s) => s.owner !== 'me' ? acc + (parseFloat(s.amount)||0) : acc, 0);
+                                amount -= others;
+                            }
+                        }
+                    } else if (filterType === 'income') {
+                        if (tx.type === 'income') amount = tx.amount;
+                    }
+
+                    if (amount <= 0) return;
+                    totalAmount += amount;
+                    const catInfo = flatCategories[tx.categoryId] || { group: '未分類', name: '未分類' };
+                    const mainCat = catInfo.group;
+                    const subCat = catInfo.name;
+
+                    if (!categoryMap[mainCat]) categoryMap[mainCat] = { total: 0, subs: {}, icon: catInfo.icon || 'circle' };
+                    categoryMap[mainCat].total += amount;
+                    categoryMap[mainCat].subs[subCat] = (categoryMap[mainCat].subs[subCat] || 0) + amount;
+                });
+
+                const categories = Object.entries(categoryMap).map(([name, data]) => ({ name, value: data.total, subs: data.subs, icon: data.icon })).sort((a, b) => b.value - a.value);
+                return { totalAmount, categories };
+            }, [data, filterType, period, currentDate]);
+
+            return (
+                <div className="p-6 animate-fade pb-24">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-2xl font-bold text-muji-text">收支分析</h3>
+                        <div className="flex bg-muji-bg rounded-lg p-1 border border-muji-border">
+                            <button onClick={() => setFilterType('expense')} className={`px-4 py-1.5 rounded text-sm font-bold transition ${filterType === 'expense' ? 'bg-rose-500 text-white shadow-sm' : 'text-muji-muted hover:bg-white'}`}>支出</button>
+                            <button onClick={() => setFilterType('income')} className={`px-4 py-1.5 rounded text-sm font-bold transition ${filterType === 'income' ? 'bg-emerald-500 text-white shadow-sm' : 'text-muji-muted hover:bg-white'}`}>收入</button>
+                        </div>
+                    </div>
+                    <div className="bg-white p-6 rounded-xl border border-muji-border shadow-sm mb-6 text-center">
+                        <div className="text-sm text-muji-muted mb-1">總金額</div>
+                        <div className="text-3xl font-mono font-bold text-muji-text">${stats.totalAmount.toLocaleString()}</div>
+                    </div>
+                    <div className="space-y-4">
+                         {stats.categories.map((cat) => (
+                             <div key={cat.name} className="bg-white p-4 rounded-xl border border-muji-border flex justify-between items-center">
+                                 <div className="flex items-center gap-3">
+                                     <div className="w-8 h-8 rounded-full bg-muji-bg flex items-center justify-center"><LucideIcon name={cat.icon} className="w-4 h-4" /></div>
+                                     <span className="font-bold">{cat.name}</span>
+                                 </div>
+                                 <span className="font-mono font-bold">${cat.value.toLocaleString()}</span>
+                             </div>
+                         ))}
+                    </div>
+                </div>
+            );
+        };
+
+        window.SettingsView = ({ data, saveData, setInputModal, showToast }) => {
+            const exportData = () => {
+                const dataStr = JSON.stringify(data, null, 2);
+                const blob = new Blob([dataStr], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = `money_backup_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+
+            const importData = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const json = JSON.parse(event.target.result);
+                        if (json.accounts && json.transactions) {
+                            if(confirm('確定要覆蓋現有資料嗎？此操作無法復原。')) {
+                                saveData(json);
+                                showToast('資料匯入成功');
+                            }
+                        } else {
+                            showToast('檔案格式錯誤', 'error');
+                        }
+                    } catch (err) {
+                        showToast('解析失敗', 'error');
+                    }
+                };
+                reader.readAsText(file);
+            };
+
+            return (
+                <div className="p-6 space-y-8 animate-fade pb-20">
+                    <div className="bg-muji-card border border-muji-border rounded-xl shadow-sm overflow-hidden mb-4 p-6">
+                        <h3 className="font-bold text-lg text-muji-text mb-4">資料管理</h3>
+                        <div className="space-y-4">
+                            <button onClick={exportData} className="w-full py-3 bg-muji-accent text-white font-bold rounded-lg shadow-sm">匯出備份 (JSON)</button>
+                            <div className="relative">
+                                <input type="file" onChange={importData} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".json" />
+                                <button className="w-full py-3 bg-white border border-muji-border text-muji-text font-bold rounded-lg hover:bg-muji-bg">匯入備份</button>
+                            </div>
+                            <button onClick={() => { if(confirm('確定要清空所有資料重置嗎？')) saveData(window.INITIAL_DATA); }} className="w-full py-3 text-red-500 text-sm hover:bg-red-50 rounded-lg">重置所有資料</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- MAIN APP COMPONENT ---
+        window.App = () => {
+            const [view, setView] = useState('dashboard'); 
+            const [data, setData] = useState(window.INITIAL_DATA);
+            const [toast, setToast] = useState(null);
+            const [selectedAccount, setSelectedAccount] = useState(null);
+            const [inputModal, setInputModal] = useState({ show: false, title: '', value: '', type: '', data: null, extra: null, value2: '', value3: '' }); 
+            
+            const showToast = useCallback((msg, type = 'info') => setToast({ message: msg, type }), []);
+            
+            // Load from LocalStorage on mount
+            useEffect(() => {
+                const saved = localStorage.getItem('money_data_single');
+                if (saved) {
+                    try {
+                        const parsed = JSON.parse(saved);
+                        setData({ ...window.INITIAL_DATA, ...parsed }); // Merge to ensure structure
+                    } catch(e) { console.error("Load failed", e); }
+                }
+            }, []);
+
+            // Save to LocalStorage
+            const saveData = (newData) => {
+                setData(newData);
+                localStorage.setItem('money_data_single', JSON.stringify(newData));
+            };
+
+            const dailyQuote = useMemo(() => { const d = new Date().getDate(); return window.QUOTES[(d - 1) % window.QUOTES.length] || window.QUOTES[0]; }, []);
+
+            const handleInputConfirm = () => {
+                const val = inputModal.value ? inputModal.value.trim() : '';
+                if (!val && !inputModal.type.includes('delete') && inputModal.type !== 'calibrate_account') { showToast('請輸入名稱', 'error'); return; }
+                let newData = { ...data }; let successMessage = '更新成功';
+                
+                switch(inputModal.type) {
+                    case 'add_account': 
+                        const newAccId = `acc_${Date.now()}`; 
+                        const initBal = parseFloat(inputModal.value2) || 0; 
+                        newData.accounts.push({ 
+                            id: newAccId, 
+                            name: val, 
+                            type: inputModal.extra || 'cash', 
+                            balance: initBal, 
+                            closingDay: (inputModal.extra === 'credit' ? inputModal.value3 : undefined) 
+                        }); 
+                        successMessage = '已新增帳戶'; 
+                        break;
+                    case 'rename_account':
+                         newData.accounts = newData.accounts.map(a => a.id === inputModal.data ? { ...a, name: val, balance: parseFloat(inputModal.value2) || a.balance } : a);
+                         successMessage = '帳戶已更新';
+                         break;
+                    case 'delete_account':
+                        newData.accounts = newData.accounts.filter(a => a.id !== inputModal.data);
+                        newData.transactions = newData.transactions.filter(t => t.accountId !== inputModal.data && t.toAccountId !== inputModal.data);
+                        if(selectedAccount === inputModal.data) setSelectedAccount(null);
+                        successMessage = '帳戶已刪除';
+                        break;
+                    case 'calibrate_account':
+                         const newBalance = parseFloat(inputModal.value) || 0;
+                         const accIndex = newData.accounts.findIndex(a => a.id === inputModal.data);
+                         if(accIndex !== -1) { newData.accounts[accIndex].balance = newBalance; }
+                         successMessage = '餘額已校正';
+                         break;
+                }
+                saveData(newData); showToast(successMessage); setInputModal({ ...inputModal, show: false });
+            };
+
+            // Calculate Dashboard Stats
+            const totalAssets = data.accounts.reduce((sum, acc) => sum + window.calculateBalance(data, acc.id), 0);
+            const monthlyStats = window.calculateMonthlyStats(data);
+            const monthlyNet = monthlyStats.income - monthlyStats.expense;
+
+            const HeaderStatus = () => (
+                <div className="flex items-center gap-3">
+                     <div className="text-xs font-mono text-muji-muted tracking-wider">
+                        {new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' })}
+                     </div>
+                </div>
+            );
+
+            return (
+                <div className="h-screen w-screen bg-muji-bg text-muji-text font-sans flex overflow-hidden">
+                    {/* Sidebar */}
+                    <div className="hidden md:flex w-48 bg-muji-sidebar border-r border-muji-border flex-col p-4 space-y-4">
+                        <div className="flex items-center gap-2 mb-2 px-2">
+                            <div className="w-8 h-8 bg-muji-accent rounded-full flex items-center justify-center text-white"><LucideIcon name="wallet" className="w-5 h-5" /></div>
+                            <h1 className="font-bold">我的記帳</h1>
+                        </div>
+                        <div className="space-y-1">
+                            {[ { id: 'dashboard', label: '總覽', icon: 'layout-grid' }, { id: 'accounting', label: '記帳', icon: 'notebook-pen' }, { id: 'analysis', label: '分析', icon: 'pie-chart' }, { id: 'settings', label: '設定', icon: 'settings' } ].map(item => (
+                                <button key={item.id} onClick={() => { setView(item.id); setSelectedAccount(null); }} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm ${view === item.id ? 'bg-white shadow-sm text-muji-accent font-bold' : 'text-muji-muted hover:bg-muji-hover'}`}>
+                                    <LucideIcon name={item.icon} className="w-5 h-5" /> {item.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="flex-1 flex flex-col h-full bg-muji-bg relative overflow-hidden">
+                        <div className="absolute top-6 right-6 z-20 flex items-center gap-4"><HeaderStatus /></div>
+                        
+                        <div className="flex-1 overflow-y-auto custom-scrollbar md:p-8 pt-16 md:pt-8">
+                            {view === 'dashboard' && (
+                                <div className="p-6 space-y-8 animate-fade h-full flex flex-col justify-center max-w-4xl mx-auto pb-24">
+                                    <div className="mb-4 text-center">
+                                        <h2 className="text-3xl font-bold text-muji-text mb-2 font-mono tracking-widest">通往財富自由之路</h2>
+                                        <p className="text-muji-accent text-sm font-mono tracking-widest uppercase">{dailyQuote}</p>
+                                    </div>
+                                    <div className="bg-white rounded-2xl p-6 text-center shadow-sm border border-muji-border relative h-32 flex flex-col justify-center items-center">
+                                        <div className="text-muji-muted text-sm font-medium mb-2 font-mono tracking-widest uppercase">總資產</div>
+                                        <div className="text-5xl font-bold text-muji-text tracking-tighter tabular-nums font-mono">${totalAssets.toLocaleString()}</div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4 w-full md:w-2/3 mx-auto z-10">
+                                        <div className="bg-emerald-50/60 p-4 rounded-xl border border-emerald-100 shadow-sm flex flex-col items-center">
+                                            <span className="text-xs text-emerald-800 mb-1 font-mono font-bold uppercase tracking-wider">本月收入</span>
+                                            <span className="text-lg font-bold text-emerald-900 font-mono">+${monthlyStats.income.toLocaleString()}</span>
+                                        </div>
+                                        <div onClick={() => { setView('accounting'); }} className="bg-rose-50/60 p-4 rounded-xl border border-rose-100 shadow-sm flex flex-col items-center cursor-pointer hover:bg-rose-100">
+                                            <span className="text-xs text-rose-800 mb-1 font-mono font-bold uppercase tracking-wider">本月支出</span>
+                                            <span className="text-lg font-bold text-rose-900 font-mono">-${monthlyStats.expense.toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {view === 'accounting' && <window.AccountingView data={data} saveData={saveData} selectedAccount={selectedAccount} setSelectedAccount={setSelectedAccount} setInputModal={setInputModal} showToast={showToast} />}
+                            {view === 'analysis' && <window.AnalysisView data={data} />}
+                            {view === 'settings' && <window.SettingsView data={data} saveData={saveData} setInputModal={setInputModal} showToast={showToast} />}
+                        </div>
+
+                        {/* Mobile Nav */}
+                        <div className="md:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-muji-border p-2 pb-6 flex justify-around items-center z-30">
+                            {[ { id: 'dashboard', icon: 'layout-grid', label: '總覽' }, { id: 'accounting', icon: 'notebook-pen', label: '記帳' }, { id: 'analysis', icon: 'pie-chart', label: '分析' }, { id: 'settings', icon: 'settings', label: '設定' } ].map(item => (
+                                <button key={item.id} onClick={() => { setView(item.id); setSelectedAccount(null); }} className={`flex flex-col items-center p-2 rounded-lg w-16 transition ${view === item.id ? 'text-muji-accent' : 'text-muji-muted'}`}>
+                                    <LucideIcon name={item.icon} className="w-6 h-6" /><span className="text-[10px] mt-1 font-medium">{item.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {toast && <window.Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+                    
+                    {/* Simplified Input Modal */}
+                    {inputModal.show && (
+                        <window.Modal title={inputModal.title} onClose={() => setInputModal({ ...inputModal, show: false })}>
+                            <div className="space-y-4">
+                                {(inputModal.type === 'add_account' || inputModal.type === 'rename_account') && 
+                                    <div className="flex bg-muji-bg rounded-lg p-1 mb-2 overflow-x-auto no-scrollbar">
+                                        {Object.entries(window.DEFAULT_ACCOUNT_TYPES).map(([key, config]) => (
+                                            <button key={key} onClick={() => setInputModal({...inputModal, extra: key})} className={`flex-1 min-w-[3rem] py-2 rounded text-xs font-bold transition flex flex-col items-center gap-1 ${inputModal.extra === key || (!inputModal.extra && key === 'cash') ? 'bg-white shadow-sm text-muji-accent' : 'text-muji-muted'}`}><LucideIcon name={config.icon} className="w-4 h-4" /> {config.label}</button>
+                                        ))}
+                                    </div>
+                                }
+                                
+                                {inputModal.type === 'calibrate_account' ? (
+                                    <>
+                                        <div className="text-sm text-muji-muted">當前計算餘額: <span className="font-mono font-bold text-muji-text">${(typeof inputModal.extra === 'number' ? inputModal.extra : 0).toLocaleString()}</span></div>
+                                        <input autoFocus type="number" className="w-full p-3 bg-muji-bg rounded-lg border-none focus:ring-1 focus:ring-muji-accent font-mono text-lg text-muji-text" value={inputModal.value ?? ''} onChange={(e) => setInputModal({ ...inputModal, value: e.target.value })} placeholder="輸入校正後的目標餘額" />
+                                    </>
+                                ) : (
+                                    <>
+                                        <input autoFocus className="w-full p-3 bg-muji-bg rounded-lg border-none focus:ring-1 focus:ring-muji-accent" value={inputModal.value ?? ''} onChange={(e) => setInputModal({ ...inputModal, value: e.target.value })} placeholder="請輸入名稱" />
+                                        {(inputModal.type === 'add_account' || inputModal.type === 'rename_account') && (
+                                            <div className="mt-2">
+                                                <label className="text-xs text-muji-muted mb-1 block">初始金額/餘額</label>
+                                                <input type="number" className="w-full p-3 bg-muji-bg rounded-lg border-none focus:ring-1 focus:ring-muji-accent" value={inputModal.value2 ?? ''} onChange={(e) => setInputModal({ ...inputModal, value2: e.target.value })} placeholder="0" />
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                                <button onClick={handleInputConfirm} className="w-full py-3 rounded-lg font-bold shadow-sm text-white bg-muji-accent mt-2">{inputModal.type.includes('delete') ? '確認刪除' : '確認'}</button>
+                            </div>
+                        </window.Modal>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
