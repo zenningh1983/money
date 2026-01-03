@@ -69,7 +69,7 @@
         // --- GITHUB CONFIGURATION ---
         const CONFIG_GITHUB_TOKEN = "2HeFl4D7QeZLTRCf0SG97fD6UyjM2Y0F6uyl"; 
         const CONFIG_REPO_BASE = "zenningh1983/money"; 
-        const CONFIG_FILE_PATH = "accounting/money_data.json"; // Update path
+        const CONFIG_FILE_PATH = "accounting/money_data.json"; 
 
         const GITHUB_CONFIG = {
             ENABLED: true,
@@ -874,6 +874,24 @@
                 return getFilteredTransactions();
             }, [selectedAccount, getFilteredTransactions]);
 
+            // [FIXED] - Added back currentMonthStats calculation
+            const currentMonthStats = useMemo(() => {
+                let income = 0;
+                let expense = 0;
+                filteredTxs.forEach(t => {
+                    if (t.type === 'income') income += (t.amount || 0);
+                    if (t.type === 'expense') {
+                        let myAmount = t.amount || 0;
+                        if (t.splits && t.splits.length > 0) {
+                             const others = t.splits.reduce((acc, s) => s.owner !== 'me' ? acc + (parseFloat(s.amount)||0) : acc, 0);
+                             myAmount -= others;
+                        }
+                        expense += myAmount;
+                    }
+                });
+                return { income, expense };
+            }, [filteredTxs]);
+
             const groupedTxs = []; 
             let skipIds = new Set();
             filteredTxs.forEach(tx => {
@@ -1247,10 +1265,6 @@
             );
         };
 
-        // --- OTHER VIEWS (Debt, Wealth, Analysis, Settings) from user files, adapted for single user ---
-        // (For brevity, I'm embedding the essential logic directly or assuming they are loaded similarly. 
-        //  The key changes were removing userId checks. I will implement simplified versions here.)
-
         const AnalysisView = ({ data }) => {
             const [filterType, setFilterType] = useState('expense'); 
             const [period, setPeriod] = useState('month'); 
@@ -1567,7 +1581,6 @@
 
         const AppLayout = ({ children, view, setView, syncStatus, selectedAccount, setSelectedAccount, onResetWealth, onResetDebt, data }) => {
             const [isCollapsed, setIsCollapsed] = useState(false);
-            const debts = useMemo(() => getDebtSummary(data), [data.transactions]);
             
             return (
                 <div className="h-screen w-screen bg-muji-bg text-muji-text font-sans flex overflow-hidden">
