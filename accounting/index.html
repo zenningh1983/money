@@ -874,7 +874,6 @@
                 return getFilteredTransactions();
             }, [selectedAccount, getFilteredTransactions]);
 
-            // [FIXED] - Added back currentMonthStats calculation
             const currentMonthStats = useMemo(() => {
                 let income = 0;
                 let expense = 0;
@@ -1035,7 +1034,7 @@
                        {selectedTxIds.length > 0 && (<div className="mb-4 flex justify-between items-center bg-muji-red/10 p-2 rounded-lg border border-muji-red/30 mx-4 md:mx-0"><span className="text-xs text-muji-red font-bold ml-2">已選取 {selectedTxIds.length} 筆</span><button onClick={() => setShowDeleteBatchConfirm(true)} className="text-xs bg-muji-red text-white px-3 py-1.5 rounded font-bold hover:opacity-80">刪除</button></div>)}
 
                        <div className="flex-1 overflow-y-auto bg-white mx-4 md:mx-0 mb-20 md:mb-0 rounded-xl border border-muji-border min-h-[50vh] max-h-[calc(100vh-250px)] relative flex flex-col">
-                            <div className="bg-muji-bg text-muji-muted font-medium border-b border-muji-border flex text-sm shadow-sm z-20 sticky top-0 grid grid-cols-[5rem_6rem_4rem_7rem_6rem_6rem_1fr] items-center">
+                            <div className="bg-muji-bg text-muji-muted font-medium border-b border-muji-border flex text-sm shadow-sm z-20 sticky top-0 grid grid-cols-7 items-center">
                                 <div className="p-4 flex justify-center"><input type="checkbox" className="w-4 h-4 accent-muji-accent cursor-pointer" checked={filteredTxs.length > 0 && selectedTxIds.length === filteredTxs.length} onChange={() => toggleSelectAll(filteredTxs)} /></div>
                                 <div className="p-4 text-center">日期</div>
                                 <div className="p-4 text-center">類型</div>
@@ -1054,7 +1053,7 @@
                                             const totalAmt = tx.totalAmount;
                                             return (
                                                 <React.Fragment key={tx.id}>
-                                                    <div onClick={() => toggleGroup(tx.linkId)} className="grid grid-cols-[5rem_6rem_4rem_7rem_6rem_6rem_1fr] items-center border-b border-muji-border/50 bg-gray-50/80 hover:bg-gray-100 font-bold cursor-pointer transition-colors text-sm">
+                                                    <div onClick={() => toggleGroup(tx.linkId)} className="grid grid-cols-7 items-center border-b border-muji-border/50 bg-gray-50/80 hover:bg-gray-100 font-bold cursor-pointer transition-colors text-sm">
                                                         <div className="p-4 flex justify-center">
                                                             <span key={isExpanded ? "exp" : "col"} className="flex items-center justify-center">
                                                                 <LucideIcon name={isExpanded ? "chevron-down" : "chevron-right"} className="w-4 h-4 text-muji-muted" />
@@ -1080,7 +1079,7 @@
                                                         const balance = balanceMap[subTx.id];
                                                         const isSettled = subTx.isSettled; 
                                                         return (
-                                                            <div key={subTx.id} onClick={() => openEdit(subTx)} className={`grid grid-cols-[5rem_6rem_4rem_7rem_6rem_6rem_1fr] items-center border-b border-muji-border/50 hover:bg-muji-hover transition-colors bg-white cursor-pointer text-sm ${isSettled ? 'opacity-50' : ''}`}>
+                                                            <div key={subTx.id} onClick={() => openEdit(subTx)} className={`grid grid-cols-7 items-center border-b border-muji-border/50 hover:bg-muji-hover transition-colors bg-white cursor-pointer text-sm ${isSettled ? 'opacity-50' : ''}`}>
                                                                 <div className="p-4 flex justify-center gap-2 pl-6 border-l-4 border-muji-accent/20"><button onClick={(e) => { e.stopPropagation(); handleDuplicateTx(subTx); }} className="p-1 text-muji-muted hover:text-muji-accent"><LucideIcon name="copy" className="w-3.5 h-3.5" /></button><button onClick={(e) => { e.stopPropagation(); handleDelete(subTx); }} className="p-1 text-muji-muted hover:text-muji-red" title="刪除並回補"><LucideIcon name="trash-2" className="w-3.5 h-3.5" /></button></div>
                                                                 <div className="p-4 text-center opacity-0">-</div> 
                                                                 <div className={`p-4 text-center font-bold ${txType.color} text-xs px-1 whitespace-nowrap ${isSettled ? 'line-through decoration-muji-text/50' : ''}`}>{txType.label}</div>
@@ -1090,7 +1089,7 @@
                                                                     </span>
                                                                 }<span className="truncate">{display}</span></div>
                                                                 <div className={`p-4 text-right font-mono font-bold ${textColorClass} text-xs ${isSettled ? 'line-through decoration-muji-text/50' : ''}`}>{sign}${subTx.amount.toLocaleString()}</div>
-                                                                <div className={`p-4 text-right font-mono text-xs text-muji-muted`}>{balance?.toLocaleString()}</div>
+                                                                <div className={`p-4 text-right font-mono text-xs text-muji-muted`}>${balance?.toLocaleString()}</div>
                                                                 <div className={`p-4 pl-4 text-left text-muji-muted text-xs truncate ${isSettled ? 'line-through' : ''}`}>{subTx.note}{isSettled ? ' (已結清)' : ''}</div>
                                                             </div>
                                                         );
@@ -1111,7 +1110,7 @@
                                             const isSettled = tx.isSettled; 
 
                                             return (
-                                                <div key={tx.id} onClick={() => openEdit(tx)} className={`grid grid-cols-[5rem_6rem_4rem_7rem_6rem_6rem_1fr] items-center border-b border-muji-border/50 hover:bg-muji-hover transition-colors cursor-pointer text-sm ${isSettled ? 'opacity-50' : ''}`}>
+                                                <div key={tx.id} onClick={() => openEdit(tx)} className={`grid grid-cols-7 items-center border-b border-muji-border/50 hover:bg-muji-hover transition-colors cursor-pointer text-sm ${isSettled ? 'opacity-50' : ''}`}>
                                                     <div className="p-4 flex justify-center gap-2" onClick={(e) => e.stopPropagation()}>
                                                         <input type="checkbox" className="w-4 h-4 accent-muji-accent cursor-pointer" checked={selectedTxIds.includes(tx.id)} onChange={() => toggleSelectTx(tx.id)} />
                                                         <button onClick={(e) => { e.stopPropagation(); handleDuplicateTx(tx); }} className="p-1 text-muji-muted hover:text-muji-accent transition-colors" title="複製並新增一筆"><LucideIcon name="copy" className="w-3.5 h-3.5" /></button>
@@ -1264,6 +1263,10 @@
                 </div>
             );
         };
+
+        // --- OTHER VIEWS (Debt, Wealth, Analysis, Settings) from user files, adapted for single user ---
+        // (For brevity, I'm embedding the essential logic directly or assuming they are loaded similarly. 
+        //  The key changes were removing userId checks. I will implement simplified versions here.)
 
         const AnalysisView = ({ data }) => {
             const [filterType, setFilterType] = useState('expense'); 
@@ -1579,7 +1582,7 @@
             );
         };
 
-        const AppLayout = ({ children, view, setView, syncStatus, selectedAccount, setSelectedAccount, onResetWealth, onResetDebt, data }) => {
+        const AppLayout = ({ children, view, setView, syncStatus, selectedAccount, setSelectedAccount, onResetDebt, data }) => {
             const [isCollapsed, setIsCollapsed] = useState(false);
             
             return (
@@ -1770,7 +1773,6 @@
                     syncStatus={syncStatus} 
                     selectedAccount={selectedAccount} 
                     setSelectedAccount={setSelectedAccount} 
-                    onResetWealth={() => {}} 
                     onResetDebt={() => setViewingDebtTarget(null)} 
                     data={data}
                 >
