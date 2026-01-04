@@ -5138,6 +5138,20 @@
       "tax": 43037,
       "realizedDividend": 0,
       "note": ""
+    },
+    {
+      "id": "6cd1b167-ee80-4495-9127-921a4592f789",
+      "date": "2009-12-11",
+      "name": "6153",
+      "symbol": "6153",
+      "type": "sell",
+      "price": 24.9,
+      "qty": 1000,
+      "fee": 96,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "d9860c1a-2c70-4aa8-a0d8-fc9d79776548"
     }
   ],
   "prices": {
