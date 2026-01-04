@@ -4360,6 +4360,20 @@
       "tax": 0,
       "realizedDividend": 0,
       "note": ""
+    },
+    {
+      "id": "d6e58a46-2a7b-4928-8d00-df550dd247ac",
+      "date": "2011-03-03",
+      "name": "2426",
+      "symbol": "2426",
+      "type": "sell",
+      "price": 26.2,
+      "qty": 1000,
+      "fee": 101,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "e79529d2-d505-486b-9be5-13b8aa40db22"
     }
   ],
   "prices": {
