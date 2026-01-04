@@ -5072,6 +5072,19 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "09df23d2-7b7b-4e3b-8094-30ad8e052fb8"
+    },
+    {
+      "id": "49659012-e2fb-4284-ba9e-8613f0cbc578",
+      "date": "2009-10-12",
+      "name": "華上",
+      "symbol": "6289",
+      "type": "buy",
+      "price": 12.95,
+      "qty": 1000,
+      "fee": 18,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": ""
     }
   ],
   "prices": {
