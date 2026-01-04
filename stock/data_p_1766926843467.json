@@ -5984,6 +5984,19 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "02b49d8c-a7e4-4d9d-9874-39ef8cc533d7"
+    },
+    {
+      "id": "789daff9-9a15-49f4-845e-ae6032e692ad",
+      "date": "2011-08-17",
+      "name": "中化生",
+      "symbol": "1762",
+      "type": "buy",
+      "price": 61,
+      "qty": 1000,
+      "fee": 52,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": ""
     }
   ],
   "prices": {
