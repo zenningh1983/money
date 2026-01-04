@@ -5863,7 +5863,7 @@
     {
       "id": "24d2706f-aed1-4caa-947e-1e5c22256ab8",
       "date": "2012-08-13",
-      "name": "5902",
+      "name": "德記",
       "symbol": "5902",
       "type": "sell",
       "price": 13.5,
@@ -6177,6 +6177,12 @@
       "dividendFreq": "年配",
       "price": 20.078,
       "updatedAt": "2026-01-04T10:36:48.026Z"
+    },
+    "5902": {
+      "stockType": "個股",
+      "dividendFreq": "無",
+      "price": 44.75,
+      "updatedAt": "2026-01-04T14:15:32.349Z"
     },
     "6153": {
       "stockType": "個股",
