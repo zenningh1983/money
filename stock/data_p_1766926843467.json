@@ -5183,6 +5183,19 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "ffb40505-6fb8-4fcd-8c5b-6ed168bb0cf3"
+    },
+    {
+      "id": "1a3ed8e1-ea3a-425f-9b3a-7f2974097599",
+      "date": "2009-11-11",
+      "name": "台苯",
+      "symbol": "1310",
+      "type": "buy",
+      "price": 13.5,
+      "qty": 2000,
+      "fee": 38,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": ""
     }
   ],
   "prices": {
