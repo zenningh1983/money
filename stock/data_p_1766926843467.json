@@ -5832,6 +5832,20 @@
       "computedPL": 593.9999999999964,
       "computedROI": 0.018317503392130143,
       "isGrouped": true
+    },
+    {
+      "id": "e2f6b297-d36d-4982-807e-cd5df9323a0b",
+      "date": "2012-09-12",
+      "name": "1444",
+      "symbol": "1444",
+      "type": "sell",
+      "price": 10.8,
+      "qty": 90,
+      "fee": 4,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "6df23d32-aa47-4324-9b5d-3fcfb433e034"
     }
   ],
   "prices": {
