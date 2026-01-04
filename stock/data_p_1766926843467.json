@@ -4404,7 +4404,10 @@
       "tax": 28,
       "realizedDividend": 0,
       "note": "",
-      "relatedBuyId": "5b9a4266-0862-4499-b818-b75128b151b9"
+      "relatedBuyId": "5b9a4266-0862-4499-b818-b75128b151b9",
+      "computedPL": -2302,
+      "computedROI": -0.19317266380236306,
+      "isGrouped": true
     }
   ],
   "prices": {
