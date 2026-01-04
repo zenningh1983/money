@@ -4888,6 +4888,20 @@
       "computedPL": 3545.0000000000146,
       "computedROI": 0.033446236001170054,
       "isGrouped": true
+    },
+    {
+      "id": "a60f0bdc-a30e-47e7-ba11-429f6b73b457",
+      "date": "2023-12-25",
+      "name": "0056",
+      "symbol": "0056",
+      "type": "sell",
+      "price": 36.65,
+      "qty": 5000,
+      "fee": 157,
+      "tax": 183,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "8580bda7-5357-40cd-89db-225b9a1c7624"
     }
   ],
   "prices": {
