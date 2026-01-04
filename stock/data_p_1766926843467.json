@@ -5318,6 +5318,58 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "67c0593f-450d-4e88-9767-f5ecbd94be9e"
+    },
+    {
+      "id": "4e8aa966-72ef-41bb-bf0c-3987e09bd3aa",
+      "date": "2011-08-05",
+      "name": "大量",
+      "symbol": "3167",
+      "type": "buy",
+      "price": 40,
+      "qty": 3000,
+      "fee": 103,
+      "tax": 120103,
+      "realizedDividend": 0,
+      "note": ""
+    },
+    {
+      "id": "4dc71e9f-977e-4b74-a046-ebd0e6d7540d",
+      "date": "2011-09-28",
+      "name": "大量",
+      "symbol": "3167",
+      "type": "buy",
+      "price": 33.8,
+      "qty": 2000,
+      "fee": 58,
+      "tax": 67658,
+      "realizedDividend": 0,
+      "note": ""
+    },
+    {
+      "id": "ad4a0735-185b-4111-803c-4ed3bfb8070a",
+      "date": "2012-10-26",
+      "name": "大量",
+      "symbol": "3167",
+      "type": "buy",
+      "price": 33,
+      "qty": 1000,
+      "fee": 28,
+      "tax": 33028,
+      "realizedDividend": 0,
+      "note": ""
+    },
+    {
+      "id": "19178405-0b6f-4458-a16b-316d730ebef0",
+      "date": "2012-11-08",
+      "name": "大量",
+      "symbol": "3167",
+      "type": "buy",
+      "price": 29,
+      "qty": 1000,
+      "fee": 25,
+      "tax": 29025,
+      "realizedDividend": 0,
+      "note": ""
     }
   ],
   "prices": {
