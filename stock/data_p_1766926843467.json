@@ -5698,6 +5698,20 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "2542e14f-fcc2-4ce7-b693-3fe86e2b5902"
+    },
+    {
+      "id": "14a291a1-fd85-4825-ad25-67b9f0339d85",
+      "date": "2023-10-16",
+      "name": "4904",
+      "symbol": "4904",
+      "type": "sell",
+      "price": 75,
+      "qty": 1000,
+      "fee": 64,
+      "tax": 225,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "83d2e7f4-7917-4204-9f28-26c99f342daf"
     }
   ],
   "prices": {
