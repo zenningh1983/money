@@ -5886,6 +5886,20 @@
       "tax": 66056,
       "realizedDividend": 0,
       "note": ""
+    },
+    {
+      "id": "a0649480-4ef2-4e2d-9fe5-be13c6441d0d",
+      "date": "2012-08-16",
+      "name": "3265",
+      "symbol": "3265",
+      "type": "sell",
+      "price": 34.1,
+      "qty": 2000,
+      "fee": 263,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "346ad53b-d1ea-4ad8-8919-00a936272f50"
     }
   ],
   "prices": {
