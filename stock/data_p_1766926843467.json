@@ -5795,12 +5795,12 @@
       "name": "力麗",
       "symbol": "1444",
       "type": "buy",
-      "price": 2012,
-      "qty": 5,
-      "fee": 16,
+      "price": null,
+      "qty": 90,
+      "fee": null,
       "tax": 90,
       "realizedDividend": 0,
-      "note": ""
+      "note": "股票股利"
     }
   ],
   "prices": {
