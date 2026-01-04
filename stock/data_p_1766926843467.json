@@ -4954,9 +4954,12 @@
       "qty": 1000,
       "fee": 28,
       "tax": 33,
-      "realizedDividend": 0,
+      "realizedDividend": 9934,
       "note": "",
-      "relatedBuyId": "cbc192ee-79dc-4190-a4d2-9260b2b8356e"
+      "relatedBuyId": "cbc192ee-79dc-4190-a4d2-9260b2b8356e",
+      "computedPL": 3164,
+      "computedROI": 0.10626364399664148,
+      "isGrouped": true
     }
   ],
   "prices": {
