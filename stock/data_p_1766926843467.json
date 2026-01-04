@@ -4391,6 +4391,20 @@
       "computedPL": -6382,
       "computedROI": -0.2097548149608887,
       "isGrouped": true
+    },
+    {
+      "id": "2aee8d8e-ef3b-4296-8c98-98d45c56857b",
+      "date": "2018-07-04",
+      "name": "2426",
+      "symbol": "2426",
+      "type": "sell",
+      "price": 24.65,
+      "qty": 392,
+      "fee": 20,
+      "tax": 28,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "5b9a4266-0862-4499-b818-b75128b151b9"
     }
   ],
   "prices": {
