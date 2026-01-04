@@ -5018,6 +5018,19 @@
       "computedPL": 5158.029999999999,
       "computedROI": 0.0708326301150632,
       "isGrouped": true
+    },
+    {
+      "id": "321f9e22-f058-41b8-9ee8-006ee712c9c3",
+      "date": "2009-11-11",
+      "name": "亞泥",
+      "symbol": "1102",
+      "type": "buy",
+      "price": 35.3,
+      "qty": 2000,
+      "fee": 99,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": ""
     }
   ],
   "prices": {
