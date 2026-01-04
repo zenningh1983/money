@@ -4997,7 +4997,7 @@
       "type": "buy",
       "price": 35.3,
       "qty": 2060,
-      "fee": -2118,
+      "fee": -2019,
       "tax": 0,
       "realizedDividend": 0,
       "note": "股票股利 60"
