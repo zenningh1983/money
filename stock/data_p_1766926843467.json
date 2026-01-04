@@ -4516,6 +4516,19 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "232e5e9b-26a9-4059-bd81-bae960ad56f3"
+    },
+    {
+      "id": "03b3c009-567b-49bb-872f-c085a8d0324b",
+      "date": "2010-12-10",
+      "name": "0056",
+      "symbol": "0056",
+      "type": "buy",
+      "price": 27.11,
+      "qty": 1000,
+      "fee": 23,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": ""
     }
   ],
   "prices": {
