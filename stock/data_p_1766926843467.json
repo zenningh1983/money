@@ -5762,6 +5762,45 @@
       "computedPL": 848,
       "computedROI": 0.02698316734018519,
       "isGrouped": true
+    },
+    {
+      "id": "5695759e-3a98-4062-81a6-d5d16669ec25",
+      "date": "2012-04-30",
+      "name": "力麗",
+      "symbol": "1444",
+      "type": "buy",
+      "price": 10.4,
+      "qty": 2000,
+      "fee": 18,
+      "tax": 20818,
+      "realizedDividend": 0,
+      "note": ""
+    },
+    {
+      "id": "03616ab5-56ee-4022-9e7d-e6a2cbeaa10e",
+      "date": "2012-05-16",
+      "name": "力麗",
+      "symbol": "1444",
+      "type": "buy",
+      "price": 10.8,
+      "qty": 3000,
+      "fee": 28,
+      "tax": 32428,
+      "realizedDividend": 0,
+      "note": ""
+    },
+    {
+      "id": "6df23d32-aa47-4324-9b5d-3fcfb433e034",
+      "date": "2012-05-16",
+      "name": "力麗",
+      "symbol": "1444",
+      "type": "buy",
+      "price": 2012,
+      "qty": 5,
+      "fee": 16,
+      "tax": 90,
+      "realizedDividend": 0,
+      "note": ""
     }
   ],
   "prices": {
