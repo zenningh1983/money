@@ -5805,7 +5805,7 @@
     {
       "id": "ef2498e2-3c56-4d48-b0ad-ebdd4bc2b07c",
       "date": "2012-05-02",
-      "name": "1444",
+      "name": "力麗",
       "symbol": "1444",
       "type": "sell",
       "price": 11.2,
@@ -5819,7 +5819,7 @@
     {
       "id": "37241710-e4ba-4bf7-b788-ead1dd6f43da",
       "date": "2012-08-15",
-      "name": "1444",
+      "name": "力麗",
       "symbol": "1444",
       "type": "sell",
       "price": 11.05,
@@ -5836,7 +5836,7 @@
     {
       "id": "e2f6b297-d36d-4982-807e-cd5df9323a0b",
       "date": "2012-09-12",
-      "name": "1444",
+      "name": "力麗",
       "symbol": "1444",
       "type": "sell",
       "price": 10.8,
@@ -5903,9 +5903,9 @@
     },
     "1444": {
       "stockType": "個股",
-      "dividendFreq": "無",
+      "dividendFreq": "年配",
       "price": 5.97,
-      "updatedAt": "2026-01-04T11:08:30.281Z"
+      "updatedAt": "2026-01-04T14:14:17.476Z"
     },
     "1447": {
       "price": 5.33,
