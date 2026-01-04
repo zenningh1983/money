@@ -5099,6 +5099,45 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "49659012-e2fb-4284-ba9e-8613f0cbc578"
+    },
+    {
+      "id": "d9860c1a-2c70-4aa8-a0d8-fc9d79776548",
+      "date": "2009-09-21",
+      "name": "嘉聯益",
+      "symbol": "6153",
+      "type": "buy",
+      "price": 24.1,
+      "qty": 1000,
+      "fee": 34,
+      "tax": 24134,
+      "realizedDividend": 0,
+      "note": ""
+    },
+    {
+      "id": "fe1e00e1-1062-4101-9b98-a00baf729ade",
+      "date": "2015-01-16",
+      "name": "嘉聯益",
+      "symbol": "6153",
+      "type": "buy",
+      "price": 34.2,
+      "qty": 1000,
+      "fee": 29,
+      "tax": 34229,
+      "realizedDividend": 0,
+      "note": ""
+    },
+    {
+      "id": "ffb40505-6fb8-4fcd-8c5b-6ed168bb0cf3",
+      "date": "2018-09-12",
+      "name": "嘉聯益",
+      "symbol": "6153",
+      "type": "buy",
+      "price": 43,
+      "qty": 1000,
+      "fee": 37,
+      "tax": 43037,
+      "realizedDividend": 0,
+      "note": ""
     }
   ],
   "prices": {
