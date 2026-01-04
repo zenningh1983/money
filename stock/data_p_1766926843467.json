@@ -5984,6 +5984,20 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "02b49d8c-a7e4-4d9d-9874-39ef8cc533d7"
+    },
+    {
+      "id": "940855a5-baf5-451f-a26d-36e0c1fa5348",
+      "date": "2020-05-05",
+      "name": "1762",
+      "symbol": "1762",
+      "type": "sell",
+      "price": 61.3,
+      "qty": 1000,
+      "fee": 52,
+      "tax": 184,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "0611a7a0-43dd-484a-a312-223dc0c20da0"
     }
   ],
   "prices": {
