@@ -5370,6 +5370,20 @@
       "tax": 29025,
       "realizedDividend": 0,
       "note": ""
+    },
+    {
+      "id": "15576b69-e1b9-4d30-af28-4650ea5c1cb4",
+      "date": "2012-02-14",
+      "name": "3167",
+      "symbol": "3167",
+      "type": "sell",
+      "price": 40,
+      "qty": 3000,
+      "fee": 463,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "4e8aa966-72ef-41bb-bf0c-3987e09bd3aa"
     }
   ],
   "prices": {
