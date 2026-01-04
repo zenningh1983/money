@@ -4448,6 +4448,20 @@
       "tax": 0,
       "realizedDividend": 0,
       "note": ""
+    },
+    {
+      "id": "382c6aa1-42f4-4fc4-8299-c398667d7c1b",
+      "date": "2011-03-31",
+      "name": "2885",
+      "symbol": "2885",
+      "type": "sell",
+      "price": 21.15,
+      "qty": 2000,
+      "fee": 163,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "ea70d3a4-ba67-42db-ae57-df47fc395925"
     }
   ],
   "prices": {
