@@ -5291,6 +5291,19 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "c2de43b9-5f71-4413-9420-d504ce328cb1"
+    },
+    {
+      "id": "67c0593f-450d-4e88-9767-f5ecbd94be9e",
+      "date": "2011-06-16",
+      "name": "凌群",
+      "symbol": "2453",
+      "type": "buy",
+      "price": 12.4,
+      "qty": 2000,
+      "fee": 21,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": ""
     }
   ],
   "prices": {
