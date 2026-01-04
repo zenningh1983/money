@@ -5152,6 +5152,20 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "d9860c1a-2c70-4aa8-a0d8-fc9d79776548"
+    },
+    {
+      "id": "86a907a9-d4e2-45b2-a0f0-78d6c7e033b6",
+      "date": "2017-11-01",
+      "name": "6153",
+      "symbol": "6153",
+      "type": "sell",
+      "price": 37.45,
+      "qty": 1000,
+      "fee": 32,
+      "tax": 112,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "fe1e00e1-1062-4101-9b98-a00baf729ade"
     }
   ],
   "prices": {
