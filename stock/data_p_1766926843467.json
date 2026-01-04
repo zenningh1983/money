@@ -4475,6 +4475,20 @@
       "tax": 0,
       "realizedDividend": 0,
       "note": ""
+    },
+    {
+      "id": "85fd71c4-ab76-4a6b-90b8-2528acf886c5",
+      "date": "2011-04-08",
+      "name": "1905",
+      "symbol": "1905",
+      "type": "sell",
+      "price": 17.1,
+      "qty": 2000,
+      "fee": 132,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "1d4a9564-55de-45aa-a11b-93b1f758668f"
     }
   ],
   "prices": {
