@@ -4996,8 +4996,8 @@
       "symbol": "1102",
       "type": "buy",
       "price": 35.3,
-      "qty": 2000,
-      "fee": 99,
+      "qty": 2060,
+      "fee": -2118,
       "tax": 0,
       "realizedDividend": 0,
       "note": "股票股利 60"
