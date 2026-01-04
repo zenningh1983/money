@@ -5732,6 +5732,19 @@
       "computedPL": -3856,
       "computedROI": -0.04907912991459518,
       "isGrouped": true
+    },
+    {
+      "id": "dcb1ed7f-2fc7-4ece-b969-d853b8944913",
+      "date": "2011-01-05",
+      "name": "和大",
+      "symbol": "1536",
+      "type": "buy",
+      "price": 15.7,
+      "qty": 2000,
+      "fee": 27,
+      "tax": 31427,
+      "realizedDividend": 0,
+      "note": ""
     }
   ],
   "prices": {
