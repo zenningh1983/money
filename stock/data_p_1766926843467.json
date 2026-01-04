@@ -5031,6 +5031,20 @@
       "tax": 0,
       "realizedDividend": 0,
       "note": ""
+    },
+    {
+      "id": "05043b75-90ae-40ae-bd39-0c52d59fd4a2",
+      "date": "2009-10-23",
+      "name": "1702",
+      "symbol": "1702",
+      "type": "sell",
+      "price": 17.65,
+      "qty": 1000,
+      "fee": 78,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "a93f6bc1-8ea6-47fc-96bd-7d1f8de15ec9"
     }
   ],
   "prices": {
@@ -5095,8 +5109,8 @@
     "1702": {
       "stockType": "個股",
       "dividendFreq": "年配",
-      "price": 12.818,
-      "updatedAt": "2026-01-04T10:27:50.199Z"
+      "price": 39.05,
+      "updatedAt": "2026-01-04T10:27:51.942Z"
     },
     "1905": {
       "price": 11.45,
