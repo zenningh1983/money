@@ -4374,6 +4374,20 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "e79529d2-d505-486b-9be5-13b8aa40db22"
+    },
+    {
+      "id": "19733ac4-0574-4b33-98dd-16b79e516332",
+      "date": "2018-07-04",
+      "name": "2426",
+      "symbol": "2426",
+      "type": "sell",
+      "price": 24.15,
+      "qty": 1000,
+      "fee": 34,
+      "tax": 72,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "3c510889-9b93-44ae-a1f7-d4b8616f5028"
     }
   ],
   "prices": {
