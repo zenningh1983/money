@@ -5018,6 +5018,19 @@
       "computedPL": 4999,
       "computedROI": 0.07070821369467743,
       "isGrouped": true
+    },
+    {
+      "id": "a93f6bc1-8ea6-47fc-96bd-7d1f8de15ec9",
+      "date": "2009-09-07",
+      "name": "南僑",
+      "symbol": "1702",
+      "type": "buy",
+      "price": 12.8,
+      "qty": 1000,
+      "fee": 18,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": ""
     }
   ],
   "prices": {
