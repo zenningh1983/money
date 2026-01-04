@@ -5387,6 +5387,20 @@
       "computedPL": -566.0000000000146,
       "computedROI": -0.004712621666403125,
       "isGrouped": true
+    },
+    {
+      "id": "79187578-7681-4003-9749-afb217e8e63e",
+      "date": "2012-02-14",
+      "name": "3167",
+      "symbol": "3167",
+      "type": "sell",
+      "price": 40,
+      "qty": 2000,
+      "fee": 308,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "4dc71e9f-977e-4b74-a046-ebd0e6d7540d"
     }
   ],
   "prices": {
