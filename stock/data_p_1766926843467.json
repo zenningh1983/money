@@ -5415,6 +5415,20 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "ad4a0735-185b-4111-803c-4ed3bfb8070a"
+    },
+    {
+      "id": "be227a62-8a02-4b0b-9015-6f9998887a2f",
+      "date": "2013-02-25",
+      "name": "3167",
+      "symbol": "3167",
+      "type": "sell",
+      "price": 36.2,
+      "qty": 1000,
+      "fee": 140,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "19178405-0b6f-4458-a16b-316d730ebef0"
     }
   ],
   "prices": {
