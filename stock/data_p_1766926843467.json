@@ -4356,7 +4356,7 @@
       "type": "buy",
       "price": 30.4,
       "qty": 392,
-      "fee": null,
+      "fee": -7,
       "tax": 0,
       "realizedDividend": 0,
       "note": ""
