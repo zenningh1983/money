@@ -5846,6 +5846,19 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "6df23d32-aa47-4324-9b5d-3fcfb433e034"
+    },
+    {
+      "id": "8eeb2250-94fc-4190-9437-96aadc261ec3",
+      "date": "2010-10-19",
+      "name": "德記",
+      "symbol": "5902",
+      "type": "buy",
+      "price": 13,
+      "qty": 3000,
+      "fee": 33,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": ""
     }
   ],
   "prices": {
@@ -5905,7 +5918,7 @@
       "stockType": "個股",
       "dividendFreq": "年配",
       "price": 5.97,
-      "updatedAt": "2026-01-04T14:14:17.476Z"
+      "updatedAt": "2026-01-04T14:14:19.665Z"
     },
     "1447": {
       "price": 5.33,
