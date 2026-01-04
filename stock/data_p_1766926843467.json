@@ -5254,7 +5254,7 @@
     {
       "id": "00fcfc45-827f-4f7a-887a-20c6eb9b0adf",
       "date": "2010-08-05",
-      "name": "5854",
+      "name": "合庫",
       "symbol": "5854",
       "type": "sell",
       "price": 22,
@@ -5531,7 +5531,7 @@
       "stockType": "個股",
       "dividendFreq": "年配",
       "price": 20.078,
-      "updatedAt": "2026-01-04T10:34:06.959Z"
+      "updatedAt": "2026-01-04T10:36:48.026Z"
     },
     "6153": {
       "stockType": "個股",
