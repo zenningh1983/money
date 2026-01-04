@@ -5815,6 +5815,20 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "5695759e-3a98-4062-81a6-d5d16669ec25"
+    },
+    {
+      "id": "37241710-e4ba-4bf7-b788-ead1dd6f43da",
+      "date": "2012-08-15",
+      "name": "1444",
+      "symbol": "1444",
+      "type": "sell",
+      "price": 11.05,
+      "qty": 3000,
+      "fee": 128,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "03616ab5-56ee-4022-9e7d-e6a2cbeaa10e"
     }
   ],
   "prices": {
