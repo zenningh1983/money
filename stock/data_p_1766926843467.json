@@ -5001,6 +5001,20 @@
       "tax": 0,
       "realizedDividend": 0,
       "note": ""
+    },
+    {
+      "id": "d6847af4-b4bc-4eae-9d11-91dbd38fb960",
+      "date": "2011-04-29",
+      "name": "1102",
+      "symbol": "1102",
+      "type": "sell",
+      "price": 38,
+      "qty": 2060,
+      "fee": 302,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "d087b755-05d9-49b4-9487-7149cd1cc5ad"
     }
   ],
   "prices": {
