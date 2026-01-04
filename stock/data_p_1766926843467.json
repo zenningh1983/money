@@ -5264,6 +5264,33 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "fd78a154-50b8-4083-a5a7-865e0d1c6af8"
+    },
+    {
+      "id": "c2de43b9-5f71-4413-9420-d504ce328cb1",
+      "date": "2011-08-19",
+      "name": "明泰",
+      "symbol": "3380",
+      "type": "buy",
+      "price": 21.5,
+      "qty": 2000,
+      "fee": 37,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": ""
+    },
+    {
+      "id": "6dec98da-d016-440a-8737-a8c4a1b79387",
+      "date": "2012-01-29",
+      "name": "明泰",
+      "symbol": "3380",
+      "type": "sell",
+      "price": 24.85,
+      "qty": 2000,
+      "fee": 192,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "c2de43b9-5f71-4413-9420-d504ce328cb1"
     }
   ],
   "prices": {
@@ -5474,6 +5501,12 @@
       "updatedAt": "2026-01-04T10:36:58.083Z",
       "stockType": "個股",
       "dividendFreq": "年配"
+    },
+    "3380": {
+      "stockType": "個股",
+      "dividendFreq": "無",
+      "price": 31.65,
+      "updatedAt": "2026-01-04T10:38:28.571Z"
     },
     "3705": {
       "price": 57.1,
