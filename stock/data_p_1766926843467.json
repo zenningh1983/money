@@ -4988,6 +4988,19 @@
       "qty": 1000,
       "fee": 25,
       "note": ""
+    },
+    {
+      "id": "d087b755-05d9-49b4-9487-7149cd1cc5ad",
+      "date": "2009-11-11",
+      "name": "亞泥",
+      "symbol": "1102",
+      "type": "buy",
+      "price": 35.3,
+      "qty": 2000,
+      "fee": 99,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": ""
     }
   ],
   "prices": {
