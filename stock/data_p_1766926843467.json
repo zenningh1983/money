@@ -4462,6 +4462,19 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "ea70d3a4-ba67-42db-ae57-df47fc395925"
+    },
+    {
+      "id": "1d4a9564-55de-45aa-a11b-93b1f758668f",
+      "date": "2010-11-15",
+      "name": "華紙",
+      "symbol": "1905",
+      "type": "buy",
+      "price": 15.3,
+      "qty": 2000,
+      "fee": 26,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": ""
     }
   ],
   "prices": {
