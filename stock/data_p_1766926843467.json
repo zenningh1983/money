@@ -5085,6 +5085,20 @@
       "tax": 0,
       "realizedDividend": 0,
       "note": ""
+    },
+    {
+      "id": "4294688b-28ba-4a5d-8cc7-7578b2dc218c",
+      "date": "2009-12-08",
+      "name": "6289",
+      "symbol": "6289",
+      "type": "sell",
+      "price": 13.65,
+      "qty": 1000,
+      "fee": 53,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "49659012-e2fb-4284-ba9e-8613f0cbc578"
     }
   ],
   "prices": {
