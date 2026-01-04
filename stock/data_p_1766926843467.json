@@ -5819,6 +5819,12 @@
       "stockType": "個股",
       "dividendFreq": "年配"
     },
+    "4904": {
+      "stockType": "個股",
+      "dividendFreq": "年配",
+      "price": 68.27525,
+      "updatedAt": "2026-01-04T10:40:59.038Z"
+    },
     "4938": {
       "price": 68.9,
       "updatedAt": "2026-01-04T10:36:59.115Z",
