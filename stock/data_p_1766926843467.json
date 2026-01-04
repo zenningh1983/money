@@ -5045,6 +5045,19 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "a93f6bc1-8ea6-47fc-96bd-7d1f8de15ec9"
+    },
+    {
+      "id": "09df23d2-7b7b-4e3b-8094-30ad8e052fb8",
+      "date": "2009-09-29",
+      "name": "奇美電",
+      "symbol": "3009",
+      "type": "buy",
+      "price": 16.7,
+      "qty": 1000,
+      "fee": 23,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": ""
     }
   ],
   "prices": {
