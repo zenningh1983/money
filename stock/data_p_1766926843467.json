@@ -4724,6 +4724,20 @@
       "tax": 52605,
       "realizedDividend": 0,
       "note": ""
+    },
+    {
+      "id": "f2a6afe9-c9ca-4965-b62a-bbca90806ea7",
+      "date": "2011-04-27",
+      "name": "0056",
+      "symbol": "0056",
+      "type": "sell",
+      "price": 27.44,
+      "qty": 1000,
+      "fee": 106,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "03b3c009-567b-49bb-872f-c085a8d0324b"
     }
   ],
   "prices": {
