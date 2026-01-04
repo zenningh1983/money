@@ -5009,14 +5009,14 @@
       "symbol": "1102",
       "type": "sell",
       "price": 38,
-      "qty": 2000,
+      "qty": 2060,
       "fee": 302,
       "tax": 0,
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "d087b755-05d9-49b4-9487-7149cd1cc5ad",
-      "computedPL": 5158.029999999999,
-      "computedROI": 0.0708326301150632,
+      "computedPL": 4999,
+      "computedROI": 0.07070821369467743,
       "isGrouped": true
     }
   ],
