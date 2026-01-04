@@ -4489,6 +4489,19 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "1d4a9564-55de-45aa-a11b-93b1f758668f"
+    },
+    {
+      "id": "232e5e9b-26a9-4059-bd81-bae960ad56f3",
+      "date": "2010-11-17",
+      "name": "聯成",
+      "symbol": "1313",
+      "type": "buy",
+      "price": 21.7,
+      "qty": 2000,
+      "fee": 37,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": ""
     }
   ],
   "prices": {
