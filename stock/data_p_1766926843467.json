@@ -5745,6 +5745,20 @@
       "tax": 31427,
       "realizedDividend": 0,
       "note": ""
+    },
+    {
+      "id": "ea20f291-941a-4d5a-a744-5e14a8e4a0cc",
+      "date": "2012-03-08",
+      "name": "1536",
+      "symbol": "1536",
+      "type": "sell",
+      "price": 16.2,
+      "qty": 2000,
+      "fee": 125,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "dcb1ed7f-2fc7-4ece-b969-d853b8944913"
     }
   ],
   "prices": {
