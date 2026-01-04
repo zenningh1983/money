@@ -4950,9 +4950,12 @@
       "qty": 2000,
       "fee": 56,
       "tax": 66,
-      "realizedDividend": 0,
+      "realizedDividend": 19868,
       "note": "",
-      "relatedBuyId": "61e2e4d5-4ecb-4e5c-880a-889c43f5d303"
+      "relatedBuyId": "61e2e4d5-4ecb-4e5c-880a-889c43f5d303",
+      "computedPL": 8569,
+      "computedROI": 0.14952276256783403,
+      "isGrouped": true
     }
   ],
   "prices": {
