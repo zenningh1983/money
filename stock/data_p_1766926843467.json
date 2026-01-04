@@ -4408,6 +4408,19 @@
       "computedPL": -2302,
       "computedROI": -0.19317266380236306,
       "isGrouped": true
+    },
+    {
+      "id": "a96e385d-58eb-420b-9817-4c442ef8c0a2",
+      "date": "2010-11-02",
+      "name": "同亨",
+      "symbol": "5490",
+      "type": "buy",
+      "price": 34,
+      "qty": 2000,
+      "fee": 58,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": ""
     }
   ],
   "prices": {
