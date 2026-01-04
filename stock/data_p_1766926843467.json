@@ -5970,6 +5970,20 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "0611a7a0-43dd-484a-a312-223dc0c20da0"
+    },
+    {
+      "id": "53f0bb94-29c4-414d-98a2-b607b80ca8f6",
+      "date": "2013-04-08",
+      "name": "1762",
+      "symbol": "1762",
+      "type": "sell",
+      "price": 56,
+      "qty": 1000,
+      "fee": 216,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "02b49d8c-a7e4-4d9d-9874-39ef8cc533d7"
     }
   ],
   "prices": {
