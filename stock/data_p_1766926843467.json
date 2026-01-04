@@ -5058,6 +5058,19 @@
       "tax": 0,
       "realizedDividend": 0,
       "note": ""
+    },
+    {
+      "id": "99e9d5c9-118e-46b5-ae49-cb726ad3e57b",
+      "date": "2009-11-11",
+      "name": "3009",
+      "symbol": "3009",
+      "type": "buy",
+      "price": 17.1,
+      "qty": 1000,
+      "fee": 75,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": ""
     }
   ],
   "prices": {
