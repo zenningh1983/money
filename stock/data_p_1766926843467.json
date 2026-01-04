@@ -5264,6 +5264,19 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "fd78a154-50b8-4083-a5a7-865e0d1c6af8"
+    },
+    {
+      "id": "c2de43b9-5f71-4413-9420-d504ce328cb1",
+      "date": "2011-08-19",
+      "name": "明泰",
+      "symbol": "3380",
+      "type": "buy",
+      "price": 21.5,
+      "qty": 2000,
+      "fee": 37,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": ""
     }
   ],
   "prices": {
