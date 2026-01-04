@@ -5250,6 +5250,20 @@
       "tax": 0,
       "realizedDividend": 0,
       "note": ""
+    },
+    {
+      "id": "00fcfc45-827f-4f7a-887a-20c6eb9b0adf",
+      "date": "2010-08-05",
+      "name": "5854",
+      "symbol": "5854",
+      "type": "sell",
+      "price": 22,
+      "qty": 1000,
+      "fee": 85,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "fd78a154-50b8-4083-a5a7-865e0d1c6af8"
     }
   ],
   "prices": {
