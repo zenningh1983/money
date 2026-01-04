@@ -4421,6 +4421,20 @@
       "tax": 0,
       "realizedDividend": 0,
       "note": ""
+    },
+    {
+      "id": "6307b405-5b6b-4260-a8ff-d687620ea74b",
+      "date": "2011-03-21",
+      "name": "5490",
+      "symbol": "5490",
+      "type": "sell",
+      "price": 37.15,
+      "qty": 2000,
+      "fee": 286,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "a96e385d-58eb-420b-9817-4c442ef8c0a2"
     }
   ],
   "prices": {
