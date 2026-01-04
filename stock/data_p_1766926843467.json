@@ -5223,6 +5223,20 @@
       "tax": 0,
       "realizedDividend": 0,
       "note": ""
+    },
+    {
+      "id": "4668729f-8282-42bb-b501-12c9ea1e41c3",
+      "date": "2010-03-08",
+      "name": "2471",
+      "symbol": "2471",
+      "type": "sell",
+      "price": 21.75,
+      "qty": 2000,
+      "fee": 168,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "e12590c0-0d9c-46da-8f10-c6b6e3fe6fa4"
     }
   ],
   "prices": {
