@@ -5859,6 +5859,20 @@
       "tax": 0,
       "realizedDividend": 0,
       "note": ""
+    },
+    {
+      "id": "24d2706f-aed1-4caa-947e-1e5c22256ab8",
+      "date": "2012-08-13",
+      "name": "5902",
+      "symbol": "5902",
+      "type": "sell",
+      "price": 13.5,
+      "qty": 3000,
+      "fee": 156,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "8eeb2250-94fc-4190-9437-96aadc261ec3"
     }
   ],
   "prices": {
