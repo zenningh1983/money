@@ -5169,6 +5169,20 @@
       "computedPL": 3077,
       "computedROI": 0.08989453387478454,
       "isGrouped": true
+    },
+    {
+      "id": "573f9051-ad1d-4939-8c4e-8f203b67f6f5",
+      "date": "2019-02-12",
+      "name": "6153",
+      "symbol": "6153",
+      "type": "sell",
+      "price": 25.3,
+      "qty": 1000,
+      "fee": 22,
+      "tax": 76,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "ffb40505-6fb8-4fcd-8c5b-6ed168bb0cf3"
     }
   ],
   "prices": {
