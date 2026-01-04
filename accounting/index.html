@@ -45,7 +45,6 @@
             font-family: 'Inter', sans-serif; 
             -webkit-tap-highlight-color: transparent; 
         }
-        /* 捲軸美化 */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #D4D4D8; border-radius: 3px; }
@@ -205,7 +204,7 @@
             const debts = {}; 
             data.transactions.forEach(tx => {
                 const amount = tx.amount || 0;
-                if (tx.isSettled) return; // Only count unsettled for the summary card
+                if (tx.isSettled) return; // Only count unsettled items for the summary balance
                 if (tx.type === 'repay' && tx.targetName) debts[tx.targetName] = (debts[tx.targetName] || 0) - amount;
                 if (tx.type === 'expense' && tx.splits && Array.isArray(tx.splits)) {
                     tx.splits.forEach(split => {
@@ -222,7 +221,7 @@
 
         const refreshIcons = () => { if (window.lucide) setTimeout(() => window.lucide.createIcons(), 50); };
 
-        // --- SHARED COMPONENTS ---
+        // --- SHARED COMPONENTS (Defined as CONSTANTS) ---
         const Toast = ({ message, type, onClose }) => {
             useEffect(() => { 
                 if (message) {
@@ -1148,7 +1147,7 @@
                                                                 <div className={`p-4 text-center font-bold ${txType.color} text-xs px-1 whitespace-nowrap ${isSettled ? 'line-through decoration-muji-text/50' : ''}`}>{txType.label}</div>
                                                                 <div className={`p-4 text-center text-xs gap-2 flex justify-center items-center ${isSettled ? 'line-through decoration-muji-text/50' : ''}`}>{(subTx.type==='expense'||subTx.type==='income')&&
                                                                     <span className="flex">
-                                                                        <LucideIcon name={cat.icon || 'circle'} className="w-4 h-4" />
+                                                                        <LucideIcon name={cat.icon || 'circle'} className="w-3.5 h-3.5 opacity-70" />
                                                                     </span>
                                                                 }<span className="truncate">{display}</span></div>
                                                                 <div className={`p-4 text-center font-mono font-bold ${textColorClass} text-xs ${isSettled ? 'line-through decoration-muji-text/50' : ''}`}>{sign}${subTx.amount.toLocaleString()}</div>
@@ -1689,6 +1688,8 @@
             const [repayAmount, setRepayAmount] = useState('');
             const [selectedTxIds, setSelectedTxIds] = useState([]);
             const [repayAccountId, setRepayAccountId] = useState('');
+            const [showEditModal, setShowEditModal] = useState(false);
+            const [editingTx, setEditingTx] = useState(null);
             
             const debts = getDebtSummary(data);
             const userAccounts = data.accounts;
@@ -1708,11 +1709,41 @@
                     if(idx !== -1) newTxs[idx] = { ...newTxs[idx], isSettled: true };
                 });
                 // Add repay tx
-                newTxs.push({ id: Date.now().toString(), date: new Date().toISOString().split('T')[0], type: 'repay', accountId: repayAccountId, amount, targetName: viewingTarget, note: '債務結算', isSettled: true }); // Repayment itself is considered settled in context of history
+                newTxs.push({ id: Date.now().toString(), date: new Date().toISOString().split('T')[0], type: 'repay', accountId: repayAccountId, amount, targetName: viewingTarget, note: '債務結算', isSettled: true }); 
                 
                 saveData({ ...data, transactions: newTxs });
-                setViewingTarget(null); setSelectedTxIds([]); setRepayAmount('');
+                setSelectedTxIds([]); setRepayAmount('');
                 showToast('還款已記錄');
+            };
+
+            const openEdit = (tx) => {
+                setEditingTx({...tx});
+                setShowEditModal(true);
+            };
+
+            const handleSaveEdit = (txsToSave) => {
+                // Simplified save for debt edit (assuming single tx for now or basic split update)
+                // In a real app, this should match AccountingView's logic.
+                // For now, we update the transaction in data.
+                let updatedTransactions = [...data.transactions];
+                const txArray = Array.isArray(txsToSave) ? txsToSave : [txsToSave];
+                
+                txArray.forEach(newTx => {
+                     const idx = updatedTransactions.findIndex(t => t.id === newTx.id);
+                     if(idx !== -1) updatedTransactions[idx] = newTx;
+                });
+                
+                saveData({ ...data, transactions: updatedTransactions });
+                setShowEditModal(false);
+                showToast('交易已更新');
+            };
+
+            const handleDeleteEdit = () => {
+                 if(!editingTx) return;
+                 const updatedTransactions = data.transactions.filter(t => t.id !== editingTx.id);
+                 saveData({ ...data, transactions: updatedTransactions });
+                 setShowEditModal(false);
+                 showToast('交易已刪除');
             };
 
             if (viewingTarget) {
@@ -1734,9 +1765,9 @@
                                 const isSettled = tx.isSettled; // Check status
 
                                 return (
-                                    <div key={tx.id} className={`flex items-center p-3 border-b border-muji-border gap-3 ${isSettled ? 'opacity-40 bg-gray-50' : 'cursor-pointer hover:bg-muji-hover'}`} onClick={() => !isSettled && setSelectedTxIds(prev => prev.includes(tx.id) ? prev.filter(i => i !== tx.id) : [...prev, tx.id])}>
+                                    <div key={tx.id} onClick={() => openEdit(tx)} className={`flex items-center p-3 border-b border-muji-border gap-3 ${isSettled ? 'opacity-40 bg-gray-50' : 'cursor-pointer hover:bg-muji-hover'}`}>
                                         {/* Checkbox: Only show if not settled */}
-                                        <div className="w-6 h-6 flex-shrink-0 flex items-center justify-center">
+                                        <div className="w-6 h-6 flex-shrink-0 flex items-center justify-center" onClick={(e) => { e.stopPropagation(); if(!isSettled) setSelectedTxIds(prev => prev.includes(tx.id) ? prev.filter(i => i !== tx.id) : [...prev, tx.id]); }}>
                                             {!isSettled && (
                                                 <input type="checkbox" checked={selectedTxIds.includes(tx.id)} readOnly className="accent-muji-accent w-4 h-4" />
                                             )}
@@ -1761,6 +1792,31 @@
                             <div className="flex gap-2 mb-2"><input type="number" className="flex-1 p-3 border border-muji-border rounded-lg bg-muji-bg font-mono" placeholder="實際還款金額" value={repayAmount} onChange={e => setRepayAmount(e.target.value)} /><select className="flex-1 p-3 border border-muji-border rounded-lg bg-muji-bg" value={repayAccountId} onChange={e => setRepayAccountId(e.target.value)}><option value="">存入帳戶</option>{userAccounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
                             <button onClick={handleRepay} disabled={selectedTotal <= 0} className={`w-full py-3 text-white rounded-lg font-bold shadow-sm transition-all ${selectedTotal > 0 ? 'bg-muji-accent hover:opacity-90' : 'bg-gray-300 cursor-not-allowed'}`}>確認還款</button>
                         </div>
+
+                        {/* Edit Modal for Debt View */}
+                        {showEditModal && (
+                            <TransactionModal 
+                                onClose={() => setShowEditModal(false)}
+                                isEditMode={true}
+                                newTx={editingTx}
+                                setNewTx={setEditingTx}
+                                isSplitMode={false} // Simplify for debt view edit
+                                setIsSplitMode={() => {}}
+                                splitTotal={editingTx.amount}
+                                setSplitTotal={() => {}}
+                                splits={[]}
+                                setSplits={() => {}}
+                                categoryGroups={data.settings?.categoryGroups || DEFAULT_CATEGORY_GROUPS}
+                                flatCategories={getFlatCategories(data.settings?.categoryGroups || DEFAULT_CATEGORY_GROUPS)}
+                                userAccounts={userAccounts}
+                                selectedAccount={null}
+                                saveTransaction={handleSaveEdit}
+                                handleDeleteTransaction={handleDeleteEdit}
+                                data={data}
+                                saveData={saveData}
+                                showToast={showToast}
+                            />
+                        )}
                     </div>
                 );
             }
@@ -1815,6 +1871,7 @@
             );
         };
 
+        // --- MAIN APP COMPONENT ---
         const App = () => {
             const [view, setView] = useState('dashboard'); 
             const [data, setData] = useState(INITIAL_DATA);
