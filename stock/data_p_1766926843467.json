@@ -5801,6 +5801,20 @@
       "tax": 90,
       "realizedDividend": 0,
       "note": "股票股利"
+    },
+    {
+      "id": "ef2498e2-3c56-4d48-b0ad-ebdd4bc2b07c",
+      "date": "2012-05-02",
+      "name": "1444",
+      "symbol": "1444",
+      "type": "sell",
+      "price": 11.2,
+      "qty": 2000,
+      "fee": 86,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "5695759e-3a98-4062-81a6-d5d16669ec25"
     }
   ],
   "prices": {
