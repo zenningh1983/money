@@ -5715,6 +5715,20 @@
       "computedPL": -4357,
       "computedROI": -0.05510446704102798,
       "isGrouped": true
+    },
+    {
+      "id": "8407d124-7cb1-44de-8c23-0229d1b0dc23",
+      "date": "2023-10-16",
+      "name": "4904",
+      "symbol": "4904",
+      "type": "sell",
+      "price": 75,
+      "qty": 1000,
+      "fee": 64,
+      "tax": 225,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "02cc9ea0-1fd3-4c88-a676-cd9083d223d6"
     }
   ],
   "prices": {
