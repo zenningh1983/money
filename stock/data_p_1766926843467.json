@@ -4977,6 +4977,17 @@
       "computedPL": 14271,
       "computedROI": 0.271285999429712,
       "isGrouped": true
+    },
+    {
+      "id": "984d04ba-fd94-4b85-817a-f069b584d728",
+      "date": "2020-08-20",
+      "name": "元大高股息",
+      "symbol": "0056",
+      "type": "buy",
+      "price": 29.75,
+      "qty": 1000,
+      "fee": 25,
+      "note": ""
     }
   ],
   "prices": {
