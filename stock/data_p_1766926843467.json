@@ -4772,6 +4772,20 @@
       "computedPL": 4521,
       "computedROI": 0.17658776658073588,
       "isGrouped": true
+    },
+    {
+      "id": "9f55ffe4-55b7-4352-afc1-e99d401a918a",
+      "date": "2020-07-31",
+      "name": "0056",
+      "symbol": "0056",
+      "type": "sell",
+      "price": 30.24,
+      "qty": 1000,
+      "fee": 26,
+      "tax": 91,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "e7e8f0bc-4c5f-4724-8250-69f0e20ddd92"
     }
   ],
   "prices": {
