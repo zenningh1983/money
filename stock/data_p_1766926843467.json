@@ -4738,6 +4738,20 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "03b3c009-567b-49bb-872f-c085a8d0324b"
+    },
+    {
+      "id": "d664252d-3a53-4db7-9942-52cd3b2f0c8c",
+      "date": "2020-07-31",
+      "name": "0056",
+      "symbol": "0056",
+      "type": "sell",
+      "price": 30.24,
+      "qty": 1000,
+      "fee": 26,
+      "tax": 91,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "74869617-4954-4a5c-b4d7-08561102ad6a"
     }
   ],
   "prices": {
