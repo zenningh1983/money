@@ -5237,6 +5237,19 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "e12590c0-0d9c-46da-8f10-c6b6e3fe6fa4"
+    },
+    {
+      "id": "fd78a154-50b8-4083-a5a7-865e0d1c6af8",
+      "date": "2009-09-18",
+      "name": "合庫",
+      "symbol": "5854",
+      "type": "buy",
+      "price": 20.05,
+      "qty": 1000,
+      "fee": 28,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": ""
     }
   ],
   "prices": {
