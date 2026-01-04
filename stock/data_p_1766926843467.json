@@ -4402,7 +4402,7 @@
       "qty": 392,
       "fee": 20,
       "tax": 28,
-      "realizedDividend": 0,
+      "realizedDividend": -3,
       "note": "",
       "relatedBuyId": "5b9a4266-0862-4499-b818-b75128b151b9",
       "computedPL": -2302,
