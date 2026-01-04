@@ -5025,9 +5025,9 @@
       "name": "亞泥",
       "symbol": "1102",
       "type": "buy",
-      "price": 35.3,
-      "qty": 2000,
-      "fee": 99,
+      "price": null,
+      "qty": 60,
+      "fee": null,
       "tax": 0,
       "realizedDividend": 0,
       "note": ""
