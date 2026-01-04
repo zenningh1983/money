@@ -5670,6 +5670,20 @@
       "realizedDividend": 0,
       "note": "",
       "relatedBuyId": "dc7f3be8-fde9-46e5-8df1-be764fffb872"
+    },
+    {
+      "id": "9f6eeb7a-4dd5-4b6d-9fbb-a49b809971d1",
+      "date": "2015-01-12",
+      "name": "4904",
+      "symbol": "4904",
+      "type": "sell",
+      "price": 77.5,
+      "qty": 1000,
+      "fee": 299,
+      "tax": 0,
+      "realizedDividend": 0,
+      "note": "",
+      "relatedBuyId": "4b1b25d9-31e3-4d23-bdff-05e7e0ae848f"
     }
   ],
   "prices": {
